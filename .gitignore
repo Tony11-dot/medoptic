@@ -39,3 +39,8 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# MEDOPTIC runtime data (reseeds from src/lib/seed.ts) and uploads
+/data/*.json
+/public/uploads/*
+!/public/uploads/.gitkeep
