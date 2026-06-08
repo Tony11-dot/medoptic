@@ -13,7 +13,8 @@ const EXT: Record<string, string> = {
   "image/svg+xml": "svg",
 };
 
-// POST — upload an image (admin only). Saves to /public/uploads and returns its URL.
+// POST — upload an image (admin only). Uses Vercel Blob in production; falls back
+// to /public/uploads locally when no blob token is configured.
 export async function POST(request: Request) {
   if (!(await isAuthed())) {
     return Response.json({ error: "Unauthorized" }, { status: 401 });
@@ -31,10 +32,18 @@ export async function POST(request: Request) {
     return Response.json({ error: "File too large (max 5MB)" }, { status: 413 });
   }
 
-  await fs.mkdir(UPLOAD_DIR, { recursive: true });
   const name = `${randomUUID()}.${EXT[file.type]}`;
+
+  // Production: store in Vercel Blob (publicly served via CDN).
+  if (process.env.BLOB_READ_WRITE_TOKEN) {
+    const { put } = await import("@vercel/blob");
+    const blob = await put(`uploads/${name}`, file, { access: "public" });
+    return Response.json({ url: blob.url }, { status: 201 });
+  }
+
+  // Local dev fallback: write to /public/uploads.
+  await fs.mkdir(UPLOAD_DIR, { recursive: true });
   const buffer = Buffer.from(await file.arrayBuffer());
   await fs.writeFile(path.join(UPLOAD_DIR, name), buffer);
-
   return Response.json({ url: `/uploads/${name}` }, { status: 201 });
 }
