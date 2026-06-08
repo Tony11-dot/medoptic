@@ -10,7 +10,7 @@ export async function POST(request: Request) {
     return Response.json({ error: "Invalid JSON" }, { status: 400 });
   }
 
-  if (!checkPassword(String(body.password ?? ""))) {
+  if (!(await checkPassword(String(body.password ?? "")))) {
     return Response.json({ error: "Incorrect password" }, { status: 401 });
   }
 

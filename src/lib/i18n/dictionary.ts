@@ -95,7 +95,19 @@ export interface Dict {
     saving: string;
     refresh: string;
     actions: { approve: string; decline: string; add: string; edit: string; delete: string; cancel: string; search: string };
-    nav: { overview: string; appointments: string; queueTypes: string; products: string; content: string };
+    nav: { overview: string; appointments: string; queueTypes: string; products: string; content: string; settings: string };
+    settings: {
+      title: string;
+      subtitle: string;
+      current: string;
+      newPass: string;
+      confirm: string;
+      save: string;
+      saved: string;
+      mismatch: string;
+      tooShort: string;
+      wrongCurrent: string;
+    };
     login: {
       title: string;
       subtitle: string;
@@ -271,7 +283,19 @@ export const dictionaries: Record<Locale, Dict> = {
       saving: "שומר…",
       refresh: "רענון",
       actions: { approve: "אישור", decline: "דחייה", add: "הוספה", edit: "עריכה", delete: "מחיקה", cancel: "ביטול", search: "חיפוש" },
-      nav: { overview: "סקירה", appointments: "תורים", queueTypes: "סוגי תורים", products: "מוצרים", content: "תוכן" },
+      nav: { overview: "סקירה", appointments: "תורים", queueTypes: "סוגי תורים", products: "מוצרים", content: "תוכן", settings: "הגדרות" },
+      settings: {
+        title: "הגדרות",
+        subtitle: "שינוי סיסמת הניהול.",
+        current: "סיסמה נוכחית",
+        newPass: "סיסמה חדשה",
+        confirm: "אישור סיסמה",
+        save: "עדכון סיסמה",
+        saved: "הסיסמה עודכנה",
+        mismatch: "הסיסמאות אינן תואמות",
+        tooShort: "הסיסמה קצרה מדי (לפחות 4 תווים)",
+        wrongCurrent: "הסיסמה הנוכחית שגויה",
+      },
       login: {
         title: "כניסת מנהל",
         subtitle: "הזינו את סיסמת המנהל כדי להמשיך.",
@@ -422,7 +446,19 @@ export const dictionaries: Record<Locale, Dict> = {
       saving: "Saving…",
       refresh: "Refresh",
       actions: { approve: "Approve", decline: "Decline", add: "Add", edit: "Edit", delete: "Delete", cancel: "Cancel", search: "Search" },
-      nav: { overview: "Overview", appointments: "Appointments", queueTypes: "Queue Types", products: "Products", content: "Content" },
+      nav: { overview: "Overview", appointments: "Appointments", queueTypes: "Queue Types", products: "Products", content: "Content", settings: "Settings" },
+      settings: {
+        title: "Settings",
+        subtitle: "Change the admin password.",
+        current: "Current password",
+        newPass: "New password",
+        confirm: "Confirm password",
+        save: "Update password",
+        saved: "Password updated",
+        mismatch: "Passwords don't match",
+        tooShort: "Password too short (at least 4 characters)",
+        wrongCurrent: "Current password is incorrect",
+      },
       login: {
         title: "Admin sign in",
         subtitle: "Enter the admin password to continue.",
@@ -573,7 +609,19 @@ export const dictionaries: Record<Locale, Dict> = {
       saving: "Сохранение…",
       refresh: "Обновить",
       actions: { approve: "Подтвердить", decline: "Отклонить", add: "Добавить", edit: "Изменить", delete: "Удалить", cancel: "Отмена", search: "Поиск" },
-      nav: { overview: "Обзор", appointments: "Записи", queueTypes: "Типы услуг", products: "Товары", content: "Контент" },
+      nav: { overview: "Обзор", appointments: "Записи", queueTypes: "Типы услуг", products: "Товары", content: "Контент", settings: "Настройки" },
+      settings: {
+        title: "Настройки",
+        subtitle: "Изменить пароль администратора.",
+        current: "Текущий пароль",
+        newPass: "Новый пароль",
+        confirm: "Подтвердите пароль",
+        save: "Обновить пароль",
+        saved: "Пароль обновлён",
+        mismatch: "Пароли не совпадают",
+        tooShort: "Пароль слишком короткий (минимум 4 символа)",
+        wrongCurrent: "Неверный текущий пароль",
+      },
       login: {
         title: "Вход для админа",
         subtitle: "Введите пароль администратора, чтобы продолжить.",

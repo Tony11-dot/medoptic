@@ -13,6 +13,7 @@ const NAV = [
   { href: "/admin/queue", key: "appointments", icon: "🗓" },
   { href: "/admin/services", key: "queueTypes", icon: "🧩" },
   { href: "/admin/content", key: "content", icon: "✎" },
+  { href: "/admin/settings", key: "settings", icon: "⚙" },
 ] as const;
 
 type AuthState = "loading" | "authed" | "denied";

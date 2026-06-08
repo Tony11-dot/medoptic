@@ -4,7 +4,7 @@
 import "server-only";
 import { promises as fs } from "fs";
 import path from "path";
-import type { Appointment, Product, Service, SiteContent } from "./types";
+import type { AdminSettings, Appointment, Product, Service, SiteContent } from "./types";
 import { seedAppointments, seedProducts, seedServices, seedContent } from "./seed";
 
 const useRedis = !!process.env.KV_REST_API_URL && !!process.env.KV_REST_API_TOKEN;
@@ -101,3 +101,10 @@ export const getContent = () => read<SiteContent>("content", seedContent);
 
 export const updateContent = (fn: (c: SiteContent) => SiteContent) =>
   mutate<SiteContent>("content", fn, seedContent);
+
+// ---- Admin settings ---------------------------------------------------------
+
+export const getSettings = () => read<AdminSettings>("settings", {});
+
+export const updateSettings = (fn: (s: AdminSettings) => AdminSettings) =>
+  mutate<AdminSettings>("settings", fn, {});

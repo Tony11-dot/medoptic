@@ -13,6 +13,12 @@ export type AppointmentStatus = "pending" | "approved" | "declined";
 /** How the customer wants to be reminded before their appointment. */
 export type ReminderChannel = "sms" | "email";
 
+/** Admin settings stored in the database (e.g. the changeable admin password). */
+export interface AdminSettings {
+  passwordSalt?: string;
+  passwordHash?: string;
+}
+
 /**
  * A bookable service / queue type, fully managed by admins. `id` is what an
  * appointment references in {@link Appointment.service}; the set is not fixed in
