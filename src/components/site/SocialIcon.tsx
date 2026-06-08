@@ -1,3 +1,15 @@
+// Resolve the destination for a social link: use the admin-set URL, or fall back
+// to MEDOPTIC's real accounts for WhatsApp/Instagram. Returns null if there's no
+// usable link (so we can hide that icon).
+export function socialHref(label: string, url?: string): string | null {
+  const u = (url ?? "").trim();
+  if (u && u !== "#") return u;
+  const k = label.trim().toLowerCase();
+  if (k.includes("whats")) return "https://wa.me/972509652008";
+  if (k.includes("insta")) return "https://instagram.com/medoptic24";
+  return null;
+}
+
 // Brand glyphs for footer social links. Matches the link's label (case-insensitive);
 // falls back to a generic link icon for anything unknown.
 export function SocialIcon({ label }: { label: string }) {

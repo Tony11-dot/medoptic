@@ -8,7 +8,7 @@ import { Logo } from "@/components/ui/Logo";
 import { LanguageSwitcher } from "./LanguageSwitcher";
 import { cn } from "@/lib/cn";
 
-const SECTIONS = ["home", "products", "team", "services", "book", "contact"] as const;
+const SECTIONS = ["home", "gallery", "team", "services", "book", "contact"] as const;
 type SectionId = (typeof SECTIONS)[number];
 
 export function Navbar() {
@@ -19,7 +19,7 @@ export function Navbar() {
 
   const labels: Record<SectionId, string> = {
     home: t.nav.home,
-    products: t.nav.products,
+    gallery: t.nav.gallery,
     team: t.nav.team,
     services: t.nav.services,
     book: t.nav.book,

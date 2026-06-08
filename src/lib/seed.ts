@@ -229,9 +229,8 @@ export const seedContent: SiteContent = {
       ru: "Вс–Чт 09:00–19:00 · Пт 09:00–13:00",
     },
     social: [
-      { label: "Instagram", url: "#" },
-      { label: "Facebook", url: "#" },
-      { label: "WhatsApp", url: "#" },
+      { label: "Instagram", url: "https://instagram.com/medoptic24" },
+      { label: "WhatsApp", url: "https://wa.me/972509652008" },
     ],
   },
 };

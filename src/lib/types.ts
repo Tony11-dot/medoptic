@@ -109,6 +109,13 @@ export interface Block {
 /** Where the custom block section sits on the public page. */
 export type BlocksPosition = "afterHero" | "afterProducts" | "beforeBooking" | "beforeFooter";
 
+/** A slide in the admin-managed hero gallery / carousel. */
+export interface GalleryImage {
+  id: string;
+  image: string;
+  caption: Localized;
+}
+
 export interface SiteContent {
   hero: {
     title: Localized;
@@ -133,6 +140,8 @@ export interface SiteContent {
   /** Admin-built custom blocks and where they render on the page. */
   blocks?: Block[];
   blocksPosition?: BlocksPosition;
+  /** Hero gallery / carousel slides, managed in the admin. */
+  gallery?: GalleryImage[];
 }
 
 export const SERVICE_TYPES: ServiceType[] = [

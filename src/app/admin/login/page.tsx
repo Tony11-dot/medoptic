@@ -70,10 +70,6 @@ export default function AdminLogin() {
           </Button>
         </form>
 
-        <p className="mt-4 text-center text-xs text-muted">
-          {t.admin.login.demo} <code className="rounded bg-surface px-1.5 py-0.5 font-mono">medoptic</code>
-        </p>
-
         <div className="mt-4 flex justify-center">
           <LanguageSwitcher />
         </div>

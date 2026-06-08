@@ -143,6 +143,16 @@ export function Booking() {
                 </a>
                 <p className="mt-3 max-w-xs text-sm text-muted">{t.booking.pickTimeHelp}</p>
 
+                {/* Strong reminder to actually pick a date/time on the calendar */}
+                <motion.p
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.2 }}
+                  className="mt-5 w-full max-w-sm rounded-2xl border-2 border-amber-300 bg-amber-50 px-4 py-3 text-sm font-bold text-amber-800"
+                >
+                  {t.booking.warnPickTime}
+                </motion.p>
+
                 <button
                   onClick={() => setDone(false)}
                   className="mt-6 text-base font-semibold text-brand-dark underline-offset-2 hover:underline"

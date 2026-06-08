@@ -7,15 +7,17 @@ import { ImageUpload } from "@/components/admin/ImageUpload";
 import { StyleToolbar } from "@/components/admin/StyleToolbar";
 import { ContentPreview } from "@/components/admin/ContentPreview";
 import { BlockBuilder } from "@/components/admin/BlockBuilder";
+import { GalleryEditor } from "@/components/admin/GalleryEditor";
 import { Blocks } from "@/components/site/Blocks";
 import { Button } from "@/components/ui/Button";
 import { useToast } from "@/components/ui/Toast";
 import { useI18n } from "@/lib/i18n/LanguageProvider";
-import type { Block, BlocksPosition, Locale, Localized, SiteContent, TeamMember, TextStyle } from "@/lib/types";
+import type { Block, BlocksPosition, GalleryImage, Locale, Localized, SiteContent, TeamMember, TextStyle } from "@/lib/types";
 import { STYLE_KEYS } from "@/lib/textStyle";
+import { ImageBlock } from "@/components/ui/ImageBlock";
 import { cn } from "@/lib/cn";
 
-type Tab = "hero" | "team" | "footer" | "blocks";
+type Tab = "hero" | "gallery" | "team" | "footer" | "blocks";
 
 const PREVIEW_LANGS: { code: Locale; label: string }[] = [
   { code: "he", label: "עברית" },
@@ -37,6 +39,7 @@ export default function ContentAdmin() {
 
   const TABS: { id: Tab; label: string }[] = [
     { id: "hero", label: t.admin.contentTabs.hero },
+    { id: "gallery", label: t.admin.contentTabs.gallery },
     { id: "team", label: t.admin.contentTabs.team },
     { id: "blocks", label: t.admin.contentTabs.blocks },
     { id: "footer", label: t.admin.contentTabs.footer },
@@ -74,6 +77,7 @@ export default function ContentAdmin() {
   const setStyle = (key: string, v: TextStyle) =>
     setContent((c) => (c ? { ...c, styles: { ...(c.styles ?? {}), [key]: v } } : c));
   const setBlocks = (blocks: Block[]) => setContent((c) => (c ? { ...c, blocks } : c));
+  const setGallery = (gallery: GalleryImage[]) => setContent((c) => (c ? { ...c, gallery } : c));
   const setBlocksPosition = (blocksPosition: BlocksPosition) =>
     setContent((c) => (c ? { ...c, blocksPosition } : c));
 
@@ -226,6 +230,16 @@ export default function ContentAdmin() {
             </>
           )}
 
+          {tab === "gallery" && (
+            <GalleryEditor
+              gallery={content.gallery ?? []}
+              onChange={setGallery}
+              addLabel={t.admin.gallery.add}
+              emptyLabel={t.admin.gallery.empty}
+              captionLabel={t.admin.gallery.caption}
+            />
+          )}
+
           {tab === "blocks" && (
             <BlockBuilder
               blocks={content.blocks ?? []}
@@ -269,6 +283,26 @@ export default function ContentAdmin() {
                   />
                 )}
               </div>
+            </div>
+          ) : tab === "gallery" ? (
+            <div className="overflow-hidden rounded-2xl border border-line bg-white p-4" dir={previewLocale === "he" ? "rtl" : "ltr"}>
+              {(content.gallery ?? []).length === 0 ? (
+                <p className="p-8 text-center text-sm text-muted">{t.admin.gallery.empty}</p>
+              ) : (
+                <div className="grid grid-cols-2 gap-3">
+                  {(content.gallery ?? []).map((g, n) => (
+                    <div key={g.id} className="overflow-hidden rounded-xl border border-line">
+                      <div className="aspect-video">
+                        <ImageBlock src={g.image} alt="" icon="eye" rounded="rounded-none" />
+                      </div>
+                      {(g.caption?.[previewLocale] || g.caption?.he) && (
+                        <p className="truncate px-2 py-1.5 text-xs font-semibold text-ink">{g.caption?.[previewLocale] || g.caption?.he}</p>
+                      )}
+                      <span className="block px-2 pb-1.5 text-[10px] text-muted">#{n + 1}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           ) : (
             <ContentPreview content={content} locale={previewLocale} tab={tab} />

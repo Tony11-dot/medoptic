@@ -5,7 +5,7 @@ import { cookies } from "next/headers";
 
 export const SESSION_COOKIE = "medoptic_admin";
 // In a real deployment set ADMIN_PASSWORD / ADMIN_TOKEN via env vars.
-const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD ?? "medoptic";
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD ?? "medoptic24";
 const SESSION_TOKEN = process.env.ADMIN_TOKEN ?? "medoptic-session-ok";
 
 export function checkPassword(password: string): boolean {

@@ -9,6 +9,7 @@ export interface Dict {
   nav: {
     home: string;
     products: string;
+    gallery: string;
     team: string;
     services: string;
     book: string;
@@ -18,6 +19,11 @@ export interface Dict {
     badge: string;
     cta: string;
     secondary: string;
+  };
+  gallery: {
+    eyebrow: string;
+    heading: string;
+    subheading: string;
   };
   services: {
     eyebrow: string;
@@ -63,6 +69,7 @@ export interface Dict {
     successBody: string;
     pickTimeCta: string;
     pickTimeHelp: string;
+    warnPickTime: string;
     bookAnother: string;
     services: Record<ServiceType, string>;
     errors: {
@@ -111,8 +118,30 @@ export interface Dict {
       content: string;
       contentSub: string;
     };
-    contentTabs: { hero: string; team: string; blocks: string; footer: string };
+    contentTabs: { hero: string; gallery: string; team: string; blocks: string; footer: string };
     status: { pending: string; approved: string; declined: string; allStatuses: string; allServices: string };
+    gallery: { add: string; empty: string; caption: string };
+    overview: { total: string; thisMonth: string; latest: string; viewAll: string; none: string };
+    queue: {
+      booked: string;
+      customer: string;
+      phone: string;
+      service: string;
+      appointment: string;
+      status: string;
+      actions: string;
+      none: string;
+      details: string;
+      name: string;
+      email: string;
+      reminderBy: string;
+      notes: string;
+      notified: string;
+      setTime: string;
+      setTimeDesc: string;
+      dateTime: string;
+      dateTimeHint: string;
+    };
   };
 }
 
@@ -143,8 +172,9 @@ export const dictionaries: Record<Locale, Dict> = {
   he: {
     dir: "rtl",
     langName: "עברית",
-    nav: { home: "מי אנחנו", products: "המוצרים שלנו", team: "האופטומטריסטים", services: "השירותים שלנו", book: "קביעת תור", contact: "צור קשר" },
-    hero: { badge: "ברוכים הבאים ל-MEDOPTIC", cta: "קביעת תור עכשיו", secondary: "לצפייה במוצרים" },
+    nav: { home: "מי אנחנו", products: "המוצרים שלנו", gallery: "גלריה", team: "האופטומטריסטים", services: "השירותים שלנו", book: "קביעת תור", contact: "צור קשר" },
+    hero: { badge: "ברוכים הבאים ל-MEDOPTIC", cta: "קביעת תור עכשיו", secondary: "לגלריה" },
+    gallery: { eyebrow: "הצצה אלינו", heading: "גלריה", subheading: "רגעים, מוצרים והאווירה אצלנו בחנות." },
     services: { eyebrow: "מה אנחנו מציעים", heading: "השירותים שלנו", subheading: "בחרו את השירות המתאים לכם וקבעו תור בקלות.", book: "קביעת תור", empty: "אין שירותים זמינים כרגע." },
     products: {
       eyebrow: "הקולקציה שלנו",
@@ -181,6 +211,7 @@ export const dictionaries: Record<Locale, Dict> = {
       successBody: "פתחנו עבורכם את היומן — בחרו את השעה שנוחה לכם.",
       pickTimeCta: "פתיחת היומן",
       pickTimeHelp: "השעה שתבחרו היא שעת התור. נשלח לכם אישור ותזכורת.",
+      warnPickTime: "⚠️ חשוב: יש לבחור תאריך ושעה ביומן, אחרת לא נוכל לשמור לכם תור. לא בחרתם? לחצו למעלה.",
       bookAnother: "קביעת תור נוסף",
       services: services_he,
       errors: {
@@ -229,15 +260,38 @@ export const dictionaries: Record<Locale, Dict> = {
         content: "תוכן",
         contentSub: "עריכת טקסט, גופנים ותמונות. התצוגה מתעדכנת תוך כדי; השינויים נשמרים בלחיצה.",
       },
-      contentTabs: { hero: "מי אנחנו", team: "אופטומטריסטים", blocks: "בלוקים", footer: "כותרת תחתונה" },
+      contentTabs: { hero: "מי אנחנו", gallery: "גלריה", team: "אופטומטריסטים", blocks: "בלוקים", footer: "כותרת תחתונה" },
       status: { pending: "ממתין", approved: "אושר", declined: "נדחה", allStatuses: "כל הסטטוסים", allServices: "כל השירותים" },
+      gallery: { add: "הוספת תמונה", empty: "אין תמונות עדיין. הוסיפו תמונות לקרוסלה.", caption: "כיתוב (לא חובה)" },
+      overview: { total: "סך התורים", thisMonth: "החודש", latest: "בקשות אחרונות", viewAll: "הצגת הכל", none: "אין תורים עדיין." },
+      queue: {
+        booked: "נקבע ב",
+        customer: "לקוח",
+        phone: "טלפון",
+        service: "שירות",
+        appointment: "מועד התור",
+        status: "סטטוס",
+        actions: "פעולות",
+        none: "אין תורים תואמים.",
+        details: "פרטי התור",
+        name: "שם",
+        email: "אימייל",
+        reminderBy: "תזכורת ב",
+        notes: "הערות",
+        notified: "נשלחה הודעה",
+        setTime: "קביעת מועד",
+        setTimeDesc: "קבעו את מועד התור — הוא נכלל ב-SMS/אימייל ובתזכורת.",
+        dateTime: "תאריך ושעה",
+        dateTimeHint: "לא חובה — אם ריק, יישלח קישור ללקוח לבחירת מועד.",
+      },
     },
   },
   en: {
     dir: "ltr",
     langName: "English",
-    nav: { home: "Who We Are", products: "Our Products", team: "Optometrists", services: "Our Services", book: "Book", contact: "Contact" },
-    hero: { badge: "Welcome to MEDOPTIC", cta: "Book Appointment Now", secondary: "Browse products" },
+    nav: { home: "Who We Are", products: "Our Products", gallery: "Gallery", team: "Optometrists", services: "Our Services", book: "Book", contact: "Contact" },
+    hero: { badge: "Welcome to MEDOPTIC", cta: "Book Appointment Now", secondary: "See gallery" },
+    gallery: { eyebrow: "A look inside", heading: "Gallery", subheading: "Moments, frames and the atmosphere at our store." },
     services: { eyebrow: "What we offer", heading: "Our Services", subheading: "Choose the service that fits you and book in a few taps.", book: "Book this", empty: "No services available right now." },
     products: {
       eyebrow: "Our collection",
@@ -274,6 +328,7 @@ export const dictionaries: Record<Locale, Dict> = {
       successBody: "We opened the calendar — choose the time that suits you.",
       pickTimeCta: "Open the calendar",
       pickTimeHelp: "The time you pick is your appointment time. We'll send a confirmation and a reminder.",
+      warnPickTime: "⚠️ Important: you must pick a date & time on the calendar, or we can't hold your appointment. Didn't choose one? Tap above.",
       bookAnother: "Book another",
       services: services_en,
       errors: {
@@ -322,15 +377,38 @@ export const dictionaries: Record<Locale, Dict> = {
         content: "Content",
         contentSub: "Edit text, fonts and images. The preview updates as you type; changes go live on save.",
       },
-      contentTabs: { hero: "Who We Are", team: "Optometrists", blocks: "Blocks", footer: "Footer" },
+      contentTabs: { hero: "Who We Are", gallery: "Gallery", team: "Optometrists", blocks: "Blocks", footer: "Footer" },
       status: { pending: "Pending", approved: "Approved", declined: "Declined", allStatuses: "All statuses", allServices: "All services" },
+      gallery: { add: "Add image", empty: "No images yet. Add images to the carousel.", caption: "Caption (optional)" },
+      overview: { total: "Total appointments", thisMonth: "This month", latest: "Latest requests", viewAll: "View all", none: "No appointments yet." },
+      queue: {
+        booked: "Booked",
+        customer: "Customer",
+        phone: "Phone",
+        service: "Service",
+        appointment: "Appointment",
+        status: "Status",
+        actions: "Actions",
+        none: "No appointments match.",
+        details: "Appointment details",
+        name: "Name",
+        email: "Email",
+        reminderBy: "Reminder by",
+        notes: "Notes",
+        notified: "Notified",
+        setTime: "Set time",
+        setTimeDesc: "Set the appointment time — it's included in the SMS/email and the reminder.",
+        dateTime: "Date & time",
+        dateTimeHint: "Optional — if empty, the customer gets the link to pick a time.",
+      },
     },
   },
   ru: {
     dir: "ltr",
     langName: "Русский",
-    nav: { home: "О нас", products: "Продукция", team: "Оптометристы", services: "Услуги", book: "Запись", contact: "Контакты" },
-    hero: { badge: "Добро пожаловать в MEDOPTIC", cta: "Записаться сейчас", secondary: "Смотреть товары" },
+    nav: { home: "О нас", products: "Продукция", gallery: "Галерея", team: "Оптометристы", services: "Услуги", book: "Запись", contact: "Контакты" },
+    hero: { badge: "Добро пожаловать в MEDOPTIC", cta: "Записаться сейчас", secondary: "Смотреть галерею" },
+    gallery: { eyebrow: "Загляните к нам", heading: "Галерея", subheading: "Моменты, оправы и атмосфера нашего магазина." },
     services: { eyebrow: "Что мы предлагаем", heading: "Наши услуги", subheading: "Выберите подходящую услугу и запишитесь за пару касаний.", book: "Записаться", empty: "Сейчас нет доступных услуг." },
     products: {
       eyebrow: "Наша коллекция",
@@ -367,6 +445,7 @@ export const dictionaries: Record<Locale, Dict> = {
       successBody: "Мы открыли календарь — выберите удобное вам время.",
       pickTimeCta: "Открыть календарь",
       pickTimeHelp: "Выбранное время — это время приёма. Мы пришлём подтверждение и напоминание.",
+      warnPickTime: "⚠️ Важно: выберите дату и время в календаре, иначе мы не сможем закрепить приём. Не выбрали? Нажмите выше.",
       bookAnother: "Записаться ещё раз",
       services: services_ru,
       errors: {
@@ -415,8 +494,30 @@ export const dictionaries: Record<Locale, Dict> = {
         content: "Контент",
         contentSub: "Редактирование текста, шрифтов и изображений. Предпросмотр обновляется на лету; изменения публикуются при сохранении.",
       },
-      contentTabs: { hero: "О нас", team: "Оптометристы", blocks: "Блоки", footer: "Подвал" },
+      contentTabs: { hero: "О нас", gallery: "Галерея", team: "Оптометристы", blocks: "Блоки", footer: "Подвал" },
       status: { pending: "Ожидает", approved: "Подтверждено", declined: "Отклонено", allStatuses: "Все статусы", allServices: "Все услуги" },
+      gallery: { add: "Добавить фото", empty: "Пока нет изображений. Добавьте фото в карусель.", caption: "Подпись (необязательно)" },
+      overview: { total: "Всего записей", thisMonth: "За месяц", latest: "Последние заявки", viewAll: "Показать все", none: "Пока нет записей." },
+      queue: {
+        booked: "Создано",
+        customer: "Клиент",
+        phone: "Телефон",
+        service: "Услуга",
+        appointment: "Приём",
+        status: "Статус",
+        actions: "Действия",
+        none: "Нет подходящих записей.",
+        details: "Детали записи",
+        name: "Имя",
+        email: "Эл. почта",
+        reminderBy: "Напоминание",
+        notes: "Примечания",
+        notified: "Уведомление",
+        setTime: "Указать время",
+        setTimeDesc: "Укажите время приёма — оно войдёт в SMS/письмо и напоминание.",
+        dateTime: "Дата и время",
+        dateTimeHint: "Необязательно — если пусто, клиент получит ссылку для выбора времени.",
+      },
     },
   },
 };

@@ -1,10 +1,9 @@
 "use client";
 
-import Link from "next/link";
 import { useI18n } from "@/lib/i18n/LanguageProvider";
 import type { SiteContent } from "@/lib/types";
 import { Logo } from "@/components/ui/Logo";
-import { SocialIcon } from "./SocialIcon";
+import { SocialIcon, socialHref } from "./SocialIcon";
 
 export function Footer({ footer }: { footer: SiteContent["footer"] }) {
   const { t, pick } = useI18n();
@@ -44,29 +43,30 @@ export function Footer({ footer }: { footer: SiteContent["footer"] }) {
           <div>
             <h3 className="text-sm font-bold uppercase tracking-wider text-white/60">{t.footer.follow}</h3>
             <ul className="mt-4 flex flex-wrap gap-2.5">
-              {footer.social.map((s) => (
-                <li key={s.label}>
-                  <a
-                    href={s.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    aria-label={s.label}
-                    title={s.label}
-                    className="grid size-11 place-items-center rounded-xl bg-white/10 text-white transition hover:-translate-y-0.5 hover:bg-white/20"
-                  >
-                    <SocialIcon label={s.label} />
-                  </a>
-                </li>
-              ))}
+              {footer.social.map((s) => {
+                const href = socialHref(s.label, s.url);
+                if (!href) return null;
+                return (
+                  <li key={s.label}>
+                    <a
+                      href={href}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      aria-label={s.label}
+                      title={s.label}
+                      className="grid size-11 place-items-center rounded-xl bg-white/10 text-white transition hover:-translate-y-0.5 hover:bg-white/20"
+                    >
+                      <SocialIcon label={s.label} />
+                    </a>
+                  </li>
+                );
+              })}
             </ul>
           </div>
         </div>
 
-        <div className="mt-12 flex flex-col items-center justify-between gap-4 border-t border-white/15 pt-6 text-sm text-white/70 sm:flex-row">
+        <div className="mt-12 flex flex-col items-center justify-center gap-4 border-t border-white/15 pt-6 text-sm text-white/70">
           <p>© {new Date().getFullYear()} MEDOPTIC. {t.footer.rights}</p>
-          <Link href="/admin" className="rounded-lg px-3 py-1.5 font-medium text-white/80 transition hover:bg-white/10 hover:text-white">
-            {t.footer.adminLink}
-          </Link>
         </div>
       </div>
     </footer>

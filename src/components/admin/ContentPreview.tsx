@@ -13,7 +13,7 @@ export function ContentPreview({
 }: {
   content: SiteContent;
   locale: Locale;
-  tab: "hero" | "team" | "footer" | "blocks";
+  tab: "hero" | "team" | "footer" | "blocks" | "gallery";
 }) {
   const pick = (v: Localized) => v?.[locale] || v?.he || "";
   const dir = locale === "he" ? "rtl" : "ltr";
