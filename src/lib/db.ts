@@ -6,7 +6,9 @@ import path from "path";
 import type { Appointment, Product, Service, SiteContent } from "./types";
 import { seedAppointments, seedProducts, seedServices, seedContent } from "./seed";
 
-const DATA_DIR = path.join(process.cwd(), "data");
+// On Vercel the project dir is read-only; only /tmp is writable. Use it there so
+// the app runs (data is per-instance until the KV store is connected).
+const DATA_DIR = process.env.VERCEL ? "/tmp/medoptic-data" : path.join(process.cwd(), "data");
 
 // Serialise writes per-file to avoid lost updates under concurrent requests.
 const locks = new Map<string, Promise<unknown>>();
