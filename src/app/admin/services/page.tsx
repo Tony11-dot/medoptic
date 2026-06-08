@@ -141,17 +141,17 @@ export default function ServicesAdmin() {
           <table className="w-full min-w-[640px] text-sm">
             <thead>
               <tr className="border-b border-line bg-surface text-left text-xs uppercase tracking-wide text-muted">
-                <th className="px-4 py-3">Order</th>
-                <th className="px-4 py-3">Name (EN / HE / RU)</th>
-                <th className="px-4 py-3">Visible on site</th>
-                <th className="px-4 py-3 text-right">Actions</th>
+                <th className="px-4 py-3 text-start">{t.admin.svc.order}</th>
+                <th className="px-4 py-3 text-start">{t.admin.svc.nameCol}</th>
+                <th className="px-4 py-3 text-start">{t.admin.svc.visible}</th>
+                <th className="px-4 py-3 text-end">{t.admin.queue.actions}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-line">
               {loading ? (
-                <tr><td colSpan={4} className="px-4 py-10 text-center text-muted">Loading…</td></tr>
+                <tr><td colSpan={4} className="px-4 py-10 text-center text-muted">{t.admin.loading}</td></tr>
               ) : services.length === 0 ? (
-                <tr><td colSpan={4} className="px-4 py-10 text-center text-muted">No queue types yet.</td></tr>
+                <tr><td colSpan={4} className="px-4 py-10 text-center text-muted">{t.admin.svc.none}</td></tr>
               ) : (
                 services.map((s, i) => (
                   <tr key={s.id} className="transition hover:bg-surface/60">
@@ -201,16 +201,18 @@ export default function ServicesAdmin() {
                     <td className="px-4 py-3">
                       <div className="flex justify-end gap-1.5">
                         <button
+                          type="button"
                           onClick={() => setDraft({ id: s.id, label: { ...s.label }, description: { ...s.description }, enabled: s.enabled })}
                           className="rounded-lg px-2.5 py-1.5 text-xs font-semibold text-brand-dark transition hover:bg-brand-50"
                         >
-                          Edit
+                          {t.admin.actions.edit}
                         </button>
                         <button
+                          type="button"
                           onClick={() => setConfirmDelete(s)}
                           className="rounded-lg bg-rose-50 px-2.5 py-1.5 text-xs font-semibold text-rose-700 transition hover:bg-rose-100"
                         >
-                          Delete
+                          {t.admin.actions.delete}
                         </button>
                       </div>
                     </td>
@@ -226,18 +228,18 @@ export default function ServicesAdmin() {
       <Modal
         open={!!draft}
         onClose={() => setDraft(null)}
-        title={draft?.id ? "Edit queue type" : "Add queue type"}
+        title={draft?.id ? t.admin.svc.editTitle : t.admin.svc.addTitle}
         className="max-w-2xl"
       >
         {draft && (
           <div className="space-y-5">
             <LocalizedField
-              label="Name"
+              label={t.admin.svc.name}
               value={draft.label}
               onChange={(label) => setDraft({ ...draft, label })}
             />
             <LocalizedField
-              label="Description (optional)"
+              label={t.admin.svc.description}
               textarea
               value={draft.description}
               onChange={(description) => setDraft({ ...draft, description })}
@@ -249,31 +251,26 @@ export default function ServicesAdmin() {
                 onChange={(e) => setDraft({ ...draft, enabled: e.target.checked })}
                 className="size-4"
               />
-              <span className="text-sm font-semibold text-ink">
-                Show this service on the public booking form
-              </span>
+              <span className="text-sm font-semibold text-ink">{t.admin.svc.show}</span>
             </label>
 
             <div className="flex justify-end gap-2 border-t border-line pt-4">
-              <Button variant="ghost" onClick={() => setDraft(null)}>Cancel</Button>
-              <Button onClick={save} disabled={saving}>{saving ? "Saving…" : "Save queue type"}</Button>
+              <Button variant="ghost" onClick={() => setDraft(null)}>{t.admin.actions.cancel}</Button>
+              <Button onClick={save} disabled={saving}>{saving ? t.admin.saving : t.admin.save}</Button>
             </div>
           </div>
         )}
       </Modal>
 
       {/* Delete confirm */}
-      <Modal open={!!confirmDelete} onClose={() => setConfirmDelete(null)} title="Delete queue type">
+      <Modal open={!!confirmDelete} onClose={() => setConfirmDelete(null)} title={t.admin.svc.deleteTitle}>
         <p className="text-sm text-muted">
-          Delete{" "}
-          <strong className="text-ink">
-            {confirmDelete?.label.en || confirmDelete?.label.he}
-          </strong>
-          ? New bookings won&apos;t be able to choose it. Existing appointments keep their record.
+          <strong className="text-ink">{confirmDelete?.label.he || confirmDelete?.label.en}</strong>
+          {" — "}{t.admin.svc.deleteWarn}
         </p>
         <div className="mt-4 flex justify-end gap-2">
-          <Button variant="ghost" onClick={() => setConfirmDelete(null)}>Cancel</Button>
-          <Button variant="danger" onClick={() => confirmDelete && remove(confirmDelete)}>Delete</Button>
+          <Button variant="ghost" onClick={() => setConfirmDelete(null)}>{t.admin.actions.cancel}</Button>
+          <Button variant="danger" onClick={() => confirmDelete && remove(confirmDelete)}>{t.admin.actions.delete}</Button>
         </div>
       </Modal>
     </AdminShell>

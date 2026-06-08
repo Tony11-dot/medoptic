@@ -121,6 +121,40 @@ export interface Dict {
     contentTabs: { hero: string; gallery: string; team: string; blocks: string; footer: string };
     status: { pending: string; approved: string; declined: string; allStatuses: string; allServices: string };
     gallery: { add: string; empty: string; caption: string };
+    fields: {
+      headline: string;
+      subtitle: string;
+      body: string;
+      sectionHeading: string;
+      sectionDescription: string;
+      teamMembers: string;
+      addMember: string;
+      removeMember: string;
+      memberName: string;
+      memberTitle: string;
+      memberSpecialty: string;
+      phone: string;
+      email: string;
+      address: string;
+      hours: string;
+      socialLinks: string;
+      addLink: string;
+      previewLanguage: string;
+      visibleOnSite: string;
+    };
+    svc: {
+      order: string;
+      nameCol: string;
+      visible: string;
+      none: string;
+      addTitle: string;
+      editTitle: string;
+      name: string;
+      description: string;
+      show: string;
+      deleteTitle: string;
+      deleteWarn: string;
+    };
     overview: { total: string; thisMonth: string; latest: string; viewAll: string; none: string };
     queue: {
       booked: string;
@@ -263,6 +297,40 @@ export const dictionaries: Record<Locale, Dict> = {
       contentTabs: { hero: "מי אנחנו", gallery: "גלריה", team: "אופטומטריסטים", blocks: "בלוקים", footer: "כותרת תחתונה" },
       status: { pending: "ממתין", approved: "אושר", declined: "נדחה", allStatuses: "כל הסטטוסים", allServices: "כל השירותים" },
       gallery: { add: "הוספת תמונה", empty: "אין תמונות עדיין. הוסיפו תמונות לקרוסלה.", caption: "כיתוב (לא חובה)" },
+      fields: {
+        headline: "כותרת ראשית",
+        subtitle: "כותרת משנה",
+        body: "תוכן",
+        sectionHeading: "כותרת המקטע",
+        sectionDescription: "תיאור המקטע",
+        teamMembers: "חברי הצוות",
+        addMember: "הוספת איש צוות",
+        removeMember: "הסרה",
+        memberName: "שם",
+        memberTitle: "תפקיד",
+        memberSpecialty: "התמחות",
+        phone: "טלפון",
+        email: "אימייל",
+        address: "כתובת",
+        hours: "שעות פעילות",
+        socialLinks: "רשתות חברתיות",
+        addLink: "הוספת קישור",
+        previewLanguage: "שפת תצוגה",
+        visibleOnSite: "מוצג באתר",
+      },
+      svc: {
+        order: "סדר",
+        nameCol: "שם",
+        visible: "מוצג באתר",
+        none: "אין סוגי תורים עדיין.",
+        addTitle: "הוספת סוג תור",
+        editTitle: "עריכת סוג תור",
+        name: "שם",
+        description: "תיאור (לא חובה)",
+        show: "הצגת השירות בטופס קביעת התור",
+        deleteTitle: "מחיקת סוג תור",
+        deleteWarn: "למחוק? לקוחות חדשים לא יוכלו לבחור בו. תורים קיימים יישארו.",
+      },
       overview: { total: "סך התורים", thisMonth: "החודש", latest: "בקשות אחרונות", viewAll: "הצגת הכל", none: "אין תורים עדיין." },
       queue: {
         booked: "נקבע ב",
@@ -380,6 +448,40 @@ export const dictionaries: Record<Locale, Dict> = {
       contentTabs: { hero: "Who We Are", gallery: "Gallery", team: "Optometrists", blocks: "Blocks", footer: "Footer" },
       status: { pending: "Pending", approved: "Approved", declined: "Declined", allStatuses: "All statuses", allServices: "All services" },
       gallery: { add: "Add image", empty: "No images yet. Add images to the carousel.", caption: "Caption (optional)" },
+      fields: {
+        headline: "Headline",
+        subtitle: "Subtitle",
+        body: "Body",
+        sectionHeading: "Section heading",
+        sectionDescription: "Section description",
+        teamMembers: "Team members",
+        addMember: "Add member",
+        removeMember: "Remove",
+        memberName: "Name",
+        memberTitle: "Title",
+        memberSpecialty: "Specialty",
+        phone: "Phone",
+        email: "Email",
+        address: "Address",
+        hours: "Opening hours",
+        socialLinks: "Social links",
+        addLink: "Add link",
+        previewLanguage: "Preview language",
+        visibleOnSite: "Visible on site",
+      },
+      svc: {
+        order: "Order",
+        nameCol: "Name",
+        visible: "Visible on site",
+        none: "No queue types yet.",
+        addTitle: "Add queue type",
+        editTitle: "Edit queue type",
+        name: "Name",
+        description: "Description (optional)",
+        show: "Show this service on the booking form",
+        deleteTitle: "Delete queue type",
+        deleteWarn: "Delete it? New bookings can't choose it. Existing appointments stay.",
+      },
       overview: { total: "Total appointments", thisMonth: "This month", latest: "Latest requests", viewAll: "View all", none: "No appointments yet." },
       queue: {
         booked: "Booked",
@@ -497,6 +599,40 @@ export const dictionaries: Record<Locale, Dict> = {
       contentTabs: { hero: "О нас", gallery: "Галерея", team: "Оптометристы", blocks: "Блоки", footer: "Подвал" },
       status: { pending: "Ожидает", approved: "Подтверждено", declined: "Отклонено", allStatuses: "Все статусы", allServices: "Все услуги" },
       gallery: { add: "Добавить фото", empty: "Пока нет изображений. Добавьте фото в карусель.", caption: "Подпись (необязательно)" },
+      fields: {
+        headline: "Заголовок",
+        subtitle: "Подзаголовок",
+        body: "Текст",
+        sectionHeading: "Заголовок раздела",
+        sectionDescription: "Описание раздела",
+        teamMembers: "Сотрудники",
+        addMember: "Добавить",
+        removeMember: "Удалить",
+        memberName: "Имя",
+        memberTitle: "Должность",
+        memberSpecialty: "Специализация",
+        phone: "Телефон",
+        email: "Эл. почта",
+        address: "Адрес",
+        hours: "Часы работы",
+        socialLinks: "Соцсети",
+        addLink: "Добавить ссылку",
+        previewLanguage: "Язык предпросмотра",
+        visibleOnSite: "Показывать на сайте",
+      },
+      svc: {
+        order: "Порядок",
+        nameCol: "Название",
+        visible: "На сайте",
+        none: "Пока нет типов услуг.",
+        addTitle: "Добавить тип услуги",
+        editTitle: "Изменить тип услуги",
+        name: "Название",
+        description: "Описание (необязательно)",
+        show: "Показывать услугу в форме записи",
+        deleteTitle: "Удалить тип услуги",
+        deleteWarn: "Удалить? Новые клиенты не смогут выбрать. Существующие записи останутся.",
+      },
       overview: { total: "Всего записей", thisMonth: "За месяц", latest: "Последние заявки", viewAll: "Показать все", none: "Пока нет записей." },
       queue: {
         booked: "Создано",

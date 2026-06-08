@@ -146,33 +146,33 @@ export default function ContentAdmin() {
           {tab === "hero" && (
             <>
               <ImageUpload value={content.hero.image} icon="eye" onChange={(image) => setHero({ image })} />
-              {styled("Headline", content.hero.title, (title) => setHero({ title }), STYLE_KEYS.heroTitle)}
-              {styled("Subtitle", content.hero.subtitle, (subtitle) => setHero({ subtitle }), STYLE_KEYS.heroSubtitle)}
-              {styled("Body", content.hero.body, (body) => setHero({ body }), STYLE_KEYS.heroBody, { textarea: true, rows: 4 })}
+              {styled(t.admin.fields.headline, content.hero.title, (title) => setHero({ title }), STYLE_KEYS.heroTitle)}
+              {styled(t.admin.fields.subtitle, content.hero.subtitle, (subtitle) => setHero({ subtitle }), STYLE_KEYS.heroSubtitle)}
+              {styled(t.admin.fields.body, content.hero.body, (body) => setHero({ body }), STYLE_KEYS.heroBody, { textarea: true, rows: 4 })}
             </>
           )}
 
           {tab === "team" && (
             <>
-              {styled("Section heading", content.team.heading, (heading) => setTeam({ heading }), STYLE_KEYS.teamHeading)}
-              {styled("Section description", content.team.body, (body) => setTeam({ body }), STYLE_KEYS.teamBody, { textarea: true })}
+              {styled(t.admin.fields.sectionHeading, content.team.heading, (heading) => setTeam({ heading }), STYLE_KEYS.teamHeading)}
+              {styled(t.admin.fields.sectionDescription, content.team.body, (body) => setTeam({ body }), STYLE_KEYS.teamBody, { textarea: true })}
 
               <div className="space-y-4 border-t border-line pt-4">
                 <div className="flex items-center justify-between">
-                  <h3 className="text-sm font-bold text-ink">Team members</h3>
-                  <Button size="sm" variant="subtle" onClick={addMember}>+ Add member</Button>
+                  <h3 className="text-sm font-bold text-ink">{t.admin.fields.teamMembers}</h3>
+                  <Button size="sm" variant="subtle" onClick={addMember}>+ {t.admin.fields.addMember}</Button>
                 </div>
                 {content.team.members.map((m) => (
                   <div key={m.id} className="space-y-3 rounded-xl border border-line p-4">
                     <ImageUpload value={m.image} icon="user" onChange={(image) => updateMember(m.id, { image })} />
                     <label className="block">
-                      <span className="mb-1.5 block text-sm font-semibold text-ink">Name</span>
+                      <span className="mb-1.5 block text-sm font-semibold text-ink">{t.admin.fields.memberName}</span>
                       <input value={m.name} onChange={(e) => updateMember(m.id, { name: e.target.value })} className={plainInput} />
                     </label>
-                    <LocalizedField label="Title" value={m.title} onChange={(title) => updateMember(m.id, { title })} />
-                    <LocalizedField label="Specialty" value={m.specialty} onChange={(specialty) => updateMember(m.id, { specialty })} />
+                    <LocalizedField label={t.admin.fields.memberTitle} value={m.title} onChange={(title) => updateMember(m.id, { title })} />
+                    <LocalizedField label={t.admin.fields.memberSpecialty} value={m.specialty} onChange={(specialty) => updateMember(m.id, { specialty })} />
                     <button onClick={() => removeMember(m.id)} className="text-sm font-medium text-rose-600 hover:underline">
-                      Remove member
+                      {t.admin.fields.removeMember}
                     </button>
                   </div>
                 ))}
@@ -184,22 +184,22 @@ export default function ContentAdmin() {
             <>
               <div className="grid gap-4 sm:grid-cols-2">
                 <label className="block">
-                  <span className="mb-1.5 block text-sm font-semibold text-ink">Phone</span>
+                  <span className="mb-1.5 block text-sm font-semibold text-ink">{t.admin.fields.phone}</span>
                   <input dir="ltr" value={content.footer.phone} onChange={(e) => setFooter({ phone: e.target.value })} className={plainInput} />
                 </label>
                 <label className="block">
-                  <span className="mb-1.5 block text-sm font-semibold text-ink">Email</span>
+                  <span className="mb-1.5 block text-sm font-semibold text-ink">{t.admin.fields.email}</span>
                   <input dir="ltr" value={content.footer.email} onChange={(e) => setFooter({ email: e.target.value })} className={plainInput} />
                 </label>
               </div>
-              <LocalizedField label="Address" value={content.footer.address} onChange={(address) => setFooter({ address })} />
-              <LocalizedField label="Opening hours" value={content.footer.hours} onChange={(hours) => setFooter({ hours })} />
+              <LocalizedField label={t.admin.fields.address} value={content.footer.address} onChange={(address) => setFooter({ address })} />
+              <LocalizedField label={t.admin.fields.hours} value={content.footer.hours} onChange={(hours) => setFooter({ hours })} />
 
               <div className="space-y-3 border-t border-line pt-4">
                 <div className="flex items-center justify-between">
-                  <h3 className="text-sm font-bold text-ink">Social links</h3>
+                  <h3 className="text-sm font-bold text-ink">{t.admin.fields.socialLinks}</h3>
                   <Button size="sm" variant="subtle" onClick={() => setFooter({ social: [...content.footer.social, { label: "", url: "" }] })}>
-                    + Add link
+                    + {t.admin.fields.addLink}
                   </Button>
                 </div>
                 {content.footer.social.map((s, i) => (
@@ -253,7 +253,7 @@ export default function ContentAdmin() {
         {/* Live preview */}
         <div className="lg:sticky lg:top-6">
           <div className="mb-2 flex items-center justify-end gap-1 rounded-lg bg-surface p-1">
-            <span className="me-auto ps-2 text-xs font-semibold text-muted">Preview language</span>
+            <span className="me-auto ps-2 text-xs font-semibold text-muted">{t.admin.fields.previewLanguage}</span>
             {PREVIEW_LANGS.map((l) => (
               <button
                 key={l.code}
