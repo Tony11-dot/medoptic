@@ -67,7 +67,7 @@ export function Navbar() {
             aria-hidden
             className="pointer-events-none absolute -inset-x-4 -inset-y-3 -z-10 rounded-full bg-[radial-gradient(ellipse_at_center,rgba(0,102,204,0.18),transparent_70%)] blur-md"
           />
-          <Logo className={cn("transition-all duration-300", scrolled ? "h-24" : "h-32")} />
+          <Logo className={cn("transition-all duration-300", scrolled ? "h-32" : "h-40")} />
         </a>
 
         {/* Desktop nav */}

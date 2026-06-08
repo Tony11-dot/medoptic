@@ -11,7 +11,7 @@ export function Logo({ className }: { className?: string }) {
     <img
       src={LOGO_SRC}
       alt="MEDOPTIC"
-      className={cn("h-20 w-auto select-none", className)}
+      className={cn("h-24 w-auto select-none", className)}
     />
   );
 }
