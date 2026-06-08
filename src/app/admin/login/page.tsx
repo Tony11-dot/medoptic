@@ -46,7 +46,7 @@ export default function AdminLogin() {
         className="w-full max-w-sm rounded-3xl border border-line bg-white p-8 shadow-card"
       >
         <div className="flex justify-center">
-          <Logo className="h-24" />
+          <Logo className="h-32" />
         </div>
         <h1 className="mt-6 text-center text-2xl font-extrabold text-ink">{t.admin.login.title}</h1>
         <p className="mt-1 text-center text-sm text-muted">{t.admin.login.subtitle}</p>
