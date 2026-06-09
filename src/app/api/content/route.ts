@@ -28,6 +28,11 @@ export async function PATCH(request: Request) {
     styles: body.styles ?? c.styles,
     blocks: body.blocks ?? c.blocks,
     blocksPosition: body.blocksPosition ?? c.blocksPosition,
+    gallery: body.gallery ?? c.gallery,
+    backgrounds: body.backgrounds ?? c.backgrounds,
+    reviews: body.reviews ?? c.reviews,
+    googlePlaceId: body.googlePlaceId ?? c.googlePlaceId,
+    showGoogleReviews: body.showGoogleReviews ?? c.showGoogleReviews,
   }));
 
   return Response.json({ content: updated });

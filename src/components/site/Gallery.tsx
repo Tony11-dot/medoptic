@@ -6,9 +6,10 @@ import { useI18n } from "@/lib/i18n/LanguageProvider";
 import type { GalleryImage } from "@/lib/types";
 import { ImageBlock } from "@/components/ui/ImageBlock";
 import { SectionHeading } from "./SectionHeading";
+import { SectionBg } from "./SectionBg";
 
 // Auto-advancing image carousel ("hero gallery"), fully managed in the admin.
-export function Gallery({ gallery }: { gallery: GalleryImage[] }) {
+export function Gallery({ gallery, bg }: { gallery: GalleryImage[]; bg?: string }) {
   const { t, pick } = useI18n();
   const [i, setI] = useState(0);
   const count = gallery.length;
@@ -26,7 +27,8 @@ export function Gallery({ gallery }: { gallery: GalleryImage[] }) {
   const slide = gallery[Math.min(i, count - 1)];
 
   return (
-    <section id="gallery" className="scroll-mt-20 bg-surface py-20 md:py-28">
+    <section id="gallery" className="relative scroll-mt-20 overflow-hidden bg-surface py-20 md:py-28">
+      <SectionBg url={bg} />
       <div className="container-x">
         <SectionHeading eyebrow={t.gallery.eyebrow} title={t.gallery.heading} subtitle={t.gallery.subheading} />
 

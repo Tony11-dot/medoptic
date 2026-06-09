@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { AdminShell } from "@/components/admin/AdminShell";
 import { LocalizedField } from "@/components/admin/LocalizedField";
+import { ImageUpload } from "@/components/admin/ImageUpload";
 import { Button } from "@/components/ui/Button";
 import { Modal } from "@/components/ui/Modal";
 import { useToast } from "@/components/ui/Toast";
@@ -15,12 +16,14 @@ interface Draft {
   id?: string;
   label: Localized;
   description: Localized;
+  image: string;
   enabled: boolean;
 }
 
 const blankDraft = (): Draft => ({
   label: emptyLocalized(),
   description: emptyLocalized(),
+  image: "",
   enabled: true,
 });
 
@@ -202,7 +205,7 @@ export default function ServicesAdmin() {
                       <div className="flex justify-end gap-1.5">
                         <button
                           type="button"
-                          onClick={() => setDraft({ id: s.id, label: { ...s.label }, description: { ...s.description }, enabled: s.enabled })}
+                          onClick={() => setDraft({ id: s.id, label: { ...s.label }, description: { ...s.description }, image: s.image ?? "", enabled: s.enabled })}
                           className="rounded-lg px-2.5 py-1.5 text-xs font-semibold text-brand-dark transition hover:bg-brand-50"
                         >
                           {t.admin.actions.edit}
@@ -233,6 +236,7 @@ export default function ServicesAdmin() {
       >
         {draft && (
           <div className="space-y-5">
+            <ImageUpload value={draft.image} icon="glasses" onChange={(image) => setDraft({ ...draft, image })} />
             <LocalizedField
               label={t.admin.svc.name}
               value={draft.label}

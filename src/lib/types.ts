@@ -29,11 +29,28 @@ export interface Service {
   label: Localized;
   /** Optional short blurb shown alongside the service on the booking form. */
   description: Localized;
+  /** Optional photo shown on the service card (URL or /uploads path). */
+  image?: string;
   /** When false the service is hidden from the public booking form. */
   enabled: boolean;
   /** Sort order in the booking form and admin list (ascending). */
   order: number;
   createdAt: string;
+}
+
+/**
+ * A customer review/testimonial. Stored as plain (single-language) text the way
+ * the customer wrote it — shown as-is regardless of the site's UI language.
+ * `source` distinguishes admin-entered reviews from ones pulled live from Google.
+ */
+export interface Review {
+  id: string;
+  author: string;
+  rating: number; // 1–5 stars
+  text: string;
+  /** Free text or ISO date, e.g. "May 2026". Optional. */
+  date?: string;
+  source?: "manual" | "google";
 }
 
 export interface Appointment {
@@ -148,6 +165,17 @@ export interface SiteContent {
   blocksPosition?: BlocksPosition;
   /** Hero gallery / carousel slides, managed in the admin. */
   gallery?: GalleryImage[];
+  /** Optional background image per section, keyed by section id
+   * (home/gallery/team/services/reviews/book). */
+  backgrounds?: Record<string, string>;
+  /** Admin-entered customer reviews shown in the Reviews section. */
+  reviews?: Review[];
+  /** Google Place ID used to pull live Google reviews (the API key lives in
+   * the GOOGLE_PLACES_API_KEY env var). Set/cleared from the admin. */
+  googlePlaceId?: string;
+  /** When true (and a Place ID + API key are configured) live Google reviews
+   * are merged in alongside the admin-entered ones. */
+  showGoogleReviews?: boolean;
 }
 
 export const SERVICE_TYPES: ServiceType[] = [

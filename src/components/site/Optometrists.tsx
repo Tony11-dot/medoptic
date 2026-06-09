@@ -5,19 +5,23 @@ import { useI18n } from "@/lib/i18n/LanguageProvider";
 import type { SiteContent } from "@/lib/types";
 import { ImageBlock } from "@/components/ui/ImageBlock";
 import { SectionHeading } from "./SectionHeading";
+import { SectionBg } from "./SectionBg";
 import { STYLE_KEYS, styleToCss } from "@/lib/textStyle";
 
 export function Optometrists({
   team,
   styles,
+  bg,
 }: {
   team: SiteContent["team"];
   styles?: SiteContent["styles"];
+  bg?: string;
 }) {
   const { t, pick } = useI18n();
 
   return (
-    <section id="team" className="scroll-mt-20 py-20 md:py-28">
+    <section id="team" className="relative scroll-mt-20 overflow-hidden py-20 md:py-28">
+      <SectionBg url={bg} />
       <div className="container-x">
         <SectionHeading
           eyebrow={t.team.eyebrow}

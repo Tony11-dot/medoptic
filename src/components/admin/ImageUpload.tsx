@@ -1,11 +1,14 @@
 "use client";
 
 import { useRef, useState } from "react";
+import { upload as blobUpload } from "@vercel/blob/client";
 import { ImageBlock } from "@/components/ui/ImageBlock";
 import { useToast } from "@/components/ui/Toast";
 import { cn } from "@/lib/cn";
 
-// Uploads to /api/upload and reports the resulting URL. Shows a live preview.
+// Uploads an image and reports the resulting URL. In production it goes straight
+// from the browser to Vercel Blob (so large photos work); locally it falls back
+// to a server route that writes to /public/uploads.
 export function ImageUpload({
   value,
   onChange,
@@ -24,9 +27,20 @@ export function ImageUpload({
   async function upload(file: File) {
     setBusy(true);
     try {
+      // Try direct-to-Blob (production). Returns 501 locally → fall back.
+      try {
+        const blob = await blobUpload(`uploads/${file.name}`, file, {
+          access: "public",
+          handleUploadUrl: "/api/upload",
+        });
+        onChange(blob.url);
+        return;
+      } catch {
+        // fall through to local server upload
+      }
       const fd = new FormData();
       fd.append("file", file);
-      const res = await fetch("/api/upload", { method: "POST", body: fd });
+      const res = await fetch("/api/upload-local", { method: "POST", body: fd });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error ?? "Upload failed");
       onChange(data.url);

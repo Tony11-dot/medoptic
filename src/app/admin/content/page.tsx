@@ -12,12 +12,14 @@ import { Blocks } from "@/components/site/Blocks";
 import { Button } from "@/components/ui/Button";
 import { useToast } from "@/components/ui/Toast";
 import { useI18n } from "@/lib/i18n/LanguageProvider";
-import type { Block, BlocksPosition, GalleryImage, Locale, Localized, SiteContent, TeamMember, TextStyle } from "@/lib/types";
+import type { Block, BlocksPosition, GalleryImage, Locale, Localized, Review, SiteContent, TeamMember, TextStyle } from "@/lib/types";
 import { STYLE_KEYS } from "@/lib/textStyle";
 import { ImageBlock } from "@/components/ui/ImageBlock";
 import { cn } from "@/lib/cn";
 
-type Tab = "hero" | "gallery" | "team" | "footer" | "blocks";
+type Tab = "hero" | "gallery" | "team" | "reviews" | "footer" | "blocks" | "backgrounds";
+
+const BG_SECTIONS = ["home", "gallery", "team", "services", "reviews", "book"] as const;
 
 const PREVIEW_LANGS: { code: Locale; label: string }[] = [
   { code: "he", label: "עברית" },
@@ -41,7 +43,9 @@ export default function ContentAdmin() {
     { id: "hero", label: t.admin.contentTabs.hero },
     { id: "gallery", label: t.admin.contentTabs.gallery },
     { id: "team", label: t.admin.contentTabs.team },
+    { id: "reviews", label: t.admin.contentTabs.reviews },
     { id: "blocks", label: t.admin.contentTabs.blocks },
+    { id: "backgrounds", label: t.admin.contentTabs.backgrounds },
     { id: "footer", label: t.admin.contentTabs.footer },
   ];
 
@@ -78,8 +82,23 @@ export default function ContentAdmin() {
     setContent((c) => (c ? { ...c, styles: { ...(c.styles ?? {}), [key]: v } } : c));
   const setBlocks = (blocks: Block[]) => setContent((c) => (c ? { ...c, blocks } : c));
   const setGallery = (gallery: GalleryImage[]) => setContent((c) => (c ? { ...c, gallery } : c));
+  const setBackground = (id: string, url: string) =>
+    setContent((c) => (c ? { ...c, backgrounds: { ...(c.backgrounds ?? {}), [id]: url } } : c));
   const setBlocksPosition = (blocksPosition: BlocksPosition) =>
     setContent((c) => (c ? { ...c, blocksPosition } : c));
+
+  // Reviews (manual list + Google settings).
+  const reviews = content?.reviews ?? [];
+  const setReviews = (next: Review[]) => setContent((c) => (c ? { ...c, reviews: next } : c));
+  const addReview = () =>
+    setReviews([...reviews, { id: `r-${Date.now()}`, author: "", rating: 5, text: "", date: "", source: "manual" }]);
+  const updateReview = (id: string, patch: Partial<Review>) =>
+    setReviews(reviews.map((r) => (r.id === id ? { ...r, ...patch } : r)));
+  const removeReview = (id: string) => setReviews(reviews.filter((r) => r.id !== id));
+  const setGooglePlaceId = (googlePlaceId: string) =>
+    setContent((c) => (c ? { ...c, googlePlaceId } : c));
+  const setShowGoogleReviews = (showGoogleReviews: boolean) =>
+    setContent((c) => (c ? { ...c, showGoogleReviews } : c));
 
   function updateMember(id: string, patch: Partial<TeamMember>) {
     setContent((c) =>
@@ -247,6 +266,99 @@ export default function ContentAdmin() {
               onBlocksChange={setBlocks}
               onPositionChange={setBlocksPosition}
             />
+          )}
+
+          {tab === "reviews" && (
+            <div className="space-y-5">
+              <p className="text-sm text-muted">{t.admin.reviews.subtitle}</p>
+
+              {/* Manual reviews */}
+              <div className="space-y-4">
+                {reviews.length === 0 && <p className="text-sm text-muted">{t.admin.reviews.none}</p>}
+                {reviews.map((r) => (
+                  <div key={r.id} className="space-y-3 rounded-xl border border-line p-4">
+                    <div className="grid gap-3 sm:grid-cols-2">
+                      <label className="block">
+                        <span className="mb-1.5 block text-sm font-semibold text-ink">{t.admin.reviews.author}</span>
+                        <input value={r.author} onChange={(e) => updateReview(r.id, { author: e.target.value })} className={plainInput} />
+                      </label>
+                      <label className="block">
+                        <span className="mb-1.5 block text-sm font-semibold text-ink">{t.admin.reviews.rating}</span>
+                        <select
+                          value={r.rating}
+                          onChange={(e) => updateReview(r.id, { rating: Number(e.target.value) })}
+                          className={plainInput}
+                        >
+                          {[5, 4, 3, 2, 1].map((n) => (
+                            <option key={n} value={n}>{"★".repeat(n)}{"☆".repeat(5 - n)} ({n})</option>
+                          ))}
+                        </select>
+                      </label>
+                    </div>
+                    <label className="block">
+                      <span className="mb-1.5 block text-sm font-semibold text-ink">{t.admin.reviews.text}</span>
+                      <textarea
+                        rows={3}
+                        value={r.text}
+                        onChange={(e) => updateReview(r.id, { text: e.target.value })}
+                        className={cn(plainInput, "h-auto resize-none py-2.5")}
+                      />
+                    </label>
+                    <label className="block max-w-xs">
+                      <span className="mb-1.5 block text-sm font-semibold text-ink">{t.admin.reviews.date}</span>
+                      <input
+                        value={r.date ?? ""}
+                        placeholder={t.admin.reviews.datePlaceholder}
+                        onChange={(e) => updateReview(r.id, { date: e.target.value })}
+                        className={plainInput}
+                      />
+                    </label>
+                    <button onClick={() => removeReview(r.id)} className="text-sm font-medium text-rose-600 hover:underline">
+                      {t.admin.reviews.remove}
+                    </button>
+                  </div>
+                ))}
+                <Button size="sm" variant="subtle" onClick={addReview}>+ {t.admin.reviews.add}</Button>
+              </div>
+
+              {/* Google reviews */}
+              <div className="space-y-3 rounded-xl border border-line bg-surface/50 p-4">
+                <h3 className="text-sm font-bold text-ink">{t.admin.reviews.googleTitle}</h3>
+                <p className="text-xs text-muted">{t.admin.reviews.googleHelp}</p>
+                <label className="flex items-center gap-3">
+                  <input
+                    type="checkbox"
+                    checked={!!content.showGoogleReviews}
+                    onChange={(e) => setShowGoogleReviews(e.target.checked)}
+                    className="size-4"
+                  />
+                  <span className="text-sm font-semibold text-ink">{t.admin.reviews.showGoogle}</span>
+                </label>
+                <label className="block">
+                  <span className="mb-1.5 block text-sm font-semibold text-ink">{t.admin.reviews.placeId}</span>
+                  <input
+                    dir="ltr"
+                    value={content.googlePlaceId ?? ""}
+                    onChange={(e) => setGooglePlaceId(e.target.value)}
+                    className={plainInput}
+                    placeholder="ChIJ…"
+                  />
+                  <span className="mt-1 block text-xs text-muted">{t.admin.reviews.placeIdHint}</span>
+                </label>
+              </div>
+            </div>
+          )}
+
+          {tab === "backgrounds" && (
+            <div className="space-y-5">
+              <p className="text-sm text-muted">{t.admin.bg.subtitle}</p>
+              {BG_SECTIONS.map((id) => (
+                <div key={id} className="rounded-xl border border-line p-4">
+                  <p className="mb-2 text-sm font-bold text-ink">{t.nav[id]}</p>
+                  <ImageUpload value={content.backgrounds?.[id] ?? ""} icon="eye" onChange={(url) => setBackground(id, url)} />
+                </div>
+              ))}
+            </div>
           )}
         </div>
 

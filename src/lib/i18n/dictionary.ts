@@ -12,6 +12,7 @@ export interface Dict {
     gallery: string;
     team: string;
     services: string;
+    reviews: string;
     book: string;
     contact: string;
   };
@@ -44,6 +45,13 @@ export interface Dict {
   };
   team: {
     eyebrow: string;
+  };
+  reviews: {
+    eyebrow: string;
+    heading: string;
+    subheading: string;
+    empty: string;
+    leaveReview: string;
   };
   booking: {
     eyebrow: string;
@@ -130,7 +138,24 @@ export interface Dict {
       content: string;
       contentSub: string;
     };
-    contentTabs: { hero: string; gallery: string; team: string; blocks: string; footer: string };
+    contentTabs: { hero: string; gallery: string; team: string; reviews: string; blocks: string; footer: string; backgrounds: string };
+    bg: { subtitle: string };
+    reviews: {
+      subtitle: string;
+      author: string;
+      rating: string;
+      text: string;
+      date: string;
+      datePlaceholder: string;
+      add: string;
+      remove: string;
+      none: string;
+      googleTitle: string;
+      googleHelp: string;
+      placeId: string;
+      placeIdHint: string;
+      showGoogle: string;
+    };
     status: { pending: string; approved: string; declined: string; allStatuses: string; allServices: string };
     gallery: { add: string; empty: string; caption: string };
     fields: {
@@ -218,7 +243,7 @@ export const dictionaries: Record<Locale, Dict> = {
   he: {
     dir: "rtl",
     langName: "עברית",
-    nav: { home: "מי אנחנו", products: "המוצרים שלנו", gallery: "גלריה", team: "האופטומטריסטים", services: "השירותים שלנו", book: "קביעת תור", contact: "צור קשר" },
+    nav: { home: "מי אנחנו", products: "המוצרים שלנו", gallery: "גלריה", team: "האופטומטריסטים", services: "השירותים שלנו", reviews: "ביקורות", book: "קביעת תור", contact: "צור קשר" },
     hero: { badge: "ברוכים הבאים ל-MEDOPTIC", cta: "קביעת תור עכשיו", secondary: "לגלריה" },
     gallery: { eyebrow: "הצצה אלינו", heading: "גלריה", subheading: "רגעים, מוצרים והאווירה אצלנו בחנות." },
     services: { eyebrow: "מה אנחנו מציעים", heading: "השירותים שלנו", subheading: "בחרו את השירות המתאים לכם וקבעו תור בקלות.", book: "קביעת תור", empty: "אין שירותים זמינים כרגע." },
@@ -233,6 +258,13 @@ export const dictionaries: Record<Locale, Dict> = {
       categories: categories_he,
     },
     team: { eyebrow: "הצוות המקצועי" },
+    reviews: {
+      eyebrow: "מה הלקוחות אומרים",
+      heading: "ביקורות",
+      subheading: "לקוחות מספרים על החוויה שלהם ב-MEDOPTIC.",
+      empty: "עדיין אין ביקורות. נשמח אם תשתפו את החוויה שלכם!",
+      leaveReview: "כתבו ביקורת בגוגל",
+    },
     booking: {
       eyebrow: "נשמח לראות אתכם",
       heading: "קביעת תור",
@@ -318,7 +350,24 @@ export const dictionaries: Record<Locale, Dict> = {
         content: "תוכן",
         contentSub: "עריכת טקסט, גופנים ותמונות. התצוגה מתעדכנת תוך כדי; השינויים נשמרים בלחיצה.",
       },
-      contentTabs: { hero: "מי אנחנו", gallery: "גלריה", team: "אופטומטריסטים", blocks: "בלוקים", footer: "כותרת תחתונה" },
+      contentTabs: { hero: "מי אנחנו", gallery: "גלריה", team: "אופטומטריסטים", reviews: "ביקורות", blocks: "בלוקים", footer: "כותרת תחתונה", backgrounds: "רקעים" },
+      bg: { subtitle: "העלו תמונת רקע לכל מקטע. התמונה תופיע מטושטשת מאחורי התוכן." },
+      reviews: {
+        subtitle: "הוסיפו ביקורות לקוחות ידנית, או חברו את גוגל כדי למשוך ביקורות אוטומטית.",
+        author: "שם הלקוח",
+        rating: "דירוג (כוכבים)",
+        text: "תוכן הביקורת",
+        date: "תאריך",
+        datePlaceholder: "למשל: מאי 2026",
+        add: "הוספת ביקורת",
+        remove: "הסרה",
+        none: "אין ביקורות ידניות עדיין.",
+        googleTitle: "ביקורות מגוגל (אוטומטי)",
+        googleHelp: "כדי למשוך ביקורות מגוגל צריך מפתח API (משתנה הסביבה GOOGLE_PLACES_API_KEY) ומזהה מקום (Place ID).",
+        placeId: "Google Place ID",
+        placeIdHint: "מצאו את ה-Place ID של ‏‎מדאופטיק‏ Medoptic בכלי של גוגל ‏(Place ID Finder).",
+        showGoogle: "להציג ביקורות מגוגל באתר",
+      },
       status: { pending: "ממתין", approved: "אושר", declined: "נדחה", allStatuses: "כל הסטטוסים", allServices: "כל השירותים" },
       gallery: { add: "הוספת תמונה", empty: "אין תמונות עדיין. הוסיפו תמונות לקרוסלה.", caption: "כיתוב (לא חובה)" },
       fields: {
@@ -381,7 +430,7 @@ export const dictionaries: Record<Locale, Dict> = {
   en: {
     dir: "ltr",
     langName: "English",
-    nav: { home: "Who We Are", products: "Our Products", gallery: "Gallery", team: "Optometrists", services: "Our Services", book: "Book", contact: "Contact" },
+    nav: { home: "Who We Are", products: "Our Products", gallery: "Gallery", team: "Optometrists", services: "Our Services", reviews: "Reviews", book: "Book", contact: "Contact" },
     hero: { badge: "Welcome to MEDOPTIC", cta: "Book Appointment Now", secondary: "See gallery" },
     gallery: { eyebrow: "A look inside", heading: "Gallery", subheading: "Moments, frames and the atmosphere at our store." },
     services: { eyebrow: "What we offer", heading: "Our Services", subheading: "Choose the service that fits you and book in a few taps.", book: "Book this", empty: "No services available right now." },
@@ -396,6 +445,13 @@ export const dictionaries: Record<Locale, Dict> = {
       categories: categories_en,
     },
     team: { eyebrow: "The professional team" },
+    reviews: {
+      eyebrow: "What our customers say",
+      heading: "Reviews",
+      subheading: "Real experiences from people who visited MEDOPTIC.",
+      empty: "No reviews yet. We'd love to hear about your visit!",
+      leaveReview: "Write a review on Google",
+    },
     booking: {
       eyebrow: "We'd love to see you",
       heading: "Book an Appointment",
@@ -481,7 +537,24 @@ export const dictionaries: Record<Locale, Dict> = {
         content: "Content",
         contentSub: "Edit text, fonts and images. The preview updates as you type; changes go live on save.",
       },
-      contentTabs: { hero: "Who We Are", gallery: "Gallery", team: "Optometrists", blocks: "Blocks", footer: "Footer" },
+      contentTabs: { hero: "Who We Are", gallery: "Gallery", team: "Optometrists", reviews: "Reviews", blocks: "Blocks", footer: "Footer", backgrounds: "Backgrounds" },
+      bg: { subtitle: "Upload a background image for any section. It appears softly behind the content." },
+      reviews: {
+        subtitle: "Add customer reviews by hand, or connect Google to pull them in automatically.",
+        author: "Customer name",
+        rating: "Rating (stars)",
+        text: "Review text",
+        date: "Date",
+        datePlaceholder: "e.g. May 2026",
+        add: "Add review",
+        remove: "Remove",
+        none: "No manual reviews yet.",
+        googleTitle: "Google reviews (automatic)",
+        googleHelp: "To pull reviews from Google you need an API key (the GOOGLE_PLACES_API_KEY env var) and a Place ID.",
+        placeId: "Google Place ID",
+        placeIdHint: "Find the Place ID for ‘מדאופטיק Medoptic’ using Google's Place ID Finder tool.",
+        showGoogle: "Show Google reviews on the site",
+      },
       status: { pending: "Pending", approved: "Approved", declined: "Declined", allStatuses: "All statuses", allServices: "All services" },
       gallery: { add: "Add image", empty: "No images yet. Add images to the carousel.", caption: "Caption (optional)" },
       fields: {
@@ -544,7 +617,7 @@ export const dictionaries: Record<Locale, Dict> = {
   ru: {
     dir: "ltr",
     langName: "Русский",
-    nav: { home: "О нас", products: "Продукция", gallery: "Галерея", team: "Оптометристы", services: "Услуги", book: "Запись", contact: "Контакты" },
+    nav: { home: "О нас", products: "Продукция", gallery: "Галерея", team: "Оптометристы", services: "Услуги", reviews: "Отзывы", book: "Запись", contact: "Контакты" },
     hero: { badge: "Добро пожаловать в MEDOPTIC", cta: "Записаться сейчас", secondary: "Смотреть галерею" },
     gallery: { eyebrow: "Загляните к нам", heading: "Галерея", subheading: "Моменты, оправы и атмосфера нашего магазина." },
     services: { eyebrow: "Что мы предлагаем", heading: "Наши услуги", subheading: "Выберите подходящую услугу и запишитесь за пару касаний.", book: "Записаться", empty: "Сейчас нет доступных услуг." },
@@ -559,6 +632,13 @@ export const dictionaries: Record<Locale, Dict> = {
       categories: categories_ru,
     },
     team: { eyebrow: "Профессиональная команда" },
+    reviews: {
+      eyebrow: "Что говорят клиенты",
+      heading: "Отзывы",
+      subheading: "Реальные впечатления тех, кто побывал в MEDOPTIC.",
+      empty: "Пока нет отзывов. Будем рады услышать о вашем визите!",
+      leaveReview: "Оставить отзыв в Google",
+    },
     booking: {
       eyebrow: "Будем рады вас видеть",
       heading: "Запись на приём",
@@ -644,7 +724,24 @@ export const dictionaries: Record<Locale, Dict> = {
         content: "Контент",
         contentSub: "Редактирование текста, шрифтов и изображений. Предпросмотр обновляется на лету; изменения публикуются при сохранении.",
       },
-      contentTabs: { hero: "О нас", gallery: "Галерея", team: "Оптометристы", blocks: "Блоки", footer: "Подвал" },
+      contentTabs: { hero: "О нас", gallery: "Галерея", team: "Оптометристы", reviews: "Отзывы", blocks: "Блоки", footer: "Подвал", backgrounds: "Фоны" },
+      bg: { subtitle: "Загрузите фоновое изображение для раздела. Оно появится мягко за контентом." },
+      reviews: {
+        subtitle: "Добавляйте отзывы клиентов вручную или подключите Google для автоматической загрузки.",
+        author: "Имя клиента",
+        rating: "Оценка (звёзды)",
+        text: "Текст отзыва",
+        date: "Дата",
+        datePlaceholder: "напр.: май 2026",
+        add: "Добавить отзыв",
+        remove: "Удалить",
+        none: "Пока нет отзывов, добавленных вручную.",
+        googleTitle: "Отзывы Google (автоматически)",
+        googleHelp: "Чтобы загружать отзывы из Google, нужен API-ключ (переменная GOOGLE_PLACES_API_KEY) и Place ID.",
+        placeId: "Google Place ID",
+        placeIdHint: "Найдите Place ID для «מדאופטיק Medoptic» с помощью инструмента Google Place ID Finder.",
+        showGoogle: "Показывать отзывы Google на сайте",
+      },
       status: { pending: "Ожидает", approved: "Подтверждено", declined: "Отклонено", allStatuses: "Все статусы", allServices: "Все услуги" },
       gallery: { add: "Добавить фото", empty: "Пока нет изображений. Добавьте фото в карусель.", caption: "Подпись (необязательно)" },
       fields: {

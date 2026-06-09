@@ -8,7 +8,7 @@ import { Logo } from "@/components/ui/Logo";
 import { LanguageSwitcher } from "./LanguageSwitcher";
 import { cn } from "@/lib/cn";
 
-const SECTIONS = ["home", "gallery", "team", "services", "book", "contact"] as const;
+const SECTIONS = ["home", "gallery", "team", "services", "reviews", "book", "contact"] as const;
 type SectionId = (typeof SECTIONS)[number];
 
 export function Navbar() {
@@ -22,6 +22,7 @@ export function Navbar() {
     gallery: t.nav.gallery,
     team: t.nav.team,
     services: t.nav.services,
+    reviews: t.nav.reviews,
     book: t.nav.book,
     contact: t.nav.contact,
   };

@@ -1,6 +1,6 @@
-// Notification layer. The actual SMS/email provider (Twilio, SendGrid, …) plugs
-// in where marked below; until credentials are set it logs the message instead
-// of throwing, so the admin approve/decline flow stays complete.
+// Notification layer. The actual WhatsApp/email provider (Twilio, SendGrid, …)
+// plugs in where marked below; until credentials are set it logs the message
+// instead of throwing, so the admin approve/decline flow stays complete.
 import "server-only";
 import type { Appointment, ReminderChannel } from "./types";
 import { SCHEDULING_URL } from "./config";
@@ -86,21 +86,43 @@ async function dispatch(appt: Appointment, message: string): Promise<NotifyResul
 // Each helper sends for real when its env vars are configured, otherwise logs
 // the message (so the admin flow works end-to-end before keys are added).
 
+// Normalize a phone number into Twilio's WhatsApp address form, e.g.
+// "0509652008" -> "whatsapp:+972509652008". Defaults to the Israel country
+// code; override with WHATSAPP_COUNTRY_CODE. Already-prefixed values pass through.
+function toWhatsApp(raw: string): string {
+  const v = raw.trim();
+  if (v.startsWith("whatsapp:")) return v;
+  let n = v.replace(/[^\d+]/g, "");
+  if (!n.startsWith("+")) {
+    const cc = process.env.WHATSAPP_COUNTRY_CODE ?? "972";
+    n = `+${cc}${n.startsWith("0") ? n.slice(1) : n}`;
+  }
+  return `whatsapp:${n}`;
+}
+
+// The "sms" channel is delivered over WhatsApp via Twilio's WhatsApp API (same
+// account/credentials, with the `whatsapp:` address prefix). TWILIO_WHATSAPP_FROM
+// must be a WhatsApp-enabled sender (e.g. "whatsapp:+14155238886" for the sandbox);
+// it falls back to TWILIO_FROM if not set.
 async function sendSms(to: string, body: string): Promise<void> {
   const sid = process.env.TWILIO_ACCOUNT_SID;
   const token = process.env.TWILIO_AUTH_TOKEN;
-  const from = process.env.TWILIO_FROM; // a Twilio number or alphanumeric sender id
+  const from = process.env.TWILIO_WHATSAPP_FROM ?? process.env.TWILIO_FROM;
   if (!sid || !token || !from) {
     // eslint-disable-next-line no-console
-    console.log(`[notify:sms (unconfigured) -> ${to}] ${body}`);
+    console.log(`[notify:whatsapp (unconfigured) -> ${to}] ${body}`);
     return;
   }
   try {
     const { default: twilio } = await import("twilio");
-    await twilio(sid, token).messages.create({ to, from, body });
+    await twilio(sid, token).messages.create({
+      to: toWhatsApp(to),
+      from: toWhatsApp(from),
+      body,
+    });
   } catch (e) {
     // eslint-disable-next-line no-console
-    console.error(`[notify:sms FAILED -> ${to}]`, e instanceof Error ? e.message : e);
+    console.error(`[notify:whatsapp FAILED -> ${to}]`, e instanceof Error ? e.message : e);
   }
 }
 

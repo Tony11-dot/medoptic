@@ -30,6 +30,16 @@ export function LocalizedField({
     <div>
       <div className="mb-1.5 flex items-center justify-between gap-2">
         <span className="text-sm font-semibold text-ink">{label}</span>
+        <div className="flex items-center gap-1.5">
+          <button
+            type="button"
+            onClick={() => onChange({ he: value[lang], en: value[lang], ru: value[lang] })}
+            title="Copy this language's text to all three"
+            className="rounded-md border border-line bg-white px-2 py-1 text-xs font-semibold text-brand-dark transition hover:border-brand disabled:opacity-40"
+            disabled={!value[lang]}
+          >
+            ⎘ all
+          </button>
         <div className="flex gap-1 rounded-lg bg-surface p-0.5">
           {LANGS.map((l) => (
             <button
@@ -43,6 +53,7 @@ export function LocalizedField({
               {l.label}
             </button>
           ))}
+        </div>
         </div>
       </div>
       {textarea ? (

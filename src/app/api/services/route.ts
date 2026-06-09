@@ -45,6 +45,7 @@ export async function POST(request: Request) {
     id: randomUUID(),
     label,
     description: localized(body.description),
+    image: typeof body.image === "string" ? body.image : "",
     enabled: body.enabled === undefined ? true : Boolean(body.enabled),
     order: typeof body.order === "number" ? body.order : maxOrder + 1,
     createdAt: new Date().toISOString(),
