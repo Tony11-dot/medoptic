@@ -155,9 +155,12 @@ async function sendEmail(to: string, subject: string, text: string): Promise<voi
   }
 }
 
-/** Notify a customer about an approve/decline decision. */
+/** Notify a customer about an approve/decline decision. The confirmation goes to
+ * every channel we can reach — always SMS, plus email whenever one was given —
+ * regardless of which reminder channels were ticked. */
 export function notifyCustomer(appt: Appointment): Promise<NotifyResult> {
-  return dispatch(appt, buildMessage(appt));
+  const channels: ReminderChannel[] = ["sms", ...(appt.email ? (["email"] as const) : [])];
+  return dispatch({ ...appt, reminderChannels: channels }, buildMessage(appt));
 }
 
 /** Send the day-before appointment reminder via the customer's chosen channel. */
