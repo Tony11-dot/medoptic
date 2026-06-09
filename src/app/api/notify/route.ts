@@ -2,6 +2,20 @@ import { getAppointments, updateAppointments } from "@/lib/db";
 import { isAuthed } from "@/lib/auth";
 import { notifyCustomer } from "@/lib/notify";
 
+// GET — config diagnostic (presence only, no secret values) so we can verify the
+// notification env vars are actually set in this deployment.
+export async function GET() {
+  return Response.json({
+    transport: process.env.NOTIFY_TRANSPORT ?? "sms",
+    twilioAccountSid: !!process.env.TWILIO_ACCOUNT_SID,
+    twilioAuthToken: !!process.env.TWILIO_AUTH_TOKEN,
+    twilioFrom: !!process.env.TWILIO_FROM,
+    twilioWhatsappFrom: !!process.env.TWILIO_WHATSAPP_FROM,
+    gmailUser: !!process.env.GMAIL_USER,
+    gmailAppPassword: !!process.env.GMAIL_APP_PASSWORD,
+  });
+}
+
 // POST — manually (re)send the notification for an appointment (admin only).
 // Body: { appointmentId: string }
 export async function POST(request: Request) {
