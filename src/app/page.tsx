@@ -1,3 +1,4 @@
+import { Fragment } from "react";
 import { promises as fs } from "fs";
 import path from "path";
 import { getContent, getServices } from "@/lib/db";
@@ -32,8 +33,6 @@ export default async function HomePage() {
   const enabledServices = services.filter((s) => s.enabled).sort((a, b) => a.order - b.order);
 
   const position: BlocksPosition = content.blocksPosition ?? "afterProducts";
-  const blocksAt = (at: BlocksPosition) =>
-    position === at ? <BlocksLive blocks={content.blocks} /> : null;
   const bg = (id: string) => content.backgrounds?.[id];
 
   // Reviews: admin-entered entries.
@@ -43,32 +42,40 @@ export default async function HomePage() {
   // set, otherwise fall back to public/who-we-are.jpg if you've dropped one in.
   const homeBg = bg("home") ?? (await fileBg("who-we-are.jpg"));
 
-  // The four middle sections can be reordered from the admin (Content → Layout).
+  // Every section can be reordered / hidden from the admin (Sections page).
   const sectionEls: Record<string, React.ReactNode> = {
+    home: <Hero key="home" hero={content.hero} styles={content.styles} bg={homeBg} />,
     gallery: <Gallery key="gallery" gallery={content.gallery ?? []} bg={bg("gallery")} styles={content.styles} />,
     team: <Optometrists key="team" team={content.team} styles={content.styles} bg={bg("team")} />,
     services: <Services key="services" services={enabledServices} bg={bg("services")} />,
     reviews: <Reviews key="reviews" reviews={reviews} placeId={content.googlePlaceId} bg={bg("reviews")} />,
+    book: <Booking key="book" bg={bg("book")} />,
+    contact: <Footer key="contact" footer={content.footer} styles={content.styles} />,
   };
-  const DEFAULT_ORDER = ["gallery", "team", "services", "reviews"];
+  const DEFAULT_ORDER = ["home", "gallery", "team", "services", "reviews", "book", "contact"];
   const order = (content.sectionOrder ?? DEFAULT_ORDER).filter((id) => id in sectionEls);
   for (const id of DEFAULT_ORDER) if (!order.includes(id)) order.push(id);
   const hidden = new Set(content.hiddenSections ?? []);
   const visibleOrder = order.filter((id) => !hidden.has(id));
 
+  // Custom blocks (if any) anchor relative to certain sections.
+  const blocksBefore: Record<string, BlocksPosition> = { book: "beforeBooking", contact: "beforeFooter" };
+  const blocksAfter: Record<string, BlocksPosition> = { home: "afterHero", gallery: "afterProducts" };
+  const blocks = (at: BlocksPosition | undefined) =>
+    at && position === at ? <BlocksLive blocks={content.blocks} /> : null;
+
   return (
     <>
       <ScrollProgress />
-      <Navbar middle={visibleOrder} />
+      <Navbar sections={visibleOrder} />
       <main>
-        <Hero hero={content.hero} styles={content.styles} bg={homeBg} />
-        {blocksAt("afterHero")}
-        {visibleOrder.map((id) => sectionEls[id])}
-        {blocksAt("afterProducts")}
-        {blocksAt("beforeBooking")}
-        <Booking bg={bg("book")} />
-        {blocksAt("beforeFooter")}
-        <Footer footer={content.footer} styles={content.styles} />
+        {visibleOrder.map((id) => (
+          <Fragment key={id}>
+            {blocks(blocksBefore[id])}
+            {sectionEls[id]}
+            {blocks(blocksAfter[id])}
+          </Fragment>
+        ))}
       </main>
     </>
   );

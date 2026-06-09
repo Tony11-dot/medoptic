@@ -7,8 +7,8 @@ import { useToast } from "@/components/ui/Toast";
 import { useI18n } from "@/lib/i18n/LanguageProvider";
 import type { SiteContent } from "@/lib/types";
 
-// The reorderable / hideable page sections (Home, Booking and Contact are fixed).
-const SECTION_IDS = ["gallery", "team", "services", "reviews"] as const;
+// Every reorderable / hideable page section (matches the home page + nav tabs).
+const SECTION_IDS = ["home", "gallery", "team", "services", "reviews", "book", "contact"] as const;
 type SId = (typeof SECTION_IDS)[number];
 
 export default function SectionsAdmin() {
@@ -104,7 +104,7 @@ export default function SectionsAdmin() {
           );
         })}
       </div>
-      <p className="mt-4 max-w-xl text-xs text-muted">Home, Booking and Contact are always shown.</p>
+      <p className="mt-4 max-w-xl text-xs text-muted">Tip: hiding Booking or Contact removes the booking form / contact details from the site — usually keep those on.</p>
     </AdminShell>
   );
 }
