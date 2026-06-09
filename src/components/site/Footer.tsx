@@ -13,8 +13,8 @@ export function Footer({ footer }: { footer: SiteContent["footer"] }) {
       <div className="container-x py-16">
         <div className="grid gap-10 md:grid-cols-2 lg:grid-cols-4">
           <div className="lg:col-span-1">
-            <span className="inline-flex rounded-2xl bg-white p-3 shadow-sm">
-              <Logo />
+            <span className="inline-flex">
+              <Logo className="h-28 w-auto brightness-0 invert" />
             </span>
             <p className="mt-4 max-w-xs text-sm text-white/75">{pick(footer.address)}</p>
           </div>
