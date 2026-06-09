@@ -11,7 +11,6 @@ import { cn } from "@/lib/cn";
 const NAV = [
   { href: "/admin", key: "overview", icon: "▦" },
   { href: "/admin/queue", key: "appointments", icon: "🗓" },
-  { href: "/admin/services", key: "queueTypes", icon: "🧩" },
   { href: "/admin/content", key: "content", icon: "✎" },
   { href: "/admin/settings", key: "settings", icon: "⚙" },
 ] as const;
