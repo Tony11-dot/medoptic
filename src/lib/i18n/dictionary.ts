@@ -88,6 +88,12 @@ export interface Dict {
     pickTimeHelp: string;
     warnPickTime: string;
     bookAnother: string;
+    enterTimeLabel: string;
+    enterTimeSave: string;
+    enterTimeSaving: string;
+    timeSaved: string;
+    cancel: string;
+    cancelledTitle: string;
     services: Record<ServiceType, string>;
     errors: {
       required: string;
@@ -314,6 +320,12 @@ export const dictionaries: Record<Locale, Dict> = {
       pickTimeHelp: "השעה שתבחרו היא שעת התור. נשלח לכם אישור ותזכורת.",
       warnPickTime: "⚠️ חשוב: יש לבחור תאריך ושעה ביומן, אחרת לא נוכל לשמור לכם תור. לא בחרתם? לחצו למעלה.",
       bookAnother: "קביעת תור נוסף",
+      enterTimeLabel: "בחרתם מועד ביומן? הזינו אותו כאן והוא יישמר אוטומטית במערכת:",
+      enterTimeSave: "שמירת המועד",
+      enterTimeSaving: "שומר…",
+      timeSaved: "✓ המועד נשמר! נשלח לכם תזכורת לפני התור.",
+      cancel: "ביטול התור",
+      cancelledTitle: "התור בוטל",
       services: services_he,
       errors: {
         required: "שדה חובה",
@@ -515,6 +527,12 @@ export const dictionaries: Record<Locale, Dict> = {
       pickTimeHelp: "The time you pick is your appointment time. We'll send a confirmation and a reminder.",
       warnPickTime: "⚠️ Important: you must pick a date & time on the calendar, or we can't hold your appointment. Didn't choose one? Tap above.",
       bookAnother: "Book another",
+      enterTimeLabel: "Picked a time on the calendar? Enter it here and it's saved automatically:",
+      enterTimeSave: "Save my time",
+      enterTimeSaving: "Saving…",
+      timeSaved: "✓ Saved! We'll send you a reminder before your appointment.",
+      cancel: "Cancel appointment",
+      cancelledTitle: "Appointment cancelled",
       services: services_en,
       errors: {
         required: "Required field",
@@ -716,6 +734,12 @@ export const dictionaries: Record<Locale, Dict> = {
       pickTimeHelp: "Выбранное время — это время приёма. Мы пришлём подтверждение и напоминание.",
       warnPickTime: "⚠️ Важно: выберите дату и время в календаре, иначе мы не сможем закрепить приём. Не выбрали? Нажмите выше.",
       bookAnother: "Записаться ещё раз",
+      enterTimeLabel: "Выбрали время в календаре? Введите его здесь — оно сохранится автоматически:",
+      enterTimeSave: "Сохранить время",
+      enterTimeSaving: "Сохранение…",
+      timeSaved: "✓ Сохранено! Мы пришлём напоминание перед приёмом.",
+      cancel: "Отменить запись",
+      cancelledTitle: "Запись отменена",
       services: services_ru,
       errors: {
         required: "Обязательное поле",

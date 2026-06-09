@@ -25,7 +25,7 @@ function whenText(appt: Appointment): string | null {
   if (!appt.appointmentAt) return null;
   const d = new Date(appt.appointmentAt);
   if (isNaN(d.getTime())) return null;
-  return d.toLocaleString("en-GB", {
+  return d.toLocaleString("he-IL", {
     weekday: "short",
     day: "2-digit",
     month: "short",
@@ -36,27 +36,27 @@ function whenText(appt: Appointment): string | null {
 
 function buildMessage(appt: Appointment): string {
   const name = `${appt.firstName} ${appt.lastName}`.trim();
-  const signoff = `Questions? Call ${BUSINESS.phone}.`;
+  const signoff = `לשאלות חייגו ${BUSINESS.phone}.`;
   const when = whenText(appt);
 
   if (appt.status === "approved") {
     const slot = when
-      ? `Your appointment is confirmed for ${when}.`
-      : `Pick your time here: ${SCHEDULING_URL}`;
-    return `${BUSINESS.name}: Hi ${name}, your booking is approved. ${slot} ${signoff}`;
+      ? `התור שלך נקבע ל-${when}.`
+      : `לבחירת מועד שנוח לך: ${SCHEDULING_URL}`;
+    return `${BUSINESS.name}: שלום ${name}, התור שלך אושר. ${slot} ${signoff}`;
   }
   if (appt.status === "declined") {
-    const reason = appt.decisionReason ? ` Reason: ${appt.decisionReason}` : "";
-    return `${BUSINESS.name}: Hi ${name}, we couldn't confirm this appointment.${reason} Please contact us to reschedule. ${signoff}`;
+    const reason = appt.decisionReason ? ` סיבה: ${appt.decisionReason}` : "";
+    return `${BUSINESS.name}: שלום ${name}, לא הצלחנו לאשר את התור.${reason} אנא צרו קשר לתיאום מחדש. ${signoff}`;
   }
-  return `${BUSINESS.name}: Hi ${name}, we received your request. ${signoff}`;
+  return `${BUSINESS.name}: שלום ${name}, קיבלנו את בקשתך. ${signoff}`;
 }
 
 function buildReminder(appt: Appointment): string {
   const name = `${appt.firstName} ${appt.lastName}`.trim();
   const when = whenText(appt);
-  const slot = when ? ` tomorrow, ${when}` : " tomorrow";
-  return `${BUSINESS.name}: Hi ${name}, a reminder of your appointment${slot}. See you soon! Call ${BUSINESS.phone} to change it.`;
+  const slot = when ? ` מחר, ${when}` : " מחר";
+  return `${BUSINESS.name}: שלום ${name}, תזכורת לתור שלך${slot}. נתראה בקרוב! לשינוי חייגו ${BUSINESS.phone}.`;
 }
 
 // ---- Branded HTML email -----------------------------------------------------
@@ -68,14 +68,14 @@ const esc = (s: string) =>
   s.replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]!);
 
 function emailSubject(appt: Appointment): string {
-  if (appt.status === "approved") return `${BUSINESS.name} — your booking is confirmed`;
-  if (appt.status === "declined") return `${BUSINESS.name} — about your appointment`;
-  return `${BUSINESS.name} — we received your request`;
+  if (appt.status === "approved") return `${BUSINESS.name} — התור שלך אושר`;
+  if (appt.status === "declined") return `${BUSINESS.name} — לגבי התור שלך`;
+  return `${BUSINESS.name} — קיבלנו את בקשתך`;
 }
 
 // A branded, email-client-safe HTML shell (tables + inline styles).
 function emailShell(lead: string, body: string, button = ""): string {
-  return `<!doctype html><html><body style="margin:0;padding:0;background:#f4f6f8;font-family:Arial,Helvetica,sans-serif;">
+  return `<!doctype html><html dir="rtl"><body style="margin:0;padding:0;background:#f4f6f8;font-family:Arial,Helvetica,sans-serif;">
   <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f4f6f8;padding:24px 12px;">
     <tr><td align="center">
       <table role="presentation" width="560" cellpadding="0" cellspacing="0" style="max-width:560px;width:100%;background:#ffffff;border-radius:18px;overflow:hidden;border:1px solid #e6eaef;">
@@ -111,26 +111,26 @@ function buildEmailHtml(appt: Appointment): string {
   const when = whenText(appt);
   if (appt.status === "approved") {
     if (when) {
-      return emailShell(`Hi ${name}, your booking is approved 🎉`, `Your appointment is confirmed for <strong>${esc(when)}</strong>. We look forward to seeing you!`);
+      return emailShell(`שלום ${name}, התור שלך אושר 🎉`, `התור נקבע ל-<strong>${esc(when)}</strong>. נשמח לראותך!`);
     }
     return emailShell(
-      `Hi ${name}, your booking is approved 🎉`,
-      `Just one step left — pick the time that suits you and we'll confirm it.`,
-      buttonHtml(SCHEDULING_URL, "Pick your time"),
+      `שלום ${name}, התור שלך אושר 🎉`,
+      `נותר שלב אחד — בחרו את המועד שנוח לכם ונאשר אותו.`,
+      buttonHtml(SCHEDULING_URL, "בחירת מועד"),
     );
   }
   if (appt.status === "declined") {
-    const reason = appt.decisionReason ? ` <br/><br/>Reason: ${esc(appt.decisionReason)}.` : "";
-    return emailShell(`Hi ${name},`, `Unfortunately we couldn't confirm this appointment.${reason}<br/><br/>Please contact us and we'll be glad to reschedule.`);
+    const reason = appt.decisionReason ? ` <br/><br/>סיבה: ${esc(appt.decisionReason)}.` : "";
+    return emailShell(`שלום ${name},`, `לצערנו לא הצלחנו לאשר את התור.${reason}<br/><br/>אנא צרו קשר ונשמח לתאם מועד חדש.`);
   }
-  return emailShell(`Hi ${name},`, `We've received your request and will get back to you shortly.`);
+  return emailShell(`שלום ${name},`, `קיבלנו את בקשתכם ונחזור אליכם בהקדם.`);
 }
 
 function buildReminderHtml(appt: Appointment): string {
   const name = esc(`${appt.firstName} ${appt.lastName}`.trim());
   const when = whenText(appt);
-  const slot = when ? `<strong>tomorrow, ${esc(when)}</strong>` : "<strong>tomorrow</strong>";
-  return emailShell(`Hi ${name}, a friendly reminder 👋`, `This is a reminder of your appointment ${slot}. See you soon!`);
+  const slot = when ? `<strong>מחר, ${esc(when)}</strong>` : "<strong>מחר</strong>";
+  return emailShell(`שלום ${name}, תזכורת ידידותית 👋`, `תזכורת לתור שלך ${slot}. נתראה בקרוב!`);
 }
 
 // Logs the message until a real provider is wired in at the marked spot.

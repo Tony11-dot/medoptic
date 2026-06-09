@@ -28,6 +28,56 @@ export function Booking({ bg }: { bg?: string }) {
   const [services, setServices] = useState<Service[]>([]);
   // The prefilled calendar link shown on the success screen (popup fallback).
   const [calendarUrl, setCalendarUrl] = useState<string | null>(null);
+  // Self-service after booking: store the time they picked, or cancel.
+  const [apptId, setApptId] = useState<string | null>(null);
+  const [timeValue, setTimeValue] = useState("");
+  const [timeSaved, setTimeSaved] = useState(false);
+  const [cancelled, setCancelled] = useState(false);
+  const [selfBusy, setSelfBusy] = useState(false);
+
+  async function saveSelfTime() {
+    if (!apptId || !timeValue) return;
+    setSelfBusy(true);
+    try {
+      const res = await fetch(`/api/appointments/${apptId}/self`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "schedule", appointmentAt: timeValue }),
+      });
+      if (!res.ok) throw new Error();
+      setTimeSaved(true);
+    } catch {
+      toast.error(t.booking.errors.generic);
+    } finally {
+      setSelfBusy(false);
+    }
+  }
+
+  async function cancelBooking() {
+    if (!apptId) return;
+    setSelfBusy(true);
+    try {
+      const res = await fetch(`/api/appointments/${apptId}/self`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "cancel" }),
+      });
+      if (!res.ok) throw new Error();
+      setCancelled(true);
+    } catch {
+      toast.error(t.booking.errors.generic);
+    } finally {
+      setSelfBusy(false);
+    }
+  }
+
+  function bookAnother() {
+    setDone(false);
+    setApptId(null);
+    setTimeValue("");
+    setTimeSaved(false);
+    setCancelled(false);
+  }
 
   // Service / queue types are managed in the admin panel — load them live so
   // the booking form always reflects what's currently offered.
@@ -67,6 +117,8 @@ export function Booking({ bg }: { bg?: string }) {
         body: JSON.stringify(values),
       });
       if (!res.ok) throw new Error("request failed");
+      const data = await res.json().catch(() => null);
+      setApptId(data?.appointment?.id ?? null);
       void win;
       setDone(true);
       reset();
@@ -122,45 +174,99 @@ export function Booking({ bg }: { bg?: string }) {
                 exit={{ opacity: 0 }}
                 className="flex h-full flex-col items-center justify-center py-10 text-center"
               >
-                <motion.span
-                  initial={{ scale: 0 }}
-                  animate={{ scale: 1 }}
-                  transition={{ type: "spring", stiffness: 260, damping: 18 }}
-                  className="grid size-16 place-items-center rounded-full bg-emerald-100 text-3xl text-emerald-600"
-                >
-                  ✓
-                </motion.span>
-                <h3 className="mt-5 text-3xl font-extrabold text-ink">{t.booking.successTitle}</h3>
-                <p className="mt-3 max-w-sm text-lg text-ink/80">{t.booking.successBody}</p>
+                {cancelled ? (
+                  <>
+                    <span className="grid size-16 place-items-center rounded-full bg-rose-100 text-3xl text-rose-600">✕</span>
+                    <h3 className="mt-5 text-3xl font-extrabold text-ink">{t.booking.cancelledTitle}</h3>
+                    <button
+                      type="button"
+                      onClick={bookAnother}
+                      className="mt-6 text-base font-semibold text-brand-dark underline-offset-2 hover:underline"
+                    >
+                      {t.booking.bookAnother}
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <motion.span
+                      initial={{ scale: 0 }}
+                      animate={{ scale: 1 }}
+                      transition={{ type: "spring", stiffness: 260, damping: 18 }}
+                      className="grid size-16 place-items-center rounded-full bg-emerald-100 text-3xl text-emerald-600"
+                    >
+                      ✓
+                    </motion.span>
+                    <h3 className="mt-5 text-3xl font-extrabold text-ink">{t.booking.successTitle}</h3>
+                    <p className="mt-3 max-w-sm text-lg text-ink/80">{t.booking.successBody}</p>
 
-                {/* Calendar opened automatically; this is the popup fallback. */}
-                <a
-                  href={calendarUrl ?? schedulingUrl()}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="mt-6 inline-flex h-16 w-full max-w-sm items-center justify-center gap-3 rounded-2xl bg-brand px-8 text-xl font-extrabold text-white shadow-[0_12px_34px_rgba(0,102,204,0.32)] transition hover:-translate-y-0.5 hover:bg-brand-dark"
-                >
-                  <span aria-hidden className="text-2xl">📅</span>
-                  {t.booking.pickTimeCta}
-                </a>
-                <p className="mt-3 max-w-xs text-sm text-muted">{t.booking.pickTimeHelp}</p>
+                    {/* Calendar opened automatically; this is the popup fallback. */}
+                    <a
+                      href={calendarUrl ?? schedulingUrl()}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="mt-6 inline-flex h-16 w-full max-w-sm items-center justify-center gap-3 rounded-2xl bg-brand px-8 text-xl font-extrabold text-white shadow-[0_12px_34px_rgba(0,102,204,0.32)] transition hover:-translate-y-0.5 hover:bg-brand-dark"
+                    >
+                      <span aria-hidden className="text-2xl">📅</span>
+                      {t.booking.pickTimeCta}
+                    </a>
+                    <p className="mt-3 max-w-xs text-sm text-muted">{t.booking.pickTimeHelp}</p>
 
-                {/* Strong reminder to actually pick a date/time on the calendar */}
-                <motion.p
-                  initial={{ opacity: 0, y: 8 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.2 }}
-                  className="mt-5 w-full max-w-sm rounded-2xl border-2 border-amber-300 bg-amber-50 px-4 py-3 text-sm font-bold text-amber-800"
-                >
-                  {t.booking.warnPickTime}
-                </motion.p>
+                    {/* Enter the time you picked → saved straight to the system */}
+                    <div className="mt-5 w-full max-w-sm rounded-2xl border border-line bg-surface p-4 text-start">
+                      {timeSaved ? (
+                        <p className="text-sm font-bold text-emerald-700">{t.booking.timeSaved}</p>
+                      ) : (
+                        <>
+                          <label className="block">
+                            <span className="mb-1.5 block text-sm font-semibold text-ink">{t.booking.enterTimeLabel}</span>
+                            <input
+                              type="datetime-local"
+                              value={timeValue}
+                              onChange={(e) => setTimeValue(e.target.value)}
+                              className="h-12 w-full rounded-xl border border-line bg-white px-3.5 text-base outline-none transition focus:border-brand focus:ring-4 focus:ring-brand/10"
+                            />
+                          </label>
+                          <button
+                            type="button"
+                            onClick={saveSelfTime}
+                            disabled={!timeValue || selfBusy}
+                            className="mt-3 inline-flex h-11 w-full items-center justify-center rounded-xl bg-brand px-5 text-base font-bold text-white transition hover:bg-brand-dark disabled:opacity-50"
+                          >
+                            {selfBusy ? t.booking.enterTimeSaving : t.booking.enterTimeSave}
+                          </button>
+                        </>
+                      )}
+                    </div>
 
-                <button
-                  onClick={() => setDone(false)}
-                  className="mt-6 text-base font-semibold text-brand-dark underline-offset-2 hover:underline"
-                >
-                  {t.booking.bookAnother}
-                </button>
+                    {/* Strong reminder — hidden once they've entered a time */}
+                    {!timeSaved && (
+                      <motion.p
+                        initial={{ opacity: 0, y: 8 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.2 }}
+                        className="mt-5 w-full max-w-sm rounded-2xl border-2 border-amber-300 bg-amber-50 px-4 py-3 text-sm font-bold text-amber-800"
+                      >
+                        {t.booking.warnPickTime}
+                      </motion.p>
+                    )}
+
+                    <button
+                      type="button"
+                      onClick={bookAnother}
+                      className="mt-6 text-base font-semibold text-brand-dark underline-offset-2 hover:underline"
+                    >
+                      {t.booking.bookAnother}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={cancelBooking}
+                      disabled={selfBusy}
+                      className="mt-2 text-sm font-medium text-rose-600 underline-offset-2 hover:underline disabled:opacity-50"
+                    >
+                      {t.booking.cancel}
+                    </button>
+                  </>
+                )}
               </motion.div>
             ) : (
               <motion.form
