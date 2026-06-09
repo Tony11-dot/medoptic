@@ -52,6 +52,15 @@ export interface Dict {
     subheading: string;
     empty: string;
     leaveReview: string;
+    writeReview: string;
+    formTitle: string;
+    formName: string;
+    formRating: string;
+    formText: string;
+    formSubmit: string;
+    formSubmitting: string;
+    formSuccess: string;
+    formError: string;
   };
   booking: {
     eyebrow: string;
@@ -158,6 +167,8 @@ export interface Dict {
       typed: string;
       googlePhoto: string;
       googlePhotoHint: string;
+      visible: string;
+      pending: string;
     };
     status: { pending: string; approved: string; declined: string; allStatuses: string; allServices: string };
     gallery: { add: string; empty: string; caption: string };
@@ -267,6 +278,15 @@ export const dictionaries: Record<Locale, Dict> = {
       subheading: "לקוחות מספרים על החוויה שלהם ב-MEDOPTIC.",
       empty: "עדיין אין ביקורות. נשמח אם תשתפו את החוויה שלכם!",
       leaveReview: "כתבו ביקורת בגוגל",
+      writeReview: "כתיבת ביקורת",
+      formTitle: "שתפו את החוויה שלכם",
+      formName: "השם שלכם",
+      formRating: "דירוג",
+      formText: "הביקורת שלכם",
+      formSubmit: "שליחה",
+      formSubmitting: "שולח…",
+      formSuccess: "תודה! הביקורת תופיע לאחר אישור.",
+      formError: "השליחה נכשלה. נסו שוב.",
     },
     booking: {
       eyebrow: "נשמח לראות אתכם",
@@ -373,6 +393,8 @@ export const dictionaries: Record<Locale, Dict> = {
         typed: "ביקורת כתובה",
         googlePhoto: "צילום מגוגל",
         googlePhotoHint: "העלו צילום מסך של ביקורת מגוגל. הוא יוצג כפי שהוא, בלי טקסט.",
+        visible: "מוצג באתר",
+        pending: "ממתין לאישור",
       },
       status: { pending: "ממתין", approved: "אושר", declined: "נדחה", allStatuses: "כל הסטטוסים", allServices: "כל השירותים" },
       gallery: { add: "הוספת תמונה", empty: "אין תמונות עדיין. הוסיפו תמונות לקרוסלה.", caption: "כיתוב (לא חובה)" },
@@ -457,6 +479,15 @@ export const dictionaries: Record<Locale, Dict> = {
       subheading: "Real experiences from people who visited MEDOPTIC.",
       empty: "No reviews yet. We'd love to hear about your visit!",
       leaveReview: "Write a review on Google",
+      writeReview: "Write a review",
+      formTitle: "Share your experience",
+      formName: "Your name",
+      formRating: "Rating",
+      formText: "Your review",
+      formSubmit: "Send",
+      formSubmitting: "Sending…",
+      formSuccess: "Thank you! Your review will appear after approval.",
+      formError: "Couldn't send. Please try again.",
     },
     booking: {
       eyebrow: "We'd love to see you",
@@ -563,6 +594,8 @@ export const dictionaries: Record<Locale, Dict> = {
         typed: "Typed review",
         googlePhoto: "Google photo",
         googlePhotoHint: "Upload a screenshot of a Google review. It's shown as-is, with no text.",
+        visible: "Shown on site",
+        pending: "Pending approval",
       },
       status: { pending: "Pending", approved: "Approved", declined: "Declined", allStatuses: "All statuses", allServices: "All services" },
       gallery: { add: "Add image", empty: "No images yet. Add images to the carousel.", caption: "Caption (optional)" },
@@ -647,6 +680,15 @@ export const dictionaries: Record<Locale, Dict> = {
       subheading: "Реальные впечатления тех, кто побывал в MEDOPTIC.",
       empty: "Пока нет отзывов. Будем рады услышать о вашем визите!",
       leaveReview: "Оставить отзыв в Google",
+      writeReview: "Написать отзыв",
+      formTitle: "Поделитесь впечатлениями",
+      formName: "Ваше имя",
+      formRating: "Оценка",
+      formText: "Ваш отзыв",
+      formSubmit: "Отправить",
+      formSubmitting: "Отправка…",
+      formSuccess: "Спасибо! Отзыв появится после проверки.",
+      formError: "Не удалось отправить. Попробуйте снова.",
     },
     booking: {
       eyebrow: "Будем рады вас видеть",
@@ -753,6 +795,8 @@ export const dictionaries: Record<Locale, Dict> = {
         typed: "Текстовый отзыв",
         googlePhoto: "Скриншот Google",
         googlePhotoHint: "Загрузите скриншот отзыва из Google. Он показывается как есть, без текста.",
+        visible: "Показывать на сайте",
+        pending: "Ожидает одобрения",
       },
       status: { pending: "Ожидает", approved: "Подтверждено", declined: "Отклонено", allStatuses: "Все статусы", allServices: "Все услуги" },
       gallery: { add: "Добавить фото", empty: "Пока нет изображений. Добавьте фото в карусель.", caption: "Подпись (необязательно)" },

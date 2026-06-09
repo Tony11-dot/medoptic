@@ -395,7 +395,12 @@ export default function ContentAdmin() {
                 {reviews.map((r) => {
                   const type = r.source ?? (r.image ? "google" : "manual");
                   return (
-                  <div key={r.id} className="space-y-3 rounded-xl border border-line p-4">
+                  <div key={r.id} className={cn("space-y-3 rounded-xl border p-4", r.approved === false ? "border-amber-300 bg-amber-50/40" : "border-line")}>
+                    <label className="flex items-center gap-2">
+                      <input type="checkbox" checked={r.approved !== false} onChange={(e) => updateReview(r.id, { approved: e.target.checked })} className="size-4" />
+                      <span className="text-sm font-semibold text-ink">{t.admin.reviews.visible}</span>
+                      {r.approved === false && <span className="rounded-md bg-amber-100 px-2 py-0.5 text-xs font-bold text-amber-700">{t.admin.reviews.pending}</span>}
+                    </label>
                     <div className="flex gap-1 rounded-lg bg-surface p-0.5">
                       <button type="button" onClick={() => updateReview(r.id, { source: "manual" })} className={cn("flex-1 rounded-md px-3 py-1.5 text-xs font-semibold transition", type === "manual" ? "bg-white text-brand-dark shadow-sm" : "text-muted")}>
                         {t.admin.reviews.typed}

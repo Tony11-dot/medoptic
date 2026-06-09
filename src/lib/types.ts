@@ -59,6 +59,9 @@ export interface Review {
   /** Optional photo (reviewer or the review itself). */
   image?: string;
   source?: "manual" | "google";
+  /** Visitor-submitted reviews start unapproved (hidden) until an admin approves.
+   * Admin-created reviews leave this undefined (treated as approved). */
+  approved?: boolean;
 }
 
 export interface Appointment {
