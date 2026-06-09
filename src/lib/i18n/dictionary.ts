@@ -155,6 +155,9 @@ export interface Dict {
       placeId: string;
       placeIdHint: string;
       showGoogle: string;
+      typed: string;
+      googlePhoto: string;
+      googlePhotoHint: string;
     };
     status: { pending: string; approved: string; declined: string; allStatuses: string; allServices: string };
     gallery: { add: string; empty: string; caption: string };
@@ -367,6 +370,9 @@ export const dictionaries: Record<Locale, Dict> = {
         placeId: "Google Place ID",
         placeIdHint: "מצאו את ה-Place ID של ‏‎מדאופטיק‏ Medoptic בכלי של גוגל ‏(Place ID Finder).",
         showGoogle: "להציג ביקורות מגוגל באתר",
+        typed: "ביקורת כתובה",
+        googlePhoto: "צילום מגוגל",
+        googlePhotoHint: "העלו צילום מסך של ביקורת מגוגל. הוא יוצג כפי שהוא, בלי טקסט.",
       },
       status: { pending: "ממתין", approved: "אושר", declined: "נדחה", allStatuses: "כל הסטטוסים", allServices: "כל השירותים" },
       gallery: { add: "הוספת תמונה", empty: "אין תמונות עדיין. הוסיפו תמונות לקרוסלה.", caption: "כיתוב (לא חובה)" },
@@ -554,6 +560,9 @@ export const dictionaries: Record<Locale, Dict> = {
         placeId: "Google Place ID",
         placeIdHint: "Find the Place ID for ‘מדאופטיק Medoptic’ using Google's Place ID Finder tool.",
         showGoogle: "Show Google reviews on the site",
+        typed: "Typed review",
+        googlePhoto: "Google photo",
+        googlePhotoHint: "Upload a screenshot of a Google review. It's shown as-is, with no text.",
       },
       status: { pending: "Pending", approved: "Approved", declined: "Declined", allStatuses: "All statuses", allServices: "All services" },
       gallery: { add: "Add image", empty: "No images yet. Add images to the carousel.", caption: "Caption (optional)" },
@@ -741,6 +750,9 @@ export const dictionaries: Record<Locale, Dict> = {
         placeId: "Google Place ID",
         placeIdHint: "Найдите Place ID для «מדאופטיק Medoptic» с помощью инструмента Google Place ID Finder.",
         showGoogle: "Показывать отзывы Google на сайте",
+        typed: "Текстовый отзыв",
+        googlePhoto: "Скриншот Google",
+        googlePhotoHint: "Загрузите скриншот отзыва из Google. Он показывается как есть, без текста.",
       },
       status: { pending: "Ожидает", approved: "Подтверждено", declined: "Отклонено", allStatuses: "Все статусы", allServices: "Все услуги" },
       gallery: { add: "Добавить фото", empty: "Пока нет изображений. Добавьте фото в карусель.", caption: "Подпись (необязательно)" },

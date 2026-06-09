@@ -392,50 +392,70 @@ export default function ContentAdmin() {
               {/* Manual reviews */}
               <div className="space-y-4">
                 {reviews.length === 0 && <p className="text-sm text-muted">{t.admin.reviews.none}</p>}
-                {reviews.map((r) => (
+                {reviews.map((r) => {
+                  const type = r.source ?? (r.image ? "google" : "manual");
+                  return (
                   <div key={r.id} className="space-y-3 rounded-xl border border-line p-4">
-                    <ImageUpload value={r.image ?? ""} icon="user" onChange={(image) => updateReview(r.id, { image })} />
-                    <div className="grid gap-3 sm:grid-cols-2">
-                      <label className="block">
-                        <span className="mb-1.5 block text-sm font-semibold text-ink">{t.admin.reviews.author}</span>
-                        <input value={r.author} onChange={(e) => updateReview(r.id, { author: e.target.value })} className={plainInput} />
-                      </label>
-                      <label className="block">
-                        <span className="mb-1.5 block text-sm font-semibold text-ink">{t.admin.reviews.rating}</span>
-                        <select
-                          value={r.rating}
-                          onChange={(e) => updateReview(r.id, { rating: Number(e.target.value) })}
-                          className={plainInput}
-                        >
-                          {[5, 4, 3, 2, 1].map((n) => (
-                            <option key={n} value={n}>{"★".repeat(n)}{"☆".repeat(5 - n)} ({n})</option>
-                          ))}
-                        </select>
-                      </label>
+                    <div className="flex gap-1 rounded-lg bg-surface p-0.5">
+                      <button type="button" onClick={() => updateReview(r.id, { source: "manual" })} className={cn("flex-1 rounded-md px-3 py-1.5 text-xs font-semibold transition", type === "manual" ? "bg-white text-brand-dark shadow-sm" : "text-muted")}>
+                        {t.admin.reviews.typed}
+                      </button>
+                      <button type="button" onClick={() => updateReview(r.id, { source: "google" })} className={cn("flex-1 rounded-md px-3 py-1.5 text-xs font-semibold transition", type === "google" ? "bg-white text-brand-dark shadow-sm" : "text-muted")}>
+                        {t.admin.reviews.googlePhoto}
+                      </button>
                     </div>
-                    <label className="block">
-                      <span className="mb-1.5 block text-sm font-semibold text-ink">{t.admin.reviews.text}</span>
-                      <textarea
-                        rows={3}
-                        value={r.text}
-                        onChange={(e) => updateReview(r.id, { text: e.target.value })}
-                        className={cn(plainInput, "h-auto resize-none py-2.5")}
-                      />
-                    </label>
-                    <label className="block max-w-xs">
-                      <span className="mb-1.5 block text-sm font-semibold text-ink">{t.admin.reviews.date}</span>
-                      <input
-                        value={r.date ?? ""}
-                        placeholder={t.admin.reviews.datePlaceholder}
-                        onChange={(e) => updateReview(r.id, { date: e.target.value })}
-                        className={plainInput}
-                      />
-                    </label>
+
+                    {type === "google" ? (
+                      <>
+                        <p className="text-xs text-muted">{t.admin.reviews.googlePhotoHint}</p>
+                        <ImageUpload value={r.image ?? ""} icon="user" onChange={(image) => updateReview(r.id, { image })} />
+                      </>
+                    ) : (
+                      <>
+                        <div className="grid gap-3 sm:grid-cols-2">
+                          <label className="block">
+                            <span className="mb-1.5 block text-sm font-semibold text-ink">{t.admin.reviews.author}</span>
+                            <input value={r.author} onChange={(e) => updateReview(r.id, { author: e.target.value })} className={plainInput} />
+                          </label>
+                          <label className="block">
+                            <span className="mb-1.5 block text-sm font-semibold text-ink">{t.admin.reviews.rating}</span>
+                            <select
+                              value={r.rating}
+                              onChange={(e) => updateReview(r.id, { rating: Number(e.target.value) })}
+                              className={plainInput}
+                            >
+                              {[5, 4, 3, 2, 1].map((n) => (
+                                <option key={n} value={n}>{"★".repeat(n)}{"☆".repeat(5 - n)} ({n})</option>
+                              ))}
+                            </select>
+                          </label>
+                        </div>
+                        <label className="block">
+                          <span className="mb-1.5 block text-sm font-semibold text-ink">{t.admin.reviews.text}</span>
+                          <textarea
+                            rows={3}
+                            value={r.text}
+                            onChange={(e) => updateReview(r.id, { text: e.target.value })}
+                            className={cn(plainInput, "h-auto resize-none py-2.5")}
+                          />
+                        </label>
+                        <label className="block max-w-xs">
+                          <span className="mb-1.5 block text-sm font-semibold text-ink">{t.admin.reviews.date}</span>
+                          <input
+                            value={r.date ?? ""}
+                            placeholder={t.admin.reviews.datePlaceholder}
+                            onChange={(e) => updateReview(r.id, { date: e.target.value })}
+                            className={plainInput}
+                          />
+                        </label>
+                      </>
+                    )}
                     <button onClick={() => removeReview(r.id)} className="text-sm font-medium text-rose-600 hover:underline">
                       {t.admin.reviews.remove}
                     </button>
                   </div>
-                ))}
+                  );
+                })}
                 <Button size="sm" variant="subtle" onClick={addReview}>+ {t.admin.reviews.add}</Button>
               </div>
             </div>

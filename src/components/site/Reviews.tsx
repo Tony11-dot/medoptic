@@ -58,16 +58,19 @@ export function Reviews({
         ) : (
           <>
             <div className="mx-auto mt-12 grid max-w-5xl gap-6 sm:grid-cols-2 lg:grid-cols-3">
-              {reviews.map((rev, i) => (
+              {reviews.map((rev, i) => {
+                const isPhoto = (rev.source ?? (rev.image ? "google" : "manual")) === "google";
+                if (isPhoto && !rev.image) return null;
+                return (
                 <motion.figure
                   key={rev.id}
                   initial={{ opacity: 0, y: 24 }}
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true, amount: 0.2 }}
                   transition={{ duration: 0.5, delay: (i % 3) * 0.1, ease: [0.22, 1, 0.36, 1] }}
-                  className={`flex flex-col rounded-2xl border border-line bg-white shadow-sm ${rev.image ? "overflow-hidden" : "p-6"}`}
+                  className={`flex flex-col rounded-2xl border border-line bg-white shadow-sm ${isPhoto ? "overflow-hidden" : "p-6"}`}
                 >
-                  {rev.image ? (
+                  {isPhoto ? (
                     // A photo review is a screenshot of a real Google review — show
                     // it as-is, no overlaid stars/text/author.
                     // eslint-disable-next-line @next/next/no-img-element
@@ -85,7 +88,8 @@ export function Reviews({
                     </>
                   )}
                 </motion.figure>
-              ))}
+                );
+              })}
             </div>
             <div className="mt-10 text-center">
               <a
