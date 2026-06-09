@@ -6,27 +6,18 @@ import { LocalizedField } from "@/components/admin/LocalizedField";
 import { ImageUpload } from "@/components/admin/ImageUpload";
 import { ImagePositioner } from "@/components/admin/ImagePositioner";
 import { StyleToolbar } from "@/components/admin/StyleToolbar";
-import { ContentPreview } from "@/components/admin/ContentPreview";
 import { BlockBuilder } from "@/components/admin/BlockBuilder";
 import { GalleryEditor } from "@/components/admin/GalleryEditor";
-import { Blocks } from "@/components/site/Blocks";
 import { Button } from "@/components/ui/Button";
 import { useToast } from "@/components/ui/Toast";
 import { useI18n } from "@/lib/i18n/LanguageProvider";
-import type { Block, BlocksPosition, GalleryImage, Locale, Localized, Review, Service, SiteContent, TeamMember, TextStyle } from "@/lib/types";
+import type { Block, BlocksPosition, GalleryImage, Localized, Review, Service, SiteContent, TeamMember, TextStyle } from "@/lib/types";
 import { STYLE_KEYS } from "@/lib/textStyle";
-import { ImageBlock } from "@/components/ui/ImageBlock";
 import { cn } from "@/lib/cn";
 
 type Tab = "hero" | "gallery" | "team" | "services" | "reviews" | "footer" | "blocks" | "backgrounds";
 
 const BG_SECTIONS = ["home", "gallery", "team", "services", "reviews", "book"] as const;
-
-const PREVIEW_LANGS: { code: Locale; label: string }[] = [
-  { code: "he", label: "עברית" },
-  { code: "en", label: "EN" },
-  { code: "ru", label: "RU" },
-];
 
 const emptyLocalized = (): Localized => ({ he: "", en: "", ru: "" });
 const plainInput =
@@ -38,7 +29,7 @@ export default function ContentAdmin() {
   const [tab, setTab] = useState<Tab>("hero");
   const [content, setContent] = useState<SiteContent | null>(null);
   const [saving, setSaving] = useState(false);
-  const [previewLocale, setPreviewLocale] = useState<Locale>("he");
+  const [previewKey, setPreviewKey] = useState(0);
   // Services (queue types) live in their own store; edited inline here and
   // synced to /api/services on save. We keep the originally-loaded list to diff
   // against (to know what to create / update / delete).
@@ -106,6 +97,7 @@ export default function ContentAdmin() {
       const fresh = await fetch("/api/services?all=1").then((r) => r.json());
       setServices(fresh.services ?? []);
       setServicesOriginal(fresh.services ?? []);
+      setPreviewKey((k) => k + 1); // reload the live preview with saved changes
       toast.success("Content saved — live on the site");
     } catch {
       toast.error("Could not save content");
@@ -486,63 +478,21 @@ export default function ContentAdmin() {
           )}
         </div>
 
-        {/* Live preview */}
+        {/* Live preview — the real site, reloaded after each save */}
         <div className="lg:sticky lg:top-6">
-          <div className="mb-2 flex items-center justify-end gap-1 rounded-lg bg-surface p-1">
-            <span className="me-auto ps-2 text-xs font-semibold text-muted">{t.admin.fields.previewLanguage}</span>
-            {PREVIEW_LANGS.map((l) => (
-              <button
-                key={l.code}
-                onClick={() => setPreviewLocale(l.code)}
-                className={cn(
-                  "rounded-md px-2.5 py-1 text-xs font-semibold transition",
-                  previewLocale === l.code ? "bg-white text-brand-dark shadow-sm" : "text-muted hover:text-ink",
-                )}
-              >
-                {l.label}
-              </button>
-            ))}
+          <div className="mb-2 flex items-center justify-between gap-2 rounded-lg bg-surface px-3 py-1.5">
+            <span className="text-xs font-semibold text-muted">Live preview — updates when you Save</span>
+            <button
+              type="button"
+              onClick={() => setPreviewKey((k) => k + 1)}
+              className="rounded-md bg-white px-2.5 py-1 text-xs font-semibold text-brand-dark shadow-sm transition hover:text-brand"
+            >
+              ↻ Refresh
+            </button>
           </div>
-          {tab === "blocks" ? (
-            <div className="overflow-hidden rounded-2xl border border-line bg-white">
-              <div className="border-b border-line bg-surface px-4 py-2 text-center text-[11px] font-semibold uppercase tracking-wide text-muted">
-                Live preview (exact site rendering)
-              </div>
-              <div className="max-h-[70vh] overflow-y-auto">
-                {(content.blocks ?? []).length === 0 ? (
-                  <p className="p-8 text-center text-sm text-muted">Add blocks to see them here.</p>
-                ) : (
-                  <Blocks
-                    blocks={content.blocks ?? []}
-                    pick={(v) => v?.[previewLocale] || v?.he || ""}
-                    dir={previewLocale === "he" ? "rtl" : "ltr"}
-                  />
-                )}
-              </div>
-            </div>
-          ) : tab === "gallery" ? (
-            <div className="overflow-hidden rounded-2xl border border-line bg-white p-4" dir={previewLocale === "he" ? "rtl" : "ltr"}>
-              {(content.gallery ?? []).length === 0 ? (
-                <p className="p-8 text-center text-sm text-muted">{t.admin.gallery.empty}</p>
-              ) : (
-                <div className="grid grid-cols-2 gap-3">
-                  {(content.gallery ?? []).map((g, n) => (
-                    <div key={g.id} className="overflow-hidden rounded-xl border border-line">
-                      <div className="aspect-video">
-                        <ImageBlock src={g.image} alt="" icon="eye" rounded="rounded-none" />
-                      </div>
-                      {(g.caption?.[previewLocale] || g.caption?.he) && (
-                        <p className="truncate px-2 py-1.5 text-xs font-semibold text-ink">{g.caption?.[previewLocale] || g.caption?.he}</p>
-                      )}
-                      <span className="block px-2 pb-1.5 text-[10px] text-muted">#{n + 1}</span>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          ) : (
-            <ContentPreview content={content} locale={previewLocale} tab={tab} />
-          )}
+          <div className="overflow-hidden rounded-2xl border border-line bg-white shadow-sm">
+            <iframe key={previewKey} src="/" title="Live preview" className="h-[78vh] w-full" />
+          </div>
         </div>
       </div>
     </AdminShell>
