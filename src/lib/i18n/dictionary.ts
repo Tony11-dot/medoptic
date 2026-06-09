@@ -138,7 +138,7 @@ export interface Dict {
       content: string;
       contentSub: string;
     };
-    contentTabs: { hero: string; gallery: string; team: string; reviews: string; blocks: string; footer: string; backgrounds: string };
+    contentTabs: { hero: string; gallery: string; team: string; services: string; reviews: string; blocks: string; footer: string; backgrounds: string };
     bg: { subtitle: string };
     reviews: {
       subtitle: string;
@@ -350,7 +350,7 @@ export const dictionaries: Record<Locale, Dict> = {
         content: "תוכן",
         contentSub: "עריכת טקסט, גופנים ותמונות. התצוגה מתעדכנת תוך כדי; השינויים נשמרים בלחיצה.",
       },
-      contentTabs: { hero: "מי אנחנו", gallery: "גלריה", team: "אופטומטריסטים", reviews: "ביקורות", blocks: "בלוקים", footer: "כותרת תחתונה", backgrounds: "רקעים" },
+      contentTabs: { hero: "מי אנחנו", gallery: "גלריה", team: "אופטומטריסטים", services: "שירותים", reviews: "ביקורות", blocks: "בלוקים", footer: "כותרת תחתונה", backgrounds: "רקעים" },
       bg: { subtitle: "העלו תמונת רקע לכל מקטע. התמונה תופיע מטושטשת מאחורי התוכן." },
       reviews: {
         subtitle: "הוסיפו ביקורות לקוחות ידנית, או חברו את גוגל כדי למשוך ביקורות אוטומטית.",
@@ -537,7 +537,7 @@ export const dictionaries: Record<Locale, Dict> = {
         content: "Content",
         contentSub: "Edit text, fonts and images. The preview updates as you type; changes go live on save.",
       },
-      contentTabs: { hero: "Who We Are", gallery: "Gallery", team: "Optometrists", reviews: "Reviews", blocks: "Blocks", footer: "Footer", backgrounds: "Backgrounds" },
+      contentTabs: { hero: "Who We Are", gallery: "Gallery", team: "Optometrists", services: "Services", reviews: "Reviews", blocks: "Blocks", footer: "Footer", backgrounds: "Backgrounds" },
       bg: { subtitle: "Upload a background image for any section. It appears softly behind the content." },
       reviews: {
         subtitle: "Add customer reviews by hand, or connect Google to pull them in automatically.",
@@ -724,7 +724,7 @@ export const dictionaries: Record<Locale, Dict> = {
         content: "Контент",
         contentSub: "Редактирование текста, шрифтов и изображений. Предпросмотр обновляется на лету; изменения публикуются при сохранении.",
       },
-      contentTabs: { hero: "О нас", gallery: "Галерея", team: "Оптометристы", reviews: "Отзывы", blocks: "Блоки", footer: "Подвал", backgrounds: "Фоны" },
+      contentTabs: { hero: "О нас", gallery: "Галерея", team: "Оптометристы", services: "Услуги", reviews: "Отзывы", blocks: "Блоки", footer: "Подвал", backgrounds: "Фоны" },
       bg: { subtitle: "Загрузите фоновое изображение для раздела. Оно появится мягко за контентом." },
       reviews: {
         subtitle: "Добавляйте отзывы клиентов вручную или подключите Google для автоматической загрузки.",

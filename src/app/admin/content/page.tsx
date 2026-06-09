@@ -13,12 +13,12 @@ import { Blocks } from "@/components/site/Blocks";
 import { Button } from "@/components/ui/Button";
 import { useToast } from "@/components/ui/Toast";
 import { useI18n } from "@/lib/i18n/LanguageProvider";
-import type { Block, BlocksPosition, GalleryImage, Locale, Localized, Review, SiteContent, TeamMember, TextStyle } from "@/lib/types";
+import type { Block, BlocksPosition, GalleryImage, Locale, Localized, Review, Service, SiteContent, TeamMember, TextStyle } from "@/lib/types";
 import { STYLE_KEYS } from "@/lib/textStyle";
 import { ImageBlock } from "@/components/ui/ImageBlock";
 import { cn } from "@/lib/cn";
 
-type Tab = "hero" | "gallery" | "team" | "reviews" | "footer" | "blocks" | "backgrounds";
+type Tab = "hero" | "gallery" | "team" | "services" | "reviews" | "footer" | "blocks" | "backgrounds";
 
 const BG_SECTIONS = ["home", "gallery", "team", "services", "reviews", "book"] as const;
 
@@ -39,11 +39,17 @@ export default function ContentAdmin() {
   const [content, setContent] = useState<SiteContent | null>(null);
   const [saving, setSaving] = useState(false);
   const [previewLocale, setPreviewLocale] = useState<Locale>("he");
+  // Services (queue types) live in their own store; edited inline here and
+  // synced to /api/services on save. We keep the originally-loaded list to diff
+  // against (to know what to create / update / delete).
+  const [services, setServices] = useState<Service[]>([]);
+  const [servicesOriginal, setServicesOriginal] = useState<Service[]>([]);
 
   const TABS: { id: Tab; label: string }[] = [
     { id: "hero", label: t.admin.contentTabs.hero },
     { id: "gallery", label: t.admin.contentTabs.gallery },
     { id: "team", label: t.admin.contentTabs.team },
+    { id: "services", label: t.admin.contentTabs.services },
     { id: "reviews", label: t.admin.contentTabs.reviews },
     { id: "blocks", label: t.admin.contentTabs.blocks },
     { id: "backgrounds", label: t.admin.contentTabs.backgrounds },
@@ -52,7 +58,37 @@ export default function ContentAdmin() {
 
   useEffect(() => {
     fetch("/api/content").then((r) => r.json()).then((d) => setContent(d.content));
+    fetch("/api/services?all=1").then((r) => r.json()).then((d) => {
+      const list: Service[] = d.services ?? [];
+      setServices(list);
+      setServicesOriginal(list);
+    });
   }, []);
+
+  // Push the inline service edits to the services API: delete removed ones,
+  // create new ones (temp id "new-…"), and patch the rest with their order.
+  async function syncServices() {
+    const removed = servicesOriginal.filter((o) => !services.some((s) => s.id === o.id));
+    await Promise.all(removed.map((s) => fetch(`/api/services/${s.id}`, { method: "DELETE" })));
+    await Promise.all(
+      services.map((s, i) => {
+        const body = JSON.stringify({
+          label: s.label,
+          description: s.description,
+          image: s.image ?? "",
+          imagePosition: s.imagePosition,
+          enabled: s.enabled,
+          order: i,
+        });
+        const isNew = s.id.startsWith("new-");
+        return fetch(isNew ? "/api/services" : `/api/services/${s.id}`, {
+          method: isNew ? "POST" : "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body,
+        });
+      }),
+    );
+  }
 
   async function save() {
     if (!content) return;
@@ -64,6 +100,10 @@ export default function ContentAdmin() {
         body: JSON.stringify(content),
       });
       if (!res.ok) throw new Error();
+      await syncServices();
+      const fresh = await fetch("/api/services?all=1").then((r) => r.json());
+      setServices(fresh.services ?? []);
+      setServicesOriginal(fresh.services ?? []);
       toast.success("Content saved — live on the site");
     } catch {
       toast.error("Could not save content");
@@ -71,6 +111,35 @@ export default function ContentAdmin() {
       setSaving(false);
     }
   }
+
+  // Inline service (queue type) editing.
+  const updateService = (id: string, patch: Partial<Service>) =>
+    setServices((list) => list.map((s) => (s.id === id ? { ...s, ...patch } : s)));
+  const removeService = (id: string) => setServices((list) => list.filter((s) => s.id !== id));
+  const addService = () =>
+    setServices((list) => [
+      ...list,
+      {
+        id: `new-${Date.now()}`,
+        label: emptyLocalized(),
+        description: emptyLocalized(),
+        image: "",
+        imagePosition: "center",
+        enabled: true,
+        order: list.length,
+        createdAt: new Date().toISOString(),
+      },
+    ]);
+  const moveService = (index: number, dir: -1 | 1) => {
+    const target = index + dir;
+    if (target < 0 || target >= services.length) return;
+    setServices((list) => {
+      const next = [...list];
+      const [m] = next.splice(index, 1);
+      next.splice(target, 0, m);
+      return next;
+    });
+  };
 
   // Section updaters keep edits immutable.
   const setHero = (patch: Partial<SiteContent["hero"]>) =>
@@ -273,6 +342,38 @@ export default function ContentAdmin() {
               onBlocksChange={setBlocks}
               onPositionChange={setBlocksPosition}
             />
+          )}
+
+          {tab === "services" && (
+            <div className="space-y-4">
+              <div className="flex items-center justify-between gap-2">
+                <p className="text-sm text-muted">{t.admin.titles.queueTypesSub}</p>
+                <Button size="sm" variant="subtle" onClick={addService}>+ {t.admin.actions.add}</Button>
+              </div>
+              {services.length === 0 && <p className="text-sm text-muted">{t.admin.svc.none}</p>}
+              {services.map((s, i) => (
+                <div key={s.id} className="space-y-3 rounded-xl border border-line p-4">
+                  <div className="flex items-center gap-1">
+                    <span className="rounded-md bg-brand-50 px-2 py-0.5 text-xs font-bold text-brand-dark">#{i + 1}</span>
+                    <div className="ms-auto flex items-center gap-1">
+                      <button type="button" onClick={() => moveService(i, -1)} disabled={i === 0} aria-label="up" className="grid size-7 place-items-center rounded-md border border-line text-muted transition hover:border-brand disabled:opacity-30">↑</button>
+                      <button type="button" onClick={() => moveService(i, 1)} disabled={i === services.length - 1} aria-label="down" className="grid size-7 place-items-center rounded-md border border-line text-muted transition hover:border-brand disabled:opacity-30">↓</button>
+                      <button type="button" onClick={() => removeService(s.id)} aria-label="delete" className="grid size-7 place-items-center rounded-md bg-rose-50 text-rose-600 transition hover:bg-rose-100">✕</button>
+                    </div>
+                  </div>
+                  <ImageUpload value={s.image ?? ""} icon="glasses" onChange={(image) => updateService(s.id, { image })} />
+                  {s.image && (
+                    <ImagePositioner value={s.imagePosition} onChange={(imagePosition) => updateService(s.id, { imagePosition })} />
+                  )}
+                  <LocalizedField label={t.admin.svc.name} value={s.label} onChange={(label) => updateService(s.id, { label })} />
+                  <LocalizedField label={t.admin.svc.description} textarea value={s.description} onChange={(description) => updateService(s.id, { description })} />
+                  <label className="flex items-center gap-3 rounded-xl border border-line bg-surface px-4 py-2.5">
+                    <input type="checkbox" checked={s.enabled} onChange={(e) => updateService(s.id, { enabled: e.target.checked })} className="size-4" />
+                    <span className="text-sm font-semibold text-ink">{t.admin.svc.show}</span>
+                  </label>
+                </div>
+              ))}
+            </div>
           )}
 
           {tab === "reviews" && (
