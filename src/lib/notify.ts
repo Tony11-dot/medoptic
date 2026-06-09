@@ -86,43 +86,51 @@ async function dispatch(appt: Appointment, message: string): Promise<NotifyResul
 // Each helper sends for real when its env vars are configured, otherwise logs
 // the message (so the admin flow works end-to-end before keys are added).
 
-// Normalize a phone number into Twilio's WhatsApp address form, e.g.
-// "0509652008" -> "whatsapp:+972509652008". Defaults to the Israel country
-// code; override with WHATSAPP_COUNTRY_CODE. Already-prefixed values pass through.
-function toWhatsApp(raw: string): string {
-  const v = raw.trim();
-  if (v.startsWith("whatsapp:")) return v;
-  let n = v.replace(/[^\d+]/g, "");
+// Turn a phone number into E.164, e.g. "0509652008" -> "+972509652008".
+// Defaults to the Israel country code; override with WHATSAPP_COUNTRY_CODE.
+function toE164(raw: string): string {
+  let n = raw.trim().replace(/[^\d+]/g, "");
   if (!n.startsWith("+")) {
     const cc = process.env.WHATSAPP_COUNTRY_CODE ?? "972";
     n = `+${cc}${n.startsWith("0") ? n.slice(1) : n}`;
   }
-  return `whatsapp:${n}`;
+  return n;
 }
 
-// The "sms" channel is delivered over WhatsApp via Twilio's WhatsApp API (same
-// account/credentials, with the `whatsapp:` address prefix). TWILIO_WHATSAPP_FROM
-// must be a WhatsApp-enabled sender (e.g. "whatsapp:+14155238886" for the sandbox);
-// it falls back to TWILIO_FROM if not set.
+// Twilio's WhatsApp address form, e.g. "whatsapp:+972509652008".
+function toWhatsApp(raw: string): string {
+  const v = raw.trim();
+  return v.startsWith("whatsapp:") ? v : `whatsapp:${toE164(v)}`;
+}
+
+// Sends the customer notification. By default it goes out as a plain SMS from
+// TWILIO_FROM (an alphanumeric sender id like "MEDOPTIC", or a Twilio number) —
+// this reaches any phone with no opt-in, while the business keeps WhatsApp for
+// manual chats. Set NOTIFY_TRANSPORT=whatsapp to deliver over Twilio's WhatsApp
+// API instead (needs a WhatsApp-enabled TWILIO_WHATSAPP_FROM). Logs instead of
+// sending until Twilio is configured, so the admin flow always completes.
 async function sendSms(to: string, body: string): Promise<void> {
   const sid = process.env.TWILIO_ACCOUNT_SID;
   const token = process.env.TWILIO_AUTH_TOKEN;
-  const from = process.env.TWILIO_WHATSAPP_FROM ?? process.env.TWILIO_FROM;
+  const useWhatsApp = process.env.NOTIFY_TRANSPORT === "whatsapp";
+  const from = useWhatsApp
+    ? process.env.TWILIO_WHATSAPP_FROM ?? process.env.TWILIO_FROM
+    : process.env.TWILIO_FROM ?? process.env.TWILIO_WHATSAPP_FROM;
+  const label = useWhatsApp ? "whatsapp" : "sms";
   if (!sid || !token || !from) {
     // eslint-disable-next-line no-console
-    console.log(`[notify:whatsapp (unconfigured) -> ${to}] ${body}`);
+    console.log(`[notify:${label} (unconfigured) -> ${to}] ${body}`);
     return;
   }
   try {
     const { default: twilio } = await import("twilio");
-    await twilio(sid, token).messages.create({
-      to: toWhatsApp(to),
-      from: toWhatsApp(from),
-      body,
-    });
+    const params = useWhatsApp
+      ? { to: toWhatsApp(to), from: toWhatsApp(from), body }
+      : { to: toE164(to), from, body };
+    await twilio(sid, token).messages.create(params);
   } catch (e) {
     // eslint-disable-next-line no-console
-    console.error(`[notify:whatsapp FAILED -> ${to}]`, e instanceof Error ? e.message : e);
+    console.error(`[notify:${label} FAILED -> ${to}]`, e instanceof Error ? e.message : e);
   }
 }
 
