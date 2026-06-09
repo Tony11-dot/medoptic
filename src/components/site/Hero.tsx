@@ -34,7 +34,7 @@ export function Hero({
     <section
       id="home"
       ref={ref}
-      className="relative overflow-hidden pt-32 pb-20 md:pt-40 md:pb-28"
+      className={`relative overflow-hidden pt-32 pb-20 md:pt-40 md:pb-28 ${bg ? "flex min-h-screen flex-col justify-center" : ""}`}
     >
       <SectionBg url={bg} />
       {/* ambient background */}

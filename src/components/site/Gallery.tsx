@@ -28,7 +28,7 @@ export function Gallery({ gallery, bg, styles }: { gallery: GalleryImage[]; bg?:
   const slide = gallery[Math.min(i, count - 1)];
 
   return (
-    <section id="gallery" className="relative scroll-mt-20 overflow-hidden bg-surface py-20 md:py-28">
+    <section id="gallery" className={`relative scroll-mt-20 overflow-hidden bg-surface py-20 md:py-28 ${bg ? "flex min-h-screen flex-col justify-center" : ""}`}>
       <SectionBg url={bg} />
       <div className="container-x">
         <SectionHeading eyebrow={t.gallery.eyebrow} title={t.gallery.heading} subtitle={t.gallery.subheading} />

@@ -86,7 +86,7 @@ export function Reviews({
   );
 
   return (
-    <section id="reviews" className="relative scroll-mt-20 overflow-hidden py-20 md:py-28">
+    <section id="reviews" className={`relative scroll-mt-20 overflow-hidden py-20 md:py-28 ${bg ? "flex min-h-screen flex-col justify-center" : ""}`}>
       <SectionBg url={bg} />
       <div className="container-x">
         <SectionHeading eyebrow={t.reviews.eyebrow} title={t.reviews.heading} subtitle={t.reviews.subheading} />

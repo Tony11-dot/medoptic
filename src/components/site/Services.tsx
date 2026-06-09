@@ -24,7 +24,7 @@ export function Services({ services, bg }: { services: Service[]; bg?: string })
   }, [open]);
 
   return (
-    <section id="services" className="relative scroll-mt-20 overflow-hidden py-20 md:py-28">
+    <section id="services" className={`relative scroll-mt-20 overflow-hidden py-20 md:py-28 ${bg ? "flex min-h-screen flex-col justify-center" : ""}`}>
       <SectionBg url={bg} />
       <div className="container-x">
         <SectionHeading eyebrow={t.services.eyebrow} title={t.services.heading} subtitle={t.services.subheading} />

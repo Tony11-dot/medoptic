@@ -78,7 +78,7 @@ export function Booking({ bg }: { bg?: string }) {
   const errId = (name: keyof FormValues) => (errors[name] ? `${name}-error` : undefined);
 
   return (
-    <section id="book" className="relative scroll-mt-20 overflow-hidden bg-surface py-20 md:py-28">
+    <section id="book" className={`relative scroll-mt-20 overflow-hidden bg-surface py-20 md:py-28 ${bg ? "flex min-h-screen flex-col justify-center" : ""}`}>
       <SectionBg url={bg} />
       <div className="container-x grid items-stretch gap-10 lg:grid-cols-[1fr_1.1fr]">
         {/* Left: invitation panel */}

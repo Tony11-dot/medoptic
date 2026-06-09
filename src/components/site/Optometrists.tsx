@@ -20,7 +20,7 @@ export function Optometrists({
   const { t, pick } = useI18n();
 
   return (
-    <section id="team" className="relative scroll-mt-20 overflow-hidden py-20 md:py-28">
+    <section id="team" className={`relative scroll-mt-20 overflow-hidden py-20 md:py-28 ${bg ? "flex min-h-screen flex-col justify-center" : ""}`}>
       <SectionBg url={bg} />
       <div className="container-x">
         <SectionHeading
