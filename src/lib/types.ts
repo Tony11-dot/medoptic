@@ -33,6 +33,8 @@ export interface Service {
   image?: string;
   /** CSS object-position for the cropped photo, e.g. "center top". */
   imagePosition?: string;
+  /** CSS aspect-ratio for the photo frame, e.g. "16 / 10". */
+  aspectRatio?: string;
   /** Optional background image for the full-screen detail view (tap a service). */
   detailBg?: string;
   /** When false the service is hidden from the public booking form. */
@@ -100,6 +102,8 @@ export interface TeamMember {
   image: string;
   /** CSS object-position for the cropped photo, e.g. "center top". */
   imagePosition?: string;
+  /** CSS aspect-ratio for the photo frame, e.g. "4 / 3". */
+  aspectRatio?: string;
 }
 
 /** Per-field text styling chosen in the admin Content editor. All optional —
@@ -147,6 +151,8 @@ export interface GalleryImage {
   caption: Localized;
   /** CSS object-position for the cropped photo, e.g. "center top". */
   imagePosition?: string;
+  /** CSS aspect-ratio for the photo frame, e.g. "16 / 9". */
+  aspectRatio?: string;
 }
 
 export interface SiteContent {
@@ -157,6 +163,8 @@ export interface SiteContent {
     image: string;
     /** CSS object-position for the cropped hero photo, e.g. "center top". */
     imagePosition?: string;
+    /** CSS aspect-ratio for the hero photo frame, e.g. "4 / 5". */
+    aspectRatio?: string;
   };
   team: {
     heading: Localized;

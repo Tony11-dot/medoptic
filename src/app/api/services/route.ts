@@ -47,6 +47,7 @@ export async function POST(request: Request) {
     description: localized(body.description),
     image: typeof body.image === "string" ? body.image : "",
     imagePosition: typeof body.imagePosition === "string" ? body.imagePosition : undefined,
+    aspectRatio: typeof body.aspectRatio === "string" ? body.aspectRatio : undefined,
     detailBg: typeof body.detailBg === "string" ? body.detailBg : undefined,
     enabled: body.enabled === undefined ? true : Boolean(body.enabled),
     order: typeof body.order === "number" ? body.order : maxOrder + 1,

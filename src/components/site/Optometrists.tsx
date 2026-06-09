@@ -41,7 +41,7 @@ export function Optometrists({
               transition={{ duration: 0.5, delay: i * 0.1, ease: [0.22, 1, 0.36, 1] }}
               className="group overflow-hidden rounded-2xl border border-line bg-white shadow-sm transition-[transform,box-shadow] duration-300 hover:-translate-y-1 hover:shadow-card"
             >
-              <div className="aspect-[4/3] overflow-hidden">
+              <div className="overflow-hidden" style={{ aspectRatio: m.aspectRatio ?? "4 / 3" }}>
                 <div className="h-full transition-transform duration-500 group-hover:scale-105">
                   <ImageBlock src={m.image} alt={m.name} icon="user" rounded="rounded-none" objectPosition={m.imagePosition} />
                 </div>

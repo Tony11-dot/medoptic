@@ -4,9 +4,9 @@ import { useEffect, useRef, useState } from "react";
 import { cn } from "@/lib/cn";
 
 // Drag-to-reposition control: shows the photo in a frame and lets you drag it to
-// choose which part stays visible. The value is a CSS object-position string in
-// percentages, e.g. "30% 65%". Uses window-level pointer listeners during a drag
-// so it keeps tracking even if the cursor leaves the box.
+// choose which part stays visible (object-position, in %). Optionally lets you
+// pick the frame's aspect ratio. Uses window-level pointer listeners during a
+// drag so it keeps tracking even if the cursor leaves the box.
 function parse(v?: string): [number, number] {
   const m = v?.match(/(-?\d+(?:\.\d+)?)%\s+(-?\d+(?:\.\d+)?)%/);
   if (m) return [parseFloat(m[1]), parseFloat(m[2])];
@@ -14,17 +14,31 @@ function parse(v?: string): [number, number] {
 }
 const clamp = (n: number) => Math.max(0, Math.min(100, n));
 
+// Frame shape options (CSS aspect-ratio value + short label).
+const ASPECTS = [
+  { v: "1 / 1", label: "1:1" },
+  { v: "4 / 5", label: "4:5" },
+  { v: "3 / 4", label: "3:4" },
+  { v: "4 / 3", label: "4:3" },
+  { v: "3 / 2", label: "3:2" },
+  { v: "16 / 10", label: "16:10" },
+  { v: "16 / 9", label: "16:9" },
+];
+
 export function ImagePositioner({
   src,
   value,
   onChange,
-  aspect = "aspect-[4/3]",
+  aspectRatio = "4 / 3",
+  onAspectChange,
 }: {
   src?: string;
   value?: string;
   onChange: (v: string) => void;
-  /** Tailwind aspect class matching the real frame, so the preview is WYSIWYG. */
-  aspect?: string;
+  /** CSS aspect-ratio of the frame (e.g. "4 / 3"); drives the WYSIWYG preview. */
+  aspectRatio?: string;
+  /** When provided, shows a frame-shape picker. */
+  onAspectChange?: (v: string) => void;
 }) {
   const boxRef = useRef<HTMLDivElement>(null);
   const onChangeRef = useRef(onChange);
@@ -76,12 +90,32 @@ export function ImagePositioner({
           Reset
         </button>
       </div>
+
+      {onAspectChange && (
+        <div className="mb-2 flex flex-wrap items-center gap-1">
+          <span className="me-1 text-xs font-semibold text-muted">Frame shape:</span>
+          {ASPECTS.map((a) => (
+            <button
+              key={a.v}
+              type="button"
+              onClick={() => onAspectChange(a.v)}
+              className={cn(
+                "rounded-md border px-2 py-1 text-xs font-semibold transition",
+                aspectRatio === a.v ? "border-brand bg-brand text-white" : "border-line bg-white text-muted hover:border-brand",
+              )}
+            >
+              {a.label}
+            </button>
+          ))}
+        </div>
+      )}
+
       <div
         ref={boxRef}
         onPointerDown={onDown}
+        style={{ aspectRatio }}
         className={cn(
           "relative w-full max-w-xs touch-none select-none overflow-hidden rounded-xl border border-line",
-          aspect,
           dragging ? "cursor-grabbing" : "cursor-grab",
         )}
       >

@@ -77,6 +77,7 @@ export default function ContentAdmin() {
           description: s.description,
           image: s.image ?? "",
           imagePosition: s.imagePosition,
+          aspectRatio: s.aspectRatio,
           detailBg: s.detailBg ?? "",
           enabled: s.enabled,
           order: i,
@@ -233,7 +234,7 @@ export default function ContentAdmin() {
             <>
               <ImageUpload value={content.hero.image} icon="eye" onChange={(image) => setHero({ image })} />
               {content.hero.image && (
-                <ImagePositioner src={content.hero.image} value={content.hero.imagePosition} onChange={(imagePosition) => setHero({ imagePosition })} aspect="aspect-[4/5]" />
+                <ImagePositioner src={content.hero.image} value={content.hero.imagePosition} onChange={(imagePosition) => setHero({ imagePosition })} aspectRatio={content.hero.aspectRatio ?? "4 / 5"} onAspectChange={(aspectRatio) => setHero({ aspectRatio })} />
               )}
               {styled(t.admin.fields.headline, content.hero.title, (title) => setHero({ title }), STYLE_KEYS.heroTitle)}
               {styled(t.admin.fields.subtitle, content.hero.subtitle, (subtitle) => setHero({ subtitle }), STYLE_KEYS.heroSubtitle)}
@@ -255,7 +256,7 @@ export default function ContentAdmin() {
                   <div key={m.id} className="space-y-3 rounded-xl border border-line p-4">
                     <ImageUpload value={m.image} icon="user" onChange={(image) => updateMember(m.id, { image })} />
                     {m.image && (
-                      <ImagePositioner src={m.image} value={m.imagePosition} onChange={(imagePosition) => updateMember(m.id, { imagePosition })} aspect="aspect-[4/3]" />
+                      <ImagePositioner src={m.image} value={m.imagePosition} onChange={(imagePosition) => updateMember(m.id, { imagePosition })} aspectRatio={m.aspectRatio ?? "4 / 3"} onAspectChange={(aspectRatio) => updateMember(m.id, { aspectRatio })} />
                     )}
                     <div>
                       <label className="block">
@@ -365,7 +366,7 @@ export default function ContentAdmin() {
                   </div>
                   <ImageUpload value={s.image ?? ""} icon="glasses" onChange={(image) => updateService(s.id, { image })} />
                   {s.image && (
-                    <ImagePositioner src={s.image} value={s.imagePosition} onChange={(imagePosition) => updateService(s.id, { imagePosition })} aspect="aspect-[16/10]" />
+                    <ImagePositioner src={s.image} value={s.imagePosition} onChange={(imagePosition) => updateService(s.id, { imagePosition })} aspectRatio={s.aspectRatio ?? "16 / 10"} onAspectChange={(aspectRatio) => updateService(s.id, { aspectRatio })} />
                   )}
                   <LocalizedField label={t.admin.svc.name} value={s.label} onChange={(label) => updateService(s.id, { label })} />
                   <LocalizedField label={t.admin.svc.description} textarea value={s.description} onChange={(description) => updateService(s.id, { description })} />

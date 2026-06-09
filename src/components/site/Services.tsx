@@ -47,7 +47,7 @@ export function Services({ services, bg }: { services: Service[]; bg?: string })
                 className="flex cursor-pointer flex-col overflow-hidden rounded-2xl border border-line bg-white shadow-sm transition-[transform,box-shadow] duration-300 hover:-translate-y-1 hover:shadow-card"
               >
                 {s.image ? (
-                  <div className="aspect-[16/10] overflow-hidden">
+                  <div className="overflow-hidden" style={{ aspectRatio: s.aspectRatio ?? "16 / 10" }}>
                     <ImageBlock src={s.image} alt={pick(s.label)} icon="glasses" rounded="rounded-none" objectPosition={s.imagePosition} />
                   </div>
                 ) : (
@@ -114,7 +114,7 @@ export function Services({ services, bg }: { services: Service[]; bg?: string })
                 className="w-full max-w-lg text-center text-white"
               >
                 {open.image && (
-                  <div className="mx-auto mb-6 aspect-[16/10] w-full max-w-md overflow-hidden rounded-2xl shadow-2xl">
+                  <div className="mx-auto mb-6 w-full max-w-md overflow-hidden rounded-2xl shadow-2xl" style={{ aspectRatio: open.aspectRatio ?? "16 / 10" }}>
                     <ImageBlock src={open.image} alt={pick(open.label)} icon="glasses" rounded="rounded-none" objectPosition={open.imagePosition} />
                   </div>
                 )}

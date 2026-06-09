@@ -34,7 +34,7 @@ export function Gallery({ gallery, bg, styles }: { gallery: GalleryImage[]; bg?:
         <SectionHeading eyebrow={t.gallery.eyebrow} title={t.gallery.heading} subtitle={t.gallery.subheading} />
 
         <div className="relative mx-auto mt-10 max-w-5xl">
-          <div className="relative aspect-[16/9] overflow-hidden rounded-3xl shadow-card">
+          <div className="relative overflow-hidden rounded-3xl shadow-card" style={{ aspectRatio: slide.aspectRatio ?? "16 / 9" }}>
             <AnimatePresence mode="wait">
               <motion.div
                 key={slide.id}
