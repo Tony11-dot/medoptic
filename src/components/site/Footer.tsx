@@ -17,7 +17,7 @@ export function Footer({ footer, styles }: { footer: SiteContent["footer"]; styl
             <span className="inline-flex">
               <Logo className="h-28 w-auto brightness-0 invert" />
             </span>
-            <p className="mt-4 max-w-xs text-sm text-white/75" style={styleToCss(styles?.["footer.address"])}>{pick(footer.address)}</p>
+            <p className="mt-4 max-w-xs whitespace-pre-line text-sm text-white/75" style={styleToCss(styles?.["footer.address"])}>{pick(footer.address)}</p>
           </div>
 
           <div>
@@ -38,7 +38,7 @@ export function Footer({ footer, styles }: { footer: SiteContent["footer"]; styl
 
           <div>
             <h3 className="text-sm font-bold uppercase tracking-wider text-white/60">{t.footer.hours}</h3>
-            <p className="mt-4 text-sm text-white/90" style={styleToCss(styles?.["footer.hours"])}>{pick(footer.hours)}</p>
+            <p className="mt-4 whitespace-pre-line text-sm text-white/90" style={styleToCss(styles?.["footer.hours"])}>{pick(footer.hours)}</p>
           </div>
 
           <div>

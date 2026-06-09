@@ -112,6 +112,29 @@ export function ImagePositioner({
         </div>
       )}
 
+      <div className="mb-2 flex items-center gap-2">
+        <span className="text-xs font-semibold text-muted">Align:</span>
+        <div className="inline-grid grid-cols-3 gap-0.5 rounded-md border border-line p-0.5">
+          {[0, 50, 100].map((y) =>
+            [0, 50, 100].map((x) => {
+              const active = Math.round(px) === x && Math.round(py) === y;
+              return (
+                <button
+                  key={`${x}-${y}`}
+                  type="button"
+                  aria-label={`align ${x}% ${y}%`}
+                  onClick={() => onChange(`${x}% ${y}%`)}
+                  className={cn(
+                    "size-5 rounded-sm transition",
+                    active ? "bg-brand" : "bg-line/50 hover:bg-brand-light",
+                  )}
+                />
+              );
+            }),
+          )}
+        </div>
+      </div>
+
       <div
         ref={boxRef}
         onPointerDown={onDown}

@@ -24,11 +24,11 @@ export function SectionHeading({
         </span>
       </Reveal>
       <Reveal index={1}>
-        <h2 style={titleStyle} className="mt-4 text-3xl font-extrabold tracking-tight text-ink md:text-4xl">{title}</h2>
+        <h2 style={titleStyle} className="mt-4 whitespace-pre-line text-3xl font-extrabold tracking-tight text-ink md:text-4xl">{title}</h2>
       </Reveal>
       {subtitle && (
         <Reveal index={2}>
-          <p style={subtitleStyle} className="mt-3 text-base text-muted md:text-lg">{subtitle}</p>
+          <p style={subtitleStyle} className="mt-3 whitespace-pre-line text-base text-muted md:text-lg">{subtitle}</p>
         </Reveal>
       )}
     </div>

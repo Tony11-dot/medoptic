@@ -41,6 +41,7 @@ export default function QueuePage() {
   const [viewing, setViewing] = useState<Appointment | null>(null);
   const [timeFor, setTimeFor] = useState<Appointment | null>(null);
   const [timeValue, setTimeValue] = useState("");
+  const [confirmDelete, setConfirmDelete] = useState<Appointment | null>(null);
 
   const load = useCallback(async () => {
     const res = await fetch("/api/appointments");
@@ -79,6 +80,21 @@ export default function QueuePage() {
       return true;
     });
   }, [items, serviceFilter, query]);
+
+  async function remove(a: Appointment) {
+    setBusy(true);
+    try {
+      const res = await fetch(`/api/appointments/${a.id}`, { method: "DELETE" });
+      if (!res.ok) throw new Error();
+      toast.success("✓");
+      setConfirmDelete(null);
+      await load();
+    } catch {
+      toast.error("!");
+    } finally {
+      setBusy(false);
+    }
+  }
 
   function openTime(a: Appointment) {
     setTimeValue(a.appointmentAt ? isoToLocalInput(a.appointmentAt) : "");
@@ -179,6 +195,9 @@ export default function QueuePage() {
                         <button type="button" onClick={() => openTime(a)} disabled={busy} className="rounded-lg bg-brand-50 px-2.5 py-1.5 text-xs font-semibold text-brand-dark transition hover:bg-brand-100 disabled:opacity-50">
                           🕑 {t.admin.queue.setTime}
                         </button>
+                        <button type="button" aria-label={t.admin.actions.delete} onClick={() => setConfirmDelete(a)} disabled={busy} className="rounded-lg bg-rose-50 px-2.5 py-1.5 text-xs font-semibold text-rose-700 transition hover:bg-rose-100 disabled:opacity-50">
+                          🗑 {t.admin.actions.delete}
+                        </button>
                       </div>
                     </td>
                   </tr>
@@ -208,6 +227,22 @@ export default function QueuePage() {
               </Button>
             </div>
           </dl>
+        )}
+      </Modal>
+
+      {/* Delete confirm modal */}
+      <Modal open={!!confirmDelete} onClose={() => setConfirmDelete(null)} title={t.admin.actions.delete}>
+        {confirmDelete && (
+          <>
+            <p className="text-sm text-muted">
+              <strong className="text-ink">{confirmDelete.firstName} {confirmDelete.lastName}</strong>
+              {" — "}{serviceLabel(confirmDelete.service)} · {fmtDate(confirmDelete.createdAt)}
+            </p>
+            <div className="mt-5 flex justify-end gap-2">
+              <Button variant="ghost" onClick={() => setConfirmDelete(null)}>{t.admin.actions.cancel}</Button>
+              <Button variant="danger" disabled={busy} onClick={() => remove(confirmDelete)}>{t.admin.actions.delete}</Button>
+            </div>
+          </>
         )}
       </Modal>
 

@@ -56,22 +56,14 @@ export function LocalizedField({
         </div>
         </div>
       </div>
-      {textarea ? (
-        <textarea
-          rows={rows}
-          dir={lang === "he" ? "rtl" : "ltr"}
-          value={value[lang]}
-          onChange={(e) => onChange({ ...value, [lang]: e.target.value })}
-          className={`${common} resize-none py-2.5`}
-        />
-      ) : (
-        <input
-          dir={lang === "he" ? "rtl" : "ltr"}
-          value={value[lang]}
-          onChange={(e) => onChange({ ...value, [lang]: e.target.value })}
-          className={`${common} h-10`}
-        />
-      )}
+      {/* Always a textarea so every field accepts Enter / new lines. */}
+      <textarea
+        rows={textarea ? rows : 2}
+        dir={lang === "he" ? "rtl" : "ltr"}
+        value={value[lang]}
+        onChange={(e) => onChange({ ...value, [lang]: e.target.value })}
+        className={`${common} resize-y py-2.5`}
+      />
     </div>
   );
 }

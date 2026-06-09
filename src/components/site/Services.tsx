@@ -58,9 +58,9 @@ export function Services({ services, bg }: { services: Service[]; bg?: string })
                   </div>
                 )}
                 <div className="flex flex-1 flex-col p-6 pt-4">
-                  <h3 className="text-xl font-bold text-ink">{pick(s.label)}</h3>
+                  <h3 className="whitespace-pre-line text-xl font-bold text-ink">{pick(s.label)}</h3>
                   {pick(s.description) && (
-                    <p className="mt-2 flex-1 text-base leading-relaxed text-muted">{pick(s.description)}</p>
+                    <p className="mt-2 flex-1 whitespace-pre-line text-base leading-relaxed text-muted">{pick(s.description)}</p>
                   )}
                   <a
                     href="#book"
@@ -118,9 +118,9 @@ export function Services({ services, bg }: { services: Service[]; bg?: string })
                     <ImageBlock src={open.image} alt={pick(open.label)} icon="glasses" rounded="rounded-none" objectPosition={open.imagePosition} />
                   </div>
                 )}
-                <h3 className="text-3xl font-extrabold drop-shadow md:text-4xl">{pick(open.label)}</h3>
+                <h3 className="whitespace-pre-line text-3xl font-extrabold drop-shadow md:text-4xl">{pick(open.label)}</h3>
                 {pick(open.description) && (
-                  <p className="mx-auto mt-4 max-w-md text-lg leading-relaxed text-white/90 drop-shadow">{pick(open.description)}</p>
+                  <p className="mx-auto mt-4 max-w-md whitespace-pre-line text-lg leading-relaxed text-white/90 drop-shadow">{pick(open.description)}</p>
                 )}
                 <a
                   href="#book"

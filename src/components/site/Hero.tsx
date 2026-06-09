@@ -60,7 +60,7 @@ export function Hero({
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.05 }}
             style={titleStyle}
-            className="mt-5 text-4xl font-extrabold leading-[1.1] tracking-tight text-ink md:text-6xl"
+            className="mt-5 whitespace-pre-line text-4xl font-extrabold leading-[1.1] tracking-tight text-ink md:text-6xl"
           >
             {pick(hero.title)}
           </motion.h1>
@@ -70,7 +70,7 @@ export function Hero({
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.12 }}
             style={subtitleStyle}
-            className="mt-3 text-lg font-semibold text-brand"
+            className="mt-3 whitespace-pre-line text-lg font-semibold text-brand"
           >
             {pick(hero.subtitle)}
           </motion.p>
@@ -80,7 +80,7 @@ export function Hero({
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.18 }}
             style={bodyStyle}
-            className="mt-5 max-w-xl text-base leading-relaxed text-muted md:text-lg"
+            className="mt-5 max-w-xl whitespace-pre-line text-base leading-relaxed text-muted md:text-lg"
           >
             {pick(hero.body)}
           </motion.p>

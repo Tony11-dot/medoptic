@@ -47,9 +47,9 @@ export function Optometrists({
                 </div>
               </div>
               <div className="p-5">
-                <h3 className="text-lg font-bold text-ink" style={styleToCss(styles?.[`team.member.${m.id}.name`])}>{m.name}</h3>
-                <p className="text-sm font-semibold text-brand" style={styleToCss(styles?.[`team.member.${m.id}.title`])}>{pick(m.title)}</p>
-                <p className="mt-2 text-sm text-muted" style={styleToCss(styles?.[`team.member.${m.id}.specialty`])}>{pick(m.specialty)}</p>
+                <h3 className="whitespace-pre-line text-lg font-bold text-ink" style={styleToCss(styles?.[`team.member.${m.id}.name`])}>{m.name}</h3>
+                <p className="whitespace-pre-line text-sm font-semibold text-brand" style={styleToCss(styles?.[`team.member.${m.id}.title`])}>{pick(m.title)}</p>
+                <p className="mt-2 whitespace-pre-line text-sm text-muted" style={styleToCss(styles?.[`team.member.${m.id}.specialty`])}>{pick(m.specialty)}</p>
               </div>
             </motion.article>
           ))}

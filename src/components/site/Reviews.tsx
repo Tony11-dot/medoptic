@@ -126,7 +126,7 @@ export function Reviews({
                   ) : (
                     <>
                       <Stars rating={rev.rating} />
-                      <blockquote className="mt-4 flex-1 text-base leading-relaxed text-ink">
+                      <blockquote className="mt-4 flex-1 whitespace-pre-line text-base leading-relaxed text-ink">
                         “{rev.text}”
                       </blockquote>
                       <figcaption className="mt-4 flex items-center justify-between gap-2 border-t border-line pt-3">
