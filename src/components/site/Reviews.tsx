@@ -109,13 +109,13 @@ export function Reviews({
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true, amount: 0.2 }}
                   transition={{ duration: 0.5, delay: (i % 3) * 0.1, ease: [0.22, 1, 0.36, 1] }}
-                  className={`flex flex-col rounded-2xl border border-line bg-white shadow-sm ${isPhoto ? "self-start overflow-hidden" : "p-6"}`}
+                  className={`flex flex-col rounded-2xl border border-line bg-white shadow-sm ${isPhoto ? "overflow-hidden" : "p-6"}`}
                 >
                   {isPhoto ? (
                     // A photo review is a screenshot of a real Google review — the
-                    // whole card is the image, nothing else.
+                    // image fills the whole card so it matches the text cards' size.
                     // eslint-disable-next-line @next/next/no-img-element
-                    <img src={rev.image} alt={rev.author || "Google review"} className="w-full" />
+                    <img src={rev.image} alt={rev.author || "Google review"} className="h-full w-full object-cover" />
                   ) : (
                     <>
                       <Stars rating={rev.rating} />
