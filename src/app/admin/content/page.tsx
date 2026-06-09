@@ -414,16 +414,6 @@ export default function ContentAdmin() {
                       <>
                         <p className="text-xs text-muted">{t.admin.reviews.googlePhotoHint}</p>
                         <ImageUpload value={r.image ?? ""} icon="user" onChange={(image) => updateReview(r.id, { image })} />
-                        <div className="grid gap-3 sm:grid-cols-2">
-                          <label className="block">
-                            <span className="mb-1.5 block text-sm font-semibold text-ink">{t.admin.reviews.author}</span>
-                            <input value={r.author} onChange={(e) => updateReview(r.id, { author: e.target.value })} className={plainInput} />
-                          </label>
-                          <label className="block">
-                            <span className="mb-1.5 block text-sm font-semibold text-ink">{t.admin.reviews.date}</span>
-                            <input value={r.date ?? ""} placeholder={t.admin.reviews.datePlaceholder} onChange={(e) => updateReview(r.id, { date: e.target.value })} className={plainInput} />
-                          </label>
-                        </div>
                       </>
                     ) : (
                       <>

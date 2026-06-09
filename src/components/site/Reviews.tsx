@@ -109,21 +109,13 @@ export function Reviews({
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true, amount: 0.2 }}
                   transition={{ duration: 0.5, delay: (i % 3) * 0.1, ease: [0.22, 1, 0.36, 1] }}
-                  className={`flex flex-col rounded-2xl border border-line bg-white shadow-sm ${isPhoto ? "overflow-hidden" : "p-6"}`}
+                  className={`flex flex-col rounded-2xl border border-line bg-white shadow-sm ${isPhoto ? "self-start overflow-hidden" : "p-6"}`}
                 >
                   {isPhoto ? (
-                    // A photo review is a screenshot of a real Google review — shown
-                    // as-is, with a white footer for the reviewer's name.
-                    <>
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img src={rev.image} alt={rev.author || "Google review"} className="w-full" />
-                      {(rev.author || rev.date) && (
-                        <figcaption className="flex items-center justify-between gap-2 border-t border-line bg-white px-5 py-3">
-                          <span className="font-bold text-ink">{rev.author}</span>
-                          <span className="text-sm text-muted">{rev.date}</span>
-                        </figcaption>
-                      )}
-                    </>
+                    // A photo review is a screenshot of a real Google review — the
+                    // whole card is the image, nothing else.
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={rev.image} alt={rev.author || "Google review"} className="w-full" />
                   ) : (
                     <>
                       <Stars rating={rev.rating} />
