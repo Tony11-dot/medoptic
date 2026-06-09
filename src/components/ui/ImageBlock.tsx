@@ -9,12 +9,15 @@ export function ImageBlock({
   className,
   rounded = "rounded-2xl",
   icon = "glasses",
+  objectPosition,
 }: {
   src?: string;
   alt: string;
   className?: string;
   rounded?: string;
   icon?: "glasses" | "eye" | "user";
+  /** CSS object-position controlling which part of the photo stays in frame. */
+  objectPosition?: string;
 }) {
   if (src) {
     return (
@@ -23,6 +26,7 @@ export function ImageBlock({
         src={src}
         alt={alt}
         loading="lazy"
+        style={objectPosition ? { objectPosition } : undefined}
         className={cn("h-full w-full object-cover", rounded, className)}
       />
     );

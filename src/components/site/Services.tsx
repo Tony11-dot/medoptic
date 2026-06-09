@@ -33,7 +33,7 @@ export function Services({ services, bg }: { services: Service[]; bg?: string })
               >
                 {s.image ? (
                   <div className="aspect-[16/10] overflow-hidden">
-                    <ImageBlock src={s.image} alt={pick(s.label)} icon="glasses" rounded="rounded-none" />
+                    <ImageBlock src={s.image} alt={pick(s.label)} icon="glasses" rounded="rounded-none" objectPosition={s.imagePosition} />
                   </div>
                 ) : (
                   <div className="px-6 pt-6">

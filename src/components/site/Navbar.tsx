@@ -56,7 +56,7 @@ export function Navbar() {
     <header
       className={cn(
         "fixed inset-x-0 top-0 z-50 bg-transparent backdrop-blur-xl transition-all duration-300",
-        scrolled ? "py-2" : "py-4",
+        scrolled ? "py-1" : "py-2",
       )}
     >
       <nav className="container-x flex items-center justify-between gap-4">
@@ -66,7 +66,7 @@ export function Navbar() {
             aria-hidden
             className="pointer-events-none absolute -inset-x-4 -inset-y-3 -z-10 rounded-full bg-[radial-gradient(ellipse_at_center,rgba(0,102,204,0.18),transparent_70%)] blur-md"
           />
-          <Logo className={cn("transition-all duration-300", scrolled ? "h-32" : "h-40")} />
+          <Logo className={cn("transition-all duration-300", scrolled ? "h-12" : "h-16")} />
         </a>
 
         {/* Desktop nav */}

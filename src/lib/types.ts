@@ -31,6 +31,8 @@ export interface Service {
   description: Localized;
   /** Optional photo shown on the service card (URL or /uploads path). */
   image?: string;
+  /** CSS object-position for the cropped photo, e.g. "center top". */
+  imagePosition?: string;
   /** When false the service is hidden from the public booking form. */
   enabled: boolean;
   /** Sort order in the booking form and admin list (ascending). */
@@ -92,6 +94,8 @@ export interface TeamMember {
   title: Localized;
   specialty: Localized;
   image: string;
+  /** CSS object-position for the cropped photo, e.g. "center top". */
+  imagePosition?: string;
 }
 
 /** Per-field text styling chosen in the admin Content editor. All optional —
@@ -137,6 +141,8 @@ export interface GalleryImage {
   id: string;
   image: string;
   caption: Localized;
+  /** CSS object-position for the cropped photo, e.g. "center top". */
+  imagePosition?: string;
 }
 
 export interface SiteContent {
@@ -145,6 +151,8 @@ export interface SiteContent {
     subtitle: Localized;
     body: Localized;
     image: string;
+    /** CSS object-position for the cropped hero photo, e.g. "center top". */
+    imagePosition?: string;
   };
   team: {
     heading: Localized;

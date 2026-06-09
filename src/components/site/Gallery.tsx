@@ -43,7 +43,7 @@ export function Gallery({ gallery, bg }: { gallery: GalleryImage[]; bg?: string 
                 transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
                 className="absolute inset-0"
               >
-                <ImageBlock src={slide.image} alt={pick(slide.caption) || "MEDOPTIC"} rounded="rounded-3xl" />
+                <ImageBlock src={slide.image} alt={pick(slide.caption) || "MEDOPTIC"} rounded="rounded-3xl" objectPosition={slide.imagePosition} />
                 {pick(slide.caption) && (
                   <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/55 to-transparent p-6 md:p-8">
                     <p className="text-lg font-bold text-white drop-shadow md:text-2xl">{pick(slide.caption)}</p>

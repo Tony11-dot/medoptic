@@ -2,6 +2,7 @@
 
 import type { GalleryImage, Localized } from "@/lib/types";
 import { ImageUpload } from "@/components/admin/ImageUpload";
+import { ImagePositioner } from "@/components/admin/ImagePositioner";
 import { LocalizedField } from "@/components/admin/LocalizedField";
 import { Button } from "@/components/ui/Button";
 
@@ -55,6 +56,9 @@ export function GalleryEditor({
             </div>
           </div>
           <ImageUpload value={g.image} icon="eye" onChange={(image) => update(g.id, { image })} />
+          {g.image && (
+            <ImagePositioner value={g.imagePosition} onChange={(imagePosition) => update(g.id, { imagePosition })} />
+          )}
           <LocalizedField label={captionLabel} value={g.caption} onChange={(caption) => update(g.id, { caption })} />
         </div>
       ))}

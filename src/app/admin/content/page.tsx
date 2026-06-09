@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { AdminShell } from "@/components/admin/AdminShell";
 import { LocalizedField } from "@/components/admin/LocalizedField";
 import { ImageUpload } from "@/components/admin/ImageUpload";
+import { ImagePositioner } from "@/components/admin/ImagePositioner";
 import { StyleToolbar } from "@/components/admin/StyleToolbar";
 import { ContentPreview } from "@/components/admin/ContentPreview";
 import { BlockBuilder } from "@/components/admin/BlockBuilder";
@@ -165,6 +166,9 @@ export default function ContentAdmin() {
           {tab === "hero" && (
             <>
               <ImageUpload value={content.hero.image} icon="eye" onChange={(image) => setHero({ image })} />
+              {content.hero.image && (
+                <ImagePositioner value={content.hero.imagePosition} onChange={(imagePosition) => setHero({ imagePosition })} />
+              )}
               {styled(t.admin.fields.headline, content.hero.title, (title) => setHero({ title }), STYLE_KEYS.heroTitle)}
               {styled(t.admin.fields.subtitle, content.hero.subtitle, (subtitle) => setHero({ subtitle }), STYLE_KEYS.heroSubtitle)}
               {styled(t.admin.fields.body, content.hero.body, (body) => setHero({ body }), STYLE_KEYS.heroBody, { textarea: true, rows: 4 })}
@@ -184,6 +188,9 @@ export default function ContentAdmin() {
                 {content.team.members.map((m) => (
                   <div key={m.id} className="space-y-3 rounded-xl border border-line p-4">
                     <ImageUpload value={m.image} icon="user" onChange={(image) => updateMember(m.id, { image })} />
+                    {m.image && (
+                      <ImagePositioner value={m.imagePosition} onChange={(imagePosition) => updateMember(m.id, { imagePosition })} />
+                    )}
                     <label className="block">
                       <span className="mb-1.5 block text-sm font-semibold text-ink">{t.admin.fields.memberName}</span>
                       <input value={m.name} onChange={(e) => updateMember(m.id, { name: e.target.value })} className={plainInput} />

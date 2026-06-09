@@ -113,7 +113,7 @@ export function Hero({
             transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
             className="relative aspect-[4/5] w-full overflow-hidden rounded-[2rem] shadow-card sm:aspect-[5/4] lg:aspect-[4/5]"
           >
-            <ImageBlock src={hero.image} alt={pick(hero.title)} icon="eye" rounded="rounded-[2rem]" />
+            <ImageBlock src={hero.image} alt={pick(hero.title)} icon="eye" rounded="rounded-[2rem]" objectPosition={hero.imagePosition} />
           </motion.div>
 
           {/* floating accent card */}

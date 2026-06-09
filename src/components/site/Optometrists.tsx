@@ -43,7 +43,7 @@ export function Optometrists({
             >
               <div className="aspect-[4/3] overflow-hidden">
                 <div className="h-full transition-transform duration-500 group-hover:scale-105">
-                  <ImageBlock src={m.image} alt={m.name} icon="user" rounded="rounded-none" />
+                  <ImageBlock src={m.image} alt={m.name} icon="user" rounded="rounded-none" objectPosition={m.imagePosition} />
                 </div>
               </div>
               <div className="p-5">

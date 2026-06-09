@@ -46,6 +46,7 @@ export async function POST(request: Request) {
     label,
     description: localized(body.description),
     image: typeof body.image === "string" ? body.image : "",
+    imagePosition: typeof body.imagePosition === "string" ? body.imagePosition : undefined,
     enabled: body.enabled === undefined ? true : Boolean(body.enabled),
     order: typeof body.order === "number" ? body.order : maxOrder + 1,
     createdAt: new Date().toISOString(),
