@@ -62,7 +62,7 @@ export function GalleryEditor({
           </div>
           <ImageUpload value={g.image} icon="eye" onChange={(image) => update(g.id, { image })} />
           {g.image && (
-            <ImagePositioner src={g.image} value={g.imagePosition} onChange={(imagePosition) => update(g.id, { imagePosition })} />
+            <ImagePositioner src={g.image} value={g.imagePosition} onChange={(imagePosition) => update(g.id, { imagePosition })} aspect="aspect-[16/9]" />
           )}
           <LocalizedField label={captionLabel} value={g.caption} onChange={(caption) => update(g.id, { caption })} />
           {onStyle && (

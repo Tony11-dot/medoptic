@@ -18,10 +18,13 @@ export function ImagePositioner({
   src,
   value,
   onChange,
+  aspect = "aspect-[4/3]",
 }: {
   src?: string;
   value?: string;
   onChange: (v: string) => void;
+  /** Tailwind aspect class matching the real frame, so the preview is WYSIWYG. */
+  aspect?: string;
 }) {
   const boxRef = useRef<HTMLDivElement>(null);
   const onChangeRef = useRef(onChange);
@@ -77,7 +80,8 @@ export function ImagePositioner({
         ref={boxRef}
         onPointerDown={onDown}
         className={cn(
-          "relative aspect-[4/3] w-full max-w-xs touch-none select-none overflow-hidden rounded-xl border border-line",
+          "relative w-full max-w-xs touch-none select-none overflow-hidden rounded-xl border border-line",
+          aspect,
           dragging ? "cursor-grabbing" : "cursor-grab",
         )}
       >

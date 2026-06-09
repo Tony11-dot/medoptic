@@ -40,7 +40,7 @@ export function ContentPreview({
               {pick(content.hero.body) || "Body text…"}
             </p>
             <div className="mt-4 aspect-[16/10] w-full overflow-hidden rounded-xl">
-              <ImageBlock src={content.hero.image} alt="hero" icon="eye" rounded="rounded-xl" />
+              <ImageBlock src={content.hero.image} alt="hero" icon="eye" rounded="rounded-xl" objectPosition={content.hero.imagePosition} />
             </div>
           </div>
         )}
@@ -60,7 +60,7 @@ export function ContentPreview({
               {content.team.members.slice(0, 4).map((m) => (
                 <div key={m.id} className="overflow-hidden rounded-xl border border-line">
                   <div className="aspect-[4/3]">
-                    <ImageBlock src={m.image} alt={m.name} icon="user" rounded="rounded-none" />
+                    <ImageBlock src={m.image} alt={m.name} icon="user" rounded="rounded-none" objectPosition={m.imagePosition} />
                   </div>
                   <div className="p-3">
                     <p className="text-sm font-bold text-ink">{m.name || "Name"}</p>
