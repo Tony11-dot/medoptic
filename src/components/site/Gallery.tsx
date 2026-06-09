@@ -59,16 +59,16 @@ export function Gallery({ gallery, bg, styles }: { gallery: GalleryImage[]; bg?:
               {/* Arrows */}
               <button
                 type="button"
-                onClick={() => go(i - 1)}
-                aria-label="Previous"
+                onClick={() => go(i + 1)}
+                aria-label="Next"
                 className="absolute left-3 top-1/2 grid size-12 -translate-y-1/2 place-items-center rounded-full bg-white/90 text-2xl text-brand-dark shadow-lg transition hover:bg-white"
               >
                 ‹
               </button>
               <button
                 type="button"
-                onClick={() => go(i + 1)}
-                aria-label="Next"
+                onClick={() => go(i - 1)}
+                aria-label="Previous"
                 className="absolute right-3 top-1/2 grid size-12 -translate-y-1/2 place-items-center rounded-full bg-white/90 text-2xl text-brand-dark shadow-lg transition hover:bg-white"
               >
                 ›

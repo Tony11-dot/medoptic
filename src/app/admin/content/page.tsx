@@ -414,6 +414,13 @@ export default function ContentAdmin() {
                       <>
                         <p className="text-xs text-muted">{t.admin.reviews.googlePhotoHint}</p>
                         <ImageUpload value={r.image ?? ""} icon="user" onChange={(image) => updateReview(r.id, { image })} />
+                        <ImagePositioner
+                          src={r.image}
+                          value={r.imagePosition}
+                          onChange={(imagePosition) => updateReview(r.id, { imagePosition })}
+                          aspectRatio={r.aspectRatio ?? "3 / 4"}
+                          onAspectChange={(aspectRatio) => updateReview(r.id, { aspectRatio })}
+                        />
                       </>
                     ) : (
                       <>

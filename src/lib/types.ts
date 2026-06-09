@@ -58,6 +58,9 @@ export interface Review {
   date?: string;
   /** Optional photo (reviewer or the review itself). */
   image?: string;
+  /** For Google-photo reviews: frame aspect-ratio (e.g. "3 / 4") + crop position. */
+  aspectRatio?: string;
+  imagePosition?: string;
   source?: "manual" | "google";
   /** Visitor-submitted reviews start unapproved (hidden) until an admin approves.
    * Admin-created reviews leave this undefined (treated as approved). */
