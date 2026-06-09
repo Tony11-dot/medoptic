@@ -27,9 +27,16 @@ export function ImageUpload({
   async function upload(file: File) {
     setBusy(true);
     try {
+      // Use an ASCII-safe upload path. The original file name may contain Hebrew
+      // or special characters, which Safari rejects when the Blob client puts the
+      // path in a request header ("string did not match the expected pattern").
+      // Blob adds a unique suffix server-side, so a generic name is fine.
+      const ext = ({ "image/jpeg": "jpg", "image/png": "png", "image/webp": "webp", "image/gif": "gif", "image/svg+xml": "svg" } as Record<string, string>)[file.type] || "jpg";
+      const safePath = `uploads/photo.${ext}`;
+
       // Try direct-to-Blob (production). Returns 501 locally → fall back.
       try {
-        const blob = await blobUpload(`uploads/${file.name}`, file, {
+        const blob = await blobUpload(safePath, file, {
           access: "public",
           handleUploadUrl: "/api/upload",
         });

@@ -89,26 +89,31 @@ export default function ServicesAdmin() {
     }
   }
 
-  // Swap a service's order with its neighbour to move it up/down the list.
+  // Move a service up/down the list. We reorder the array and reassign clean
+  // sequential orders (0,1,2,…), persisting every row whose order changed. This
+  // also self-heals any duplicate/legacy order values, unlike a plain swap.
   async function move(index: number, dir: -1 | 1) {
     const target = index + dir;
     if (target < 0 || target >= services.length) return;
-    const a = services[index];
-    const b = services[target];
-    setBusyId(a.id);
+    const reordered = [...services];
+    const [moved] = reordered.splice(index, 1);
+    reordered.splice(target, 0, moved);
+
+    setBusyId(services[index].id);
     try {
-      await Promise.all([
-        fetch(`/api/services/${a.id}`, {
-          method: "PATCH",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ order: b.order }),
-        }),
-        fetch(`/api/services/${b.id}`, {
-          method: "PATCH",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ order: a.order }),
-        }),
-      ]);
+      await Promise.all(
+        reordered
+          .map((s, i) =>
+            s.order === i
+              ? null
+              : fetch(`/api/services/${s.id}`, {
+                  method: "PATCH",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({ order: i }),
+                }),
+          )
+          .filter(Boolean),
+      );
       await load();
     } catch {
       toast.error("Could not reorder");
