@@ -112,10 +112,18 @@ export function Reviews({
                   className={`flex flex-col rounded-2xl border border-line bg-white shadow-sm ${isPhoto ? "overflow-hidden" : "p-6"}`}
                 >
                   {isPhoto ? (
-                    // A photo review is a screenshot of a real Google review — show
-                    // it as-is, no overlaid stars/text/author.
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img src={rev.image} alt={rev.author || "Google review"} className="w-full" />
+                    // A photo review is a screenshot of a real Google review — shown
+                    // as-is, with a white footer for the reviewer's name.
+                    <>
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src={rev.image} alt={rev.author || "Google review"} className="w-full" />
+                      {(rev.author || rev.date) && (
+                        <figcaption className="flex items-center justify-between gap-2 border-t border-line bg-white px-5 py-3">
+                          <span className="font-bold text-ink">{rev.author}</span>
+                          <span className="text-sm text-muted">{rev.date}</span>
+                        </figcaption>
+                      )}
+                    </>
                   ) : (
                     <>
                       <Stars rating={rev.rating} />
