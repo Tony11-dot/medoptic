@@ -1,9 +1,10 @@
 "use client";
 
-import type { GalleryImage, Localized } from "@/lib/types";
+import type { GalleryImage, Localized, TextStyle } from "@/lib/types";
 import { ImageUpload } from "@/components/admin/ImageUpload";
 import { ImagePositioner } from "@/components/admin/ImagePositioner";
 import { LocalizedField } from "@/components/admin/LocalizedField";
+import { StyleToolbar } from "@/components/admin/StyleToolbar";
 import { Button } from "@/components/ui/Button";
 
 const emptyLocalized = (): Localized => ({ he: "", en: "", ru: "" });
@@ -15,12 +16,16 @@ export function GalleryEditor({
   addLabel,
   emptyLabel,
   captionLabel,
+  styles,
+  onStyle,
 }: {
   gallery: GalleryImage[];
   onChange: (g: GalleryImage[]) => void;
   addLabel: string;
   emptyLabel: string;
   captionLabel: string;
+  styles?: Record<string, TextStyle>;
+  onStyle?: (key: string, v: TextStyle) => void;
 }) {
   const update = (id: string, patch: Partial<GalleryImage>) =>
     onChange(gallery.map((g) => (g.id === id ? { ...g, ...patch } : g)));
@@ -57,9 +62,12 @@ export function GalleryEditor({
           </div>
           <ImageUpload value={g.image} icon="eye" onChange={(image) => update(g.id, { image })} />
           {g.image && (
-            <ImagePositioner value={g.imagePosition} onChange={(imagePosition) => update(g.id, { imagePosition })} />
+            <ImagePositioner src={g.image} value={g.imagePosition} onChange={(imagePosition) => update(g.id, { imagePosition })} />
           )}
           <LocalizedField label={captionLabel} value={g.caption} onChange={(caption) => update(g.id, { caption })} />
+          {onStyle && (
+            <StyleToolbar value={styles?.[`gallery.${g.id}.caption`]} onChange={(v) => onStyle(`gallery.${g.id}.caption`, v)} />
+          )}
         </div>
       ))}
     </div>

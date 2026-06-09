@@ -236,7 +236,7 @@ export default function ContentAdmin() {
             <>
               <ImageUpload value={content.hero.image} icon="eye" onChange={(image) => setHero({ image })} />
               {content.hero.image && (
-                <ImagePositioner value={content.hero.imagePosition} onChange={(imagePosition) => setHero({ imagePosition })} />
+                <ImagePositioner src={content.hero.image} value={content.hero.imagePosition} onChange={(imagePosition) => setHero({ imagePosition })} />
               )}
               {styled(t.admin.fields.headline, content.hero.title, (title) => setHero({ title }), STYLE_KEYS.heroTitle)}
               {styled(t.admin.fields.subtitle, content.hero.subtitle, (subtitle) => setHero({ subtitle }), STYLE_KEYS.heroSubtitle)}
@@ -258,14 +258,17 @@ export default function ContentAdmin() {
                   <div key={m.id} className="space-y-3 rounded-xl border border-line p-4">
                     <ImageUpload value={m.image} icon="user" onChange={(image) => updateMember(m.id, { image })} />
                     {m.image && (
-                      <ImagePositioner value={m.imagePosition} onChange={(imagePosition) => updateMember(m.id, { imagePosition })} />
+                      <ImagePositioner src={m.image} value={m.imagePosition} onChange={(imagePosition) => updateMember(m.id, { imagePosition })} />
                     )}
-                    <label className="block">
-                      <span className="mb-1.5 block text-sm font-semibold text-ink">{t.admin.fields.memberName}</span>
-                      <input value={m.name} onChange={(e) => updateMember(m.id, { name: e.target.value })} className={plainInput} />
-                    </label>
-                    <LocalizedField label={t.admin.fields.memberTitle} value={m.title} onChange={(title) => updateMember(m.id, { title })} />
-                    <LocalizedField label={t.admin.fields.memberSpecialty} value={m.specialty} onChange={(specialty) => updateMember(m.id, { specialty })} />
+                    <div>
+                      <label className="block">
+                        <span className="mb-1.5 block text-sm font-semibold text-ink">{t.admin.fields.memberName}</span>
+                        <input value={m.name} onChange={(e) => updateMember(m.id, { name: e.target.value })} className={plainInput} />
+                      </label>
+                      <StyleToolbar value={content.styles?.[`team.member.${m.id}.name`]} onChange={(v) => setStyle(`team.member.${m.id}.name`, v)} />
+                    </div>
+                    {styled(t.admin.fields.memberTitle, m.title, (title) => updateMember(m.id, { title }), `team.member.${m.id}.title`)}
+                    {styled(t.admin.fields.memberSpecialty, m.specialty, (specialty) => updateMember(m.id, { specialty }), `team.member.${m.id}.specialty`)}
                     <button onClick={() => removeMember(m.id)} className="text-sm font-medium text-rose-600 hover:underline">
                       {t.admin.fields.removeMember}
                     </button>
@@ -287,8 +290,8 @@ export default function ContentAdmin() {
                   <input dir="ltr" value={content.footer.email} onChange={(e) => setFooter({ email: e.target.value })} className={plainInput} />
                 </label>
               </div>
-              <LocalizedField label={t.admin.fields.address} value={content.footer.address} onChange={(address) => setFooter({ address })} />
-              <LocalizedField label={t.admin.fields.hours} value={content.footer.hours} onChange={(hours) => setFooter({ hours })} />
+              {styled(t.admin.fields.address, content.footer.address, (address) => setFooter({ address }), "footer.address")}
+              {styled(t.admin.fields.hours, content.footer.hours, (hours) => setFooter({ hours }), "footer.hours")}
 
               <div className="space-y-3 border-t border-line pt-4">
                 <div className="flex items-center justify-between">
@@ -332,6 +335,8 @@ export default function ContentAdmin() {
               addLabel={t.admin.gallery.add}
               emptyLabel={t.admin.gallery.empty}
               captionLabel={t.admin.gallery.caption}
+              styles={content.styles}
+              onStyle={setStyle}
             />
           )}
 
@@ -363,7 +368,7 @@ export default function ContentAdmin() {
                   </div>
                   <ImageUpload value={s.image ?? ""} icon="glasses" onChange={(image) => updateService(s.id, { image })} />
                   {s.image && (
-                    <ImagePositioner value={s.imagePosition} onChange={(imagePosition) => updateService(s.id, { imagePosition })} />
+                    <ImagePositioner src={s.image} value={s.imagePosition} onChange={(imagePosition) => updateService(s.id, { imagePosition })} />
                   )}
                   <LocalizedField label={t.admin.svc.name} value={s.label} onChange={(label) => updateService(s.id, { label })} />
                   <LocalizedField label={t.admin.svc.description} textarea value={s.description} onChange={(description) => updateService(s.id, { description })} />

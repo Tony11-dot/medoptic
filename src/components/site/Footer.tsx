@@ -3,9 +3,10 @@
 import { useI18n } from "@/lib/i18n/LanguageProvider";
 import type { SiteContent } from "@/lib/types";
 import { Logo } from "@/components/ui/Logo";
+import { styleToCss } from "@/lib/textStyle";
 import { SocialIcon, socialHref } from "./SocialIcon";
 
-export function Footer({ footer }: { footer: SiteContent["footer"] }) {
+export function Footer({ footer, styles }: { footer: SiteContent["footer"]; styles?: SiteContent["styles"] }) {
   const { t, pick } = useI18n();
 
   return (
@@ -16,7 +17,7 @@ export function Footer({ footer }: { footer: SiteContent["footer"] }) {
             <span className="inline-flex">
               <Logo className="h-28 w-auto brightness-0 invert" />
             </span>
-            <p className="mt-4 max-w-xs text-sm text-white/75">{pick(footer.address)}</p>
+            <p className="mt-4 max-w-xs text-sm text-white/75" style={styleToCss(styles?.["footer.address"])}>{pick(footer.address)}</p>
           </div>
 
           <div>
@@ -37,7 +38,7 @@ export function Footer({ footer }: { footer: SiteContent["footer"] }) {
 
           <div>
             <h3 className="text-sm font-bold uppercase tracking-wider text-white/60">{t.footer.hours}</h3>
-            <p className="mt-4 text-sm text-white/90">{pick(footer.hours)}</p>
+            <p className="mt-4 text-sm text-white/90" style={styleToCss(styles?.["footer.hours"])}>{pick(footer.hours)}</p>
           </div>
 
           <div>

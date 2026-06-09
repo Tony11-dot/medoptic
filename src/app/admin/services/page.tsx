@@ -246,7 +246,7 @@ export default function ServicesAdmin() {
           <div className="space-y-5">
             <ImageUpload value={draft.image} icon="glasses" onChange={(image) => setDraft({ ...draft, image })} />
             {draft.image && (
-              <ImagePositioner value={draft.imagePosition} onChange={(imagePosition) => setDraft({ ...draft, imagePosition })} />
+              <ImagePositioner src={draft.image} value={draft.imagePosition} onChange={(imagePosition) => setDraft({ ...draft, imagePosition })} />
             )}
             <LocalizedField
               label={t.admin.svc.name}

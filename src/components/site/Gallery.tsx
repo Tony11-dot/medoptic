@@ -3,13 +3,14 @@
 import { AnimatePresence, motion } from "framer-motion";
 import { useCallback, useEffect, useState } from "react";
 import { useI18n } from "@/lib/i18n/LanguageProvider";
-import type { GalleryImage } from "@/lib/types";
+import type { GalleryImage, SiteContent } from "@/lib/types";
 import { ImageBlock } from "@/components/ui/ImageBlock";
+import { styleToCss } from "@/lib/textStyle";
 import { SectionHeading } from "./SectionHeading";
 import { SectionBg } from "./SectionBg";
 
 // Auto-advancing image carousel ("hero gallery"), fully managed in the admin.
-export function Gallery({ gallery, bg }: { gallery: GalleryImage[]; bg?: string }) {
+export function Gallery({ gallery, bg, styles }: { gallery: GalleryImage[]; bg?: string; styles?: SiteContent["styles"] }) {
   const { t, pick } = useI18n();
   const [i, setI] = useState(0);
   const count = gallery.length;
@@ -46,7 +47,7 @@ export function Gallery({ gallery, bg }: { gallery: GalleryImage[]; bg?: string 
                 <ImageBlock src={slide.image} alt={pick(slide.caption) || "MEDOPTIC"} rounded="rounded-3xl" objectPosition={slide.imagePosition} />
                 {pick(slide.caption) && (
                   <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/55 to-transparent p-6 md:p-8">
-                    <p className="text-lg font-bold text-white drop-shadow md:text-2xl">{pick(slide.caption)}</p>
+                    <p className="text-lg font-bold text-white drop-shadow md:text-2xl" style={styleToCss(styles?.[`gallery.${slide.id}.caption`])}>{pick(slide.caption)}</p>
                   </div>
                 )}
               </motion.div>

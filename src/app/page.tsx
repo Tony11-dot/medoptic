@@ -53,7 +53,7 @@ export default async function HomePage() {
       <main>
         <Hero hero={content.hero} styles={content.styles} bg={homeBg} />
         {blocksAt("afterHero")}
-        <Gallery gallery={content.gallery ?? []} bg={bg("gallery")} />
+        <Gallery gallery={content.gallery ?? []} bg={bg("gallery")} styles={content.styles} />
         {blocksAt("afterProducts")}
         <Optometrists team={content.team} styles={content.styles} bg={bg("team")} />
         <Services services={enabledServices} bg={bg("services")} />
@@ -61,7 +61,7 @@ export default async function HomePage() {
         {blocksAt("beforeBooking")}
         <Booking bg={bg("book")} />
         {blocksAt("beforeFooter")}
-        <Footer footer={content.footer} />
+        <Footer footer={content.footer} styles={content.styles} />
       </main>
     </>
   );
