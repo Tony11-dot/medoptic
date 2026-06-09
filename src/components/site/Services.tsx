@@ -93,7 +93,7 @@ export function Services({ services, bg }: { services: Service[]; bg?: string })
             ) : (
               <div className="fixed inset-0 brand-gradient" />
             )}
-            <div className="fixed inset-0 bg-black/55" />
+            <div className="fixed inset-0 bg-black/30 backdrop-blur-sm" />
 
             <button
               type="button"
