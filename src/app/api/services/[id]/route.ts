@@ -38,6 +38,7 @@ export async function PATCH(
         description: localized(body.description, s.description),
         image: typeof body.image === "string" ? body.image : s.image,
         imagePosition: typeof body.imagePosition === "string" ? body.imagePosition : s.imagePosition,
+        detailBg: typeof body.detailBg === "string" ? body.detailBg : s.detailBg,
         enabled: body.enabled != null ? Boolean(body.enabled) : s.enabled,
         order: typeof body.order === "number" ? body.order : s.order,
       };

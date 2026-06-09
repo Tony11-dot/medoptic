@@ -11,7 +11,6 @@ import { Reviews } from "@/components/site/Reviews";
 import { Booking } from "@/components/site/Booking";
 import { Footer } from "@/components/site/Footer";
 import { BlocksLive } from "@/components/site/Blocks";
-import { getGoogleReviews } from "@/lib/reviews";
 import type { BlocksPosition, Review } from "@/lib/types";
 
 // Always render fresh so admin edits to content show immediately.
@@ -37,14 +36,23 @@ export default async function HomePage() {
     position === at ? <BlocksLive blocks={content.blocks} /> : null;
   const bg = (id: string) => content.backgrounds?.[id];
 
-  // Reviews: admin-entered ones, plus live Google reviews when enabled + configured.
-  const manualReviews: Review[] = content.reviews ?? [];
-  const googleReviews = content.showGoogleReviews ? await getGoogleReviews(content.googlePlaceId) : [];
-  const reviews: Review[] = [...manualReviews, ...googleReviews];
+  // Reviews: admin-entered entries.
+  const reviews: Review[] = content.reviews ?? [];
 
   // "Who We Are" is the home/Hero section. Use the admin-uploaded background if
   // set, otherwise fall back to public/who-we-are.jpg if you've dropped one in.
   const homeBg = bg("home") ?? (await fileBg("who-we-are.jpg"));
+
+  // The four middle sections can be reordered from the admin (Content → Layout).
+  const sectionEls: Record<string, React.ReactNode> = {
+    gallery: <Gallery key="gallery" gallery={content.gallery ?? []} bg={bg("gallery")} styles={content.styles} />,
+    team: <Optometrists key="team" team={content.team} styles={content.styles} bg={bg("team")} />,
+    services: <Services key="services" services={enabledServices} bg={bg("services")} />,
+    reviews: <Reviews key="reviews" reviews={reviews} placeId={content.googlePlaceId} bg={bg("reviews")} />,
+  };
+  const DEFAULT_ORDER = ["gallery", "team", "services", "reviews"];
+  const order = (content.sectionOrder ?? DEFAULT_ORDER).filter((id) => id in sectionEls);
+  for (const id of DEFAULT_ORDER) if (!order.includes(id)) order.push(id);
 
   return (
     <>
@@ -53,11 +61,8 @@ export default async function HomePage() {
       <main>
         <Hero hero={content.hero} styles={content.styles} bg={homeBg} />
         {blocksAt("afterHero")}
-        <Gallery gallery={content.gallery ?? []} bg={bg("gallery")} styles={content.styles} />
+        {order.map((id) => sectionEls[id])}
         {blocksAt("afterProducts")}
-        <Optometrists team={content.team} styles={content.styles} bg={bg("team")} />
-        <Services services={enabledServices} bg={bg("services")} />
-        <Reviews reviews={reviews} placeId={content.googlePlaceId} bg={bg("reviews")} />
         {blocksAt("beforeBooking")}
         <Booking bg={bg("book")} />
         {blocksAt("beforeFooter")}

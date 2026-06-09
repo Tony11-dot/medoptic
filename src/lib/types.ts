@@ -33,6 +33,8 @@ export interface Service {
   image?: string;
   /** CSS object-position for the cropped photo, e.g. "center top". */
   imagePosition?: string;
+  /** Optional background image for the full-screen detail view (tap a service). */
+  detailBg?: string;
   /** When false the service is hidden from the public booking form. */
   enabled: boolean;
   /** Sort order in the booking form and admin list (ascending). */
@@ -52,6 +54,8 @@ export interface Review {
   text: string;
   /** Free text or ISO date, e.g. "May 2026". Optional. */
   date?: string;
+  /** Optional photo (reviewer or the review itself). */
+  image?: string;
   source?: "manual" | "google";
 }
 
@@ -184,6 +188,9 @@ export interface SiteContent {
   /** When true (and a Place ID + API key are configured) live Google reviews
    * are merged in alongside the admin-entered ones. */
   showGoogleReviews?: boolean;
+  /** Admin-chosen order of the reorderable middle sections on the home page.
+   * Subset/permutation of ["gallery","team","services","reviews"]. */
+  sectionOrder?: string[];
 }
 
 export const SERVICE_TYPES: ServiceType[] = [

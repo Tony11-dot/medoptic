@@ -3,6 +3,7 @@
 import { motion } from "framer-motion";
 import { useI18n } from "@/lib/i18n/LanguageProvider";
 import type { Review } from "@/lib/types";
+import { ImageBlock } from "@/components/ui/ImageBlock";
 import { SectionHeading } from "./SectionHeading";
 import { SectionBg } from "./SectionBg";
 
@@ -67,6 +68,11 @@ export function Reviews({
                   transition={{ duration: 0.5, delay: (i % 3) * 0.1, ease: [0.22, 1, 0.36, 1] }}
                   className="flex flex-col rounded-2xl border border-line bg-white p-6 shadow-sm"
                 >
+                  {rev.image && (
+                    <div className="mb-4 size-16 overflow-hidden rounded-full border border-line">
+                      <ImageBlock src={rev.image} alt={rev.author} icon="user" rounded="rounded-none" />
+                    </div>
+                  )}
                   <Stars rating={rev.rating} />
                   <blockquote className="mt-4 flex-1 text-base leading-relaxed text-ink">
                     “{rev.text}”

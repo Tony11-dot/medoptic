@@ -18,7 +18,9 @@ import { STYLE_KEYS } from "@/lib/textStyle";
 import { ImageBlock } from "@/components/ui/ImageBlock";
 import { cn } from "@/lib/cn";
 
-type Tab = "hero" | "gallery" | "team" | "services" | "reviews" | "footer" | "blocks" | "backgrounds";
+type Tab = "hero" | "gallery" | "team" | "services" | "reviews" | "footer" | "blocks" | "backgrounds" | "layout";
+
+const SECTION_IDS = ["gallery", "team", "services", "reviews"] as const;
 
 const BG_SECTIONS = ["home", "gallery", "team", "services", "reviews", "book"] as const;
 
@@ -53,8 +55,25 @@ export default function ContentAdmin() {
     { id: "reviews", label: t.admin.contentTabs.reviews },
     { id: "blocks", label: t.admin.contentTabs.blocks },
     { id: "backgrounds", label: t.admin.contentTabs.backgrounds },
+    { id: "layout", label: t.admin.contentTabs.layout },
     { id: "footer", label: t.admin.contentTabs.footer },
   ];
+
+  // Order of the reorderable middle sections on the home page.
+  const sectionOrder: string[] = (() => {
+    const saved = content?.sectionOrder ?? [];
+    const order = saved.filter((id) => (SECTION_IDS as readonly string[]).includes(id));
+    for (const id of SECTION_IDS) if (!order.includes(id)) order.push(id);
+    return order;
+  })();
+  const moveSection = (index: number, dir: -1 | 1) => {
+    const target = index + dir;
+    if (target < 0 || target >= sectionOrder.length) return;
+    const next = [...sectionOrder];
+    const [m] = next.splice(index, 1);
+    next.splice(target, 0, m);
+    setContent((c) => (c ? { ...c, sectionOrder: next } : c));
+  };
 
   useEffect(() => {
     fetch("/api/content").then((r) => r.json()).then((d) => setContent(d.content));
@@ -77,6 +96,7 @@ export default function ContentAdmin() {
           description: s.description,
           image: s.image ?? "",
           imagePosition: s.imagePosition,
+          detailBg: s.detailBg ?? "",
           enabled: s.enabled,
           order: i,
         });
@@ -165,10 +185,6 @@ export default function ContentAdmin() {
   const updateReview = (id: string, patch: Partial<Review>) =>
     setReviews(reviews.map((r) => (r.id === id ? { ...r, ...patch } : r)));
   const removeReview = (id: string) => setReviews(reviews.filter((r) => r.id !== id));
-  const setGooglePlaceId = (googlePlaceId: string) =>
-    setContent((c) => (c ? { ...c, googlePlaceId } : c));
-  const setShowGoogleReviews = (showGoogleReviews: boolean) =>
-    setContent((c) => (c ? { ...c, showGoogleReviews } : c));
 
   function updateMember(id: string, patch: Partial<TeamMember>) {
     setContent((c) =>
@@ -278,6 +294,22 @@ export default function ContentAdmin() {
             </>
           )}
 
+          {tab === "layout" && (
+            <div className="space-y-3">
+              <p className="text-sm text-muted">Reorder the main page sections (top to bottom on the site).</p>
+              {sectionOrder.map((id, i) => (
+                <div key={id} className="flex items-center gap-2 rounded-xl border border-line p-3">
+                  <span className="rounded-md bg-brand-50 px-2 py-0.5 text-xs font-bold text-brand-dark">#{i + 1}</span>
+                  <span className="text-sm font-semibold text-ink">{t.nav[id as "gallery" | "team" | "services" | "reviews"]}</span>
+                  <div className="ms-auto flex items-center gap-1">
+                    <button type="button" onClick={() => moveSection(i, -1)} disabled={i === 0} aria-label="up" className="grid size-7 place-items-center rounded-md border border-line text-muted transition hover:border-brand disabled:opacity-30">↑</button>
+                    <button type="button" onClick={() => moveSection(i, 1)} disabled={i === sectionOrder.length - 1} aria-label="down" className="grid size-7 place-items-center rounded-md border border-line text-muted transition hover:border-brand disabled:opacity-30">↓</button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+
           {tab === "footer" && (
             <>
               <div className="grid gap-4 sm:grid-cols-2">
@@ -372,6 +404,12 @@ export default function ContentAdmin() {
                   )}
                   <LocalizedField label={t.admin.svc.name} value={s.label} onChange={(label) => updateService(s.id, { label })} />
                   <LocalizedField label={t.admin.svc.description} textarea value={s.description} onChange={(description) => updateService(s.id, { description })} />
+                  <div>
+                    <span className="mb-1.5 block text-sm font-semibold text-ink">
+                      Detail background <span className="font-normal text-muted">— shown full-screen when the card is tapped</span>
+                    </span>
+                    <ImageUpload value={s.detailBg ?? ""} icon="eye" onChange={(detailBg) => updateService(s.id, { detailBg })} />
+                  </div>
                   <label className="flex items-center gap-3 rounded-xl border border-line bg-surface px-4 py-2.5">
                     <input type="checkbox" checked={s.enabled} onChange={(e) => updateService(s.id, { enabled: e.target.checked })} className="size-4" />
                     <span className="text-sm font-semibold text-ink">{t.admin.svc.show}</span>
@@ -390,6 +428,7 @@ export default function ContentAdmin() {
                 {reviews.length === 0 && <p className="text-sm text-muted">{t.admin.reviews.none}</p>}
                 {reviews.map((r) => (
                   <div key={r.id} className="space-y-3 rounded-xl border border-line p-4">
+                    <ImageUpload value={r.image ?? ""} icon="user" onChange={(image) => updateReview(r.id, { image })} />
                     <div className="grid gap-3 sm:grid-cols-2">
                       <label className="block">
                         <span className="mb-1.5 block text-sm font-semibold text-ink">{t.admin.reviews.author}</span>
@@ -432,32 +471,6 @@ export default function ContentAdmin() {
                   </div>
                 ))}
                 <Button size="sm" variant="subtle" onClick={addReview}>+ {t.admin.reviews.add}</Button>
-              </div>
-
-              {/* Google reviews */}
-              <div className="space-y-3 rounded-xl border border-line bg-surface/50 p-4">
-                <h3 className="text-sm font-bold text-ink">{t.admin.reviews.googleTitle}</h3>
-                <p className="text-xs text-muted">{t.admin.reviews.googleHelp}</p>
-                <label className="flex items-center gap-3">
-                  <input
-                    type="checkbox"
-                    checked={!!content.showGoogleReviews}
-                    onChange={(e) => setShowGoogleReviews(e.target.checked)}
-                    className="size-4"
-                  />
-                  <span className="text-sm font-semibold text-ink">{t.admin.reviews.showGoogle}</span>
-                </label>
-                <label className="block">
-                  <span className="mb-1.5 block text-sm font-semibold text-ink">{t.admin.reviews.placeId}</span>
-                  <input
-                    dir="ltr"
-                    value={content.googlePlaceId ?? ""}
-                    onChange={(e) => setGooglePlaceId(e.target.value)}
-                    className={plainInput}
-                    placeholder="ChIJ…"
-                  />
-                  <span className="mt-1 block text-xs text-muted">{t.admin.reviews.placeIdHint}</span>
-                </label>
               </div>
             </div>
           )}

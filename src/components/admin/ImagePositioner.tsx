@@ -1,11 +1,12 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { cn } from "@/lib/cn";
 
 // Drag-to-reposition control: shows the photo in a frame and lets you drag it to
 // choose which part stays visible. The value is a CSS object-position string in
-// percentages, e.g. "30% 65%". Works with mouse and touch (pointer events).
+// percentages, e.g. "30% 65%". Uses window-level pointer listeners during a drag
+// so it keeps tracking even if the cursor leaves the box.
 function parse(v?: string): [number, number] {
   const m = v?.match(/(-?\d+(?:\.\d+)?)%\s+(-?\d+(?:\.\d+)?)%/);
   if (m) return [parseFloat(m[1]), parseFloat(m[2])];
@@ -23,30 +24,39 @@ export function ImagePositioner({
   onChange: (v: string) => void;
 }) {
   const boxRef = useRef<HTMLDivElement>(null);
-  const drag = useRef<{ x: number; y: number; px: number; py: number } | null>(null);
+  const onChangeRef = useRef(onChange);
+  onChangeRef.current = onChange;
   const [dragging, setDragging] = useState(false);
   const [px, py] = parse(value);
+
+  // Clean up listeners if the component unmounts mid-drag.
+  useEffect(() => () => setDragging(false), []);
 
   if (!src) return null;
 
   function onDown(e: React.PointerEvent) {
-    (e.currentTarget as Element).setPointerCapture?.(e.pointerId);
-    drag.current = { x: e.clientX, y: e.clientY, px, py };
-    setDragging(true);
-  }
-  function onMove(e: React.PointerEvent) {
-    const d = drag.current;
+    e.preventDefault();
     const box = boxRef.current;
-    if (!d || !box) return;
+    if (!box) return;
     const rect = box.getBoundingClientRect();
-    // Dragging the image right reveals its left side → object-position x drops.
-    const nx = clamp(d.px - ((e.clientX - d.x) / rect.width) * 100);
-    const ny = clamp(d.py - ((e.clientY - d.y) / rect.height) * 100);
-    onChange(`${Math.round(nx)}% ${Math.round(ny)}%`);
-  }
-  function onUp() {
-    drag.current = null;
-    setDragging(false);
+    const start = { x: e.clientX, y: e.clientY, px, py };
+    setDragging(true);
+
+    const move = (ev: PointerEvent) => {
+      // Dragging the image right reveals its left side → object-position x drops.
+      const nx = clamp(start.px - ((ev.clientX - start.x) / rect.width) * 100);
+      const ny = clamp(start.py - ((ev.clientY - start.y) / rect.height) * 100);
+      onChangeRef.current(`${Math.round(nx)}% ${Math.round(ny)}%`);
+    };
+    const up = () => {
+      setDragging(false);
+      window.removeEventListener("pointermove", move);
+      window.removeEventListener("pointerup", up);
+      window.removeEventListener("pointercancel", up);
+    };
+    window.addEventListener("pointermove", move);
+    window.addEventListener("pointerup", up);
+    window.addEventListener("pointercancel", up);
   }
 
   return (
@@ -66,9 +76,6 @@ export function ImagePositioner({
       <div
         ref={boxRef}
         onPointerDown={onDown}
-        onPointerMove={onMove}
-        onPointerUp={onUp}
-        onPointerCancel={onUp}
         className={cn(
           "relative aspect-[4/3] w-full max-w-xs touch-none select-none overflow-hidden rounded-xl border border-line",
           dragging ? "cursor-grabbing" : "cursor-grab",

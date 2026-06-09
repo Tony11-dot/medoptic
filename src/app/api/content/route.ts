@@ -33,6 +33,7 @@ export async function PATCH(request: Request) {
     reviews: body.reviews ?? c.reviews,
     googlePlaceId: body.googlePlaceId ?? c.googlePlaceId,
     showGoogleReviews: body.showGoogleReviews ?? c.showGoogleReviews,
+    sectionOrder: body.sectionOrder ?? c.sectionOrder,
   }));
 
   return Response.json({ content: updated });
