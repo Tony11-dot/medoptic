@@ -59,8 +59,86 @@ function buildReminder(appt: Appointment): string {
   return `${BUSINESS.name}: Hi ${name}, a reminder of your appointment${slot}. See you soon! Call ${BUSINESS.phone} to change it.`;
 }
 
+// ---- Branded HTML email -----------------------------------------------------
+
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://medoptic.net";
+const BRAND = "#0066CC";
+
+const esc = (s: string) =>
+  s.replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]!);
+
+function emailSubject(appt: Appointment): string {
+  if (appt.status === "approved") return `${BUSINESS.name} — your booking is confirmed`;
+  if (appt.status === "declined") return `${BUSINESS.name} — about your appointment`;
+  return `${BUSINESS.name} — we received your request`;
+}
+
+// A branded, email-client-safe HTML shell (tables + inline styles).
+function emailShell(lead: string, body: string, button = ""): string {
+  return `<!doctype html><html><body style="margin:0;padding:0;background:#f4f6f8;font-family:Arial,Helvetica,sans-serif;">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f4f6f8;padding:24px 12px;">
+    <tr><td align="center">
+      <table role="presentation" width="560" cellpadding="0" cellspacing="0" style="max-width:560px;width:100%;background:#ffffff;border-radius:18px;overflow:hidden;border:1px solid #e6eaef;">
+        <tr><td align="center" style="padding:28px 24px 10px;">
+          <img src="${SITE_URL}/logo-web.png" alt="MEDOPTIC" width="170" style="display:block;width:170px;max-width:60%;height:auto;" />
+        </td></tr>
+        <tr><td style="font-size:0;line-height:0;height:4px;background:${BRAND};">&nbsp;</td></tr>
+        <tr><td style="padding:28px 32px 4px;">
+          <p style="margin:0 0 12px;font-size:20px;font-weight:bold;color:#1a2330;">${lead}</p>
+          <p style="margin:0;font-size:16px;line-height:1.6;color:#46505e;">${body}</p>
+          ${button ? `<p style="margin:26px 0 6px;">${button}</p>` : ""}
+        </td></tr>
+        <tr><td style="padding:22px 32px 28px;">
+          <hr style="border:none;border-top:1px solid #e6eaef;margin:0 0 16px;" />
+          <p style="margin:0;font-size:13px;line-height:1.7;color:#8a94a3;">
+            <strong style="color:#1a2330;">${BUSINESS.name}</strong><br/>
+            ☎ <a href="tel:${BUSINESS.phone.replace(/\s/g, "")}" style="color:${BRAND};text-decoration:none;">${esc(BUSINESS.phone)}</a><br/>
+            ✉ <a href="mailto:${BUSINESS.email}" style="color:${BRAND};text-decoration:none;">${esc(BUSINESS.email)}</a>
+          </p>
+        </td></tr>
+      </table>
+    </td></tr>
+  </table>
+</body></html>`;
+}
+
+function buttonHtml(href: string, label: string): string {
+  return `<a href="${href}" style="display:inline-block;background:${BRAND};color:#ffffff;text-decoration:none;font-weight:bold;padding:14px 30px;border-radius:12px;font-size:16px;">${label}</a>`;
+}
+
+function buildEmailHtml(appt: Appointment): string {
+  const name = esc(`${appt.firstName} ${appt.lastName}`.trim());
+  const when = whenText(appt);
+  if (appt.status === "approved") {
+    if (when) {
+      return emailShell(`Hi ${name}, your booking is approved 🎉`, `Your appointment is confirmed for <strong>${esc(when)}</strong>. We look forward to seeing you!`);
+    }
+    return emailShell(
+      `Hi ${name}, your booking is approved 🎉`,
+      `Just one step left — pick the time that suits you and we'll confirm it.`,
+      buttonHtml(SCHEDULING_URL, "Pick your time"),
+    );
+  }
+  if (appt.status === "declined") {
+    const reason = appt.decisionReason ? ` <br/><br/>Reason: ${esc(appt.decisionReason)}.` : "";
+    return emailShell(`Hi ${name},`, `Unfortunately we couldn't confirm this appointment.${reason}<br/><br/>Please contact us and we'll be glad to reschedule.`);
+  }
+  return emailShell(`Hi ${name},`, `We've received your request and will get back to you shortly.`);
+}
+
+function buildReminderHtml(appt: Appointment): string {
+  const name = esc(`${appt.firstName} ${appt.lastName}`.trim());
+  const when = whenText(appt);
+  const slot = when ? `<strong>tomorrow, ${esc(when)}</strong>` : "<strong>tomorrow</strong>";
+  return emailShell(`Hi ${name}, a friendly reminder 👋`, `This is a reminder of your appointment ${slot}. See you soon!`);
+}
+
 // Logs the message until a real provider is wired in at the marked spot.
-async function dispatch(appt: Appointment, message: string): Promise<NotifyResult> {
+async function dispatch(
+  appt: Appointment,
+  message: string,
+  email?: { subject: string; html: string },
+): Promise<NotifyResult> {
   // Send via each chosen channel (defaults to SMS). Email only if we have one.
   const wanted: ReminderChannel[] = appt.reminderChannels?.length ? appt.reminderChannels : ["sms"];
   const channels: ReminderChannel[] = Array.from(new Set(wanted)).filter(
@@ -75,7 +153,7 @@ async function dispatch(appt: Appointment, message: string): Promise<NotifyResul
       await sendSms(appt.phone, message);
     } else if (appt.email) {
       recipients.push(appt.email);
-      await sendEmail(appt.email, `${BUSINESS.name} — appointment update`, message);
+      await sendEmail(appt.email, email?.subject ?? `${BUSINESS.name} — appointment update`, message, email?.html);
     }
   }
 
@@ -134,7 +212,7 @@ async function sendSms(to: string, body: string): Promise<void> {
   }
 }
 
-async function sendEmail(to: string, subject: string, text: string): Promise<void> {
+async function sendEmail(to: string, subject: string, text: string, html?: string): Promise<void> {
   const user = process.env.GMAIL_USER;
   const pass = process.env.GMAIL_APP_PASSWORD;
   if (!user || !pass) {
@@ -148,7 +226,7 @@ async function sendEmail(to: string, subject: string, text: string): Promise<voi
       service: "gmail",
       auth: { user, pass },
     });
-    await transport.sendMail({ from: `${BUSINESS.name} <${user}>`, to, subject, text });
+    await transport.sendMail({ from: `${BUSINESS.name} <${user}>`, to, subject, text, html });
   } catch (e) {
     // eslint-disable-next-line no-console
     console.error(`[notify:email FAILED -> ${to}]`, e instanceof Error ? e.message : e);
@@ -160,10 +238,16 @@ async function sendEmail(to: string, subject: string, text: string): Promise<voi
  * regardless of which reminder channels were ticked. */
 export function notifyCustomer(appt: Appointment): Promise<NotifyResult> {
   const channels: ReminderChannel[] = ["sms", ...(appt.email ? (["email"] as const) : [])];
-  return dispatch({ ...appt, reminderChannels: channels }, buildMessage(appt));
+  return dispatch({ ...appt, reminderChannels: channels }, buildMessage(appt), {
+    subject: emailSubject(appt),
+    html: buildEmailHtml(appt),
+  });
 }
 
 /** Send the day-before appointment reminder via the customer's chosen channel. */
 export function notifyReminder(appt: Appointment): Promise<NotifyResult> {
-  return dispatch(appt, buildReminder(appt));
+  return dispatch(appt, buildReminder(appt), {
+    subject: `${BUSINESS.name} — appointment reminder`,
+    html: buildReminderHtml(appt),
+  });
 }
