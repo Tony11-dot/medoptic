@@ -103,7 +103,7 @@ export interface Dict {
     saving: string;
     refresh: string;
     actions: { approve: string; decline: string; add: string; edit: string; delete: string; cancel: string; search: string };
-    nav: { overview: string; appointments: string; queueTypes: string; products: string; content: string; settings: string };
+    nav: { overview: string; appointments: string; queueTypes: string; products: string; content: string; sections: string; settings: string };
     settings: {
       title: string;
       subtitle: string;
@@ -315,7 +315,7 @@ export const dictionaries: Record<Locale, Dict> = {
       saving: "שומר…",
       refresh: "רענון",
       actions: { approve: "אישור", decline: "דחייה", add: "הוספה", edit: "עריכה", delete: "מחיקה", cancel: "ביטול", search: "חיפוש" },
-      nav: { overview: "סקירה", appointments: "תורים", queueTypes: "סוגי תורים", products: "מוצרים", content: "תוכן", settings: "הגדרות" },
+      nav: { overview: "סקירה", appointments: "תורים", queueTypes: "סוגי תורים", products: "מוצרים", content: "תוכן", sections: "מקטעים", settings: "הגדרות" },
       settings: {
         title: "הגדרות",
         subtitle: "שינוי סיסמת הניהול.",
@@ -502,7 +502,7 @@ export const dictionaries: Record<Locale, Dict> = {
       saving: "Saving…",
       refresh: "Refresh",
       actions: { approve: "Approve", decline: "Decline", add: "Add", edit: "Edit", delete: "Delete", cancel: "Cancel", search: "Search" },
-      nav: { overview: "Overview", appointments: "Appointments", queueTypes: "Queue Types", products: "Products", content: "Content", settings: "Settings" },
+      nav: { overview: "Overview", appointments: "Appointments", queueTypes: "Queue Types", products: "Products", content: "Content", sections: "Sections", settings: "Settings" },
       settings: {
         title: "Settings",
         subtitle: "Change the admin password.",
@@ -689,7 +689,7 @@ export const dictionaries: Record<Locale, Dict> = {
       saving: "Сохранение…",
       refresh: "Обновить",
       actions: { approve: "Подтвердить", decline: "Отклонить", add: "Добавить", edit: "Изменить", delete: "Удалить", cancel: "Отмена", search: "Поиск" },
-      nav: { overview: "Обзор", appointments: "Записи", queueTypes: "Типы услуг", products: "Товары", content: "Контент", settings: "Настройки" },
+      nav: { overview: "Обзор", appointments: "Записи", queueTypes: "Типы услуг", products: "Товары", content: "Контент", sections: "Разделы", settings: "Настройки" },
       settings: {
         title: "Настройки",
         subtitle: "Изменить пароль администратора.",

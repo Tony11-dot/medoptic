@@ -34,6 +34,7 @@ export async function PATCH(request: Request) {
     googlePlaceId: body.googlePlaceId ?? c.googlePlaceId,
     showGoogleReviews: body.showGoogleReviews ?? c.showGoogleReviews,
     sectionOrder: body.sectionOrder ?? c.sectionOrder,
+    hiddenSections: body.hiddenSections ?? c.hiddenSections,
   }));
 
   return Response.json({ content: updated });

@@ -8,14 +8,18 @@ import { Logo } from "@/components/ui/Logo";
 import { LanguageSwitcher } from "./LanguageSwitcher";
 import { cn } from "@/lib/cn";
 
-const SECTIONS = ["home", "gallery", "team", "services", "reviews", "book", "contact"] as const;
-type SectionId = (typeof SECTIONS)[number];
+type SectionId = "home" | "gallery" | "team" | "services" | "reviews" | "book" | "contact";
+const MIDDLE_DEFAULT = ["gallery", "team", "services", "reviews"];
 
-export function Navbar() {
+export function Navbar({ middle = MIDDLE_DEFAULT }: { middle?: string[] }) {
   const { t } = useI18n();
   const [scrolled, setScrolled] = useState(false);
   const [active, setActive] = useState<SectionId>("home");
   const [menuOpen, setMenuOpen] = useState(false);
+
+  // Home is always first; Booking + Contact always last. The middle tabs follow
+  // the admin's Sections order/visibility.
+  const SECTIONS = ["home", ...middle, "book", "contact"] as SectionId[];
 
   const labels: Record<SectionId, string> = {
     home: t.nav.home,
@@ -50,7 +54,8 @@ export function Navbar() {
       if (el) observer.observe(el);
     });
     return () => observer.disconnect();
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [middle]);
 
   return (
     <header

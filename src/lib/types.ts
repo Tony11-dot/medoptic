@@ -191,6 +191,8 @@ export interface SiteContent {
   /** Admin-chosen order of the reorderable middle sections on the home page.
    * Subset/permutation of ["gallery","team","services","reviews"]. */
   sectionOrder?: string[];
+  /** Section ids hidden from the page + nav (managed in admin → Sections). */
+  hiddenSections?: string[];
 }
 
 export const SERVICE_TYPES: ServiceType[] = [

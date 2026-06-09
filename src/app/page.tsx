@@ -53,15 +53,17 @@ export default async function HomePage() {
   const DEFAULT_ORDER = ["gallery", "team", "services", "reviews"];
   const order = (content.sectionOrder ?? DEFAULT_ORDER).filter((id) => id in sectionEls);
   for (const id of DEFAULT_ORDER) if (!order.includes(id)) order.push(id);
+  const hidden = new Set(content.hiddenSections ?? []);
+  const visibleOrder = order.filter((id) => !hidden.has(id));
 
   return (
     <>
       <ScrollProgress />
-      <Navbar />
+      <Navbar middle={visibleOrder} />
       <main>
         <Hero hero={content.hero} styles={content.styles} bg={homeBg} />
         {blocksAt("afterHero")}
-        {order.map((id) => sectionEls[id])}
+        {visibleOrder.map((id) => sectionEls[id])}
         {blocksAt("afterProducts")}
         {blocksAt("beforeBooking")}
         <Booking bg={bg("book")} />

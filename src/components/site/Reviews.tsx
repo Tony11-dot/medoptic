@@ -3,7 +3,6 @@
 import { motion } from "framer-motion";
 import { useI18n } from "@/lib/i18n/LanguageProvider";
 import type { Review } from "@/lib/types";
-import { ImageBlock } from "@/components/ui/ImageBlock";
 import { SectionHeading } from "./SectionHeading";
 import { SectionBg } from "./SectionBg";
 
@@ -66,21 +65,25 @@ export function Reviews({
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true, amount: 0.2 }}
                   transition={{ duration: 0.5, delay: (i % 3) * 0.1, ease: [0.22, 1, 0.36, 1] }}
-                  className="flex flex-col rounded-2xl border border-line bg-white p-6 shadow-sm"
+                  className={`flex flex-col rounded-2xl border border-line bg-white shadow-sm ${rev.image ? "overflow-hidden" : "p-6"}`}
                 >
-                  {rev.image && (
-                    <div className="mb-4 size-16 overflow-hidden rounded-full border border-line">
-                      <ImageBlock src={rev.image} alt={rev.author} icon="user" rounded="rounded-none" />
-                    </div>
+                  {rev.image ? (
+                    // A photo review is a screenshot of a real Google review — show
+                    // it as-is, no overlaid stars/text/author.
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={rev.image} alt={rev.author || "Google review"} className="w-full" />
+                  ) : (
+                    <>
+                      <Stars rating={rev.rating} />
+                      <blockquote className="mt-4 flex-1 text-base leading-relaxed text-ink">
+                        “{rev.text}”
+                      </blockquote>
+                      <figcaption className="mt-4 flex items-center justify-between gap-2 border-t border-line pt-3">
+                        <span className="font-bold text-ink">{rev.author}</span>
+                        <span className="text-sm text-muted">{rev.date}</span>
+                      </figcaption>
+                    </>
                   )}
-                  <Stars rating={rev.rating} />
-                  <blockquote className="mt-4 flex-1 text-base leading-relaxed text-ink">
-                    “{rev.text}”
-                  </blockquote>
-                  <figcaption className="mt-4 flex items-center justify-between gap-2 border-t border-line pt-3">
-                    <span className="font-bold text-ink">{rev.author}</span>
-                    <span className="text-sm text-muted">{rev.date}</span>
-                  </figcaption>
                 </motion.figure>
               ))}
             </div>

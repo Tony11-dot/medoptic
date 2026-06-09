@@ -18,9 +18,7 @@ import { STYLE_KEYS } from "@/lib/textStyle";
 import { ImageBlock } from "@/components/ui/ImageBlock";
 import { cn } from "@/lib/cn";
 
-type Tab = "hero" | "gallery" | "team" | "services" | "reviews" | "footer" | "blocks" | "backgrounds" | "layout";
-
-const SECTION_IDS = ["gallery", "team", "services", "reviews"] as const;
+type Tab = "hero" | "gallery" | "team" | "services" | "reviews" | "footer" | "blocks" | "backgrounds";
 
 const BG_SECTIONS = ["home", "gallery", "team", "services", "reviews", "book"] as const;
 
@@ -55,25 +53,8 @@ export default function ContentAdmin() {
     { id: "reviews", label: t.admin.contentTabs.reviews },
     { id: "blocks", label: t.admin.contentTabs.blocks },
     { id: "backgrounds", label: t.admin.contentTabs.backgrounds },
-    { id: "layout", label: t.admin.contentTabs.layout },
     { id: "footer", label: t.admin.contentTabs.footer },
   ];
-
-  // Order of the reorderable middle sections on the home page.
-  const sectionOrder: string[] = (() => {
-    const saved = content?.sectionOrder ?? [];
-    const order = saved.filter((id) => (SECTION_IDS as readonly string[]).includes(id));
-    for (const id of SECTION_IDS) if (!order.includes(id)) order.push(id);
-    return order;
-  })();
-  const moveSection = (index: number, dir: -1 | 1) => {
-    const target = index + dir;
-    if (target < 0 || target >= sectionOrder.length) return;
-    const next = [...sectionOrder];
-    const [m] = next.splice(index, 1);
-    next.splice(target, 0, m);
-    setContent((c) => (c ? { ...c, sectionOrder: next } : c));
-  };
 
   useEffect(() => {
     fetch("/api/content").then((r) => r.json()).then((d) => setContent(d.content));
@@ -292,22 +273,6 @@ export default function ContentAdmin() {
                 ))}
               </div>
             </>
-          )}
-
-          {tab === "layout" && (
-            <div className="space-y-3">
-              <p className="text-sm text-muted">Reorder the main page sections (top to bottom on the site).</p>
-              {sectionOrder.map((id, i) => (
-                <div key={id} className="flex items-center gap-2 rounded-xl border border-line p-3">
-                  <span className="rounded-md bg-brand-50 px-2 py-0.5 text-xs font-bold text-brand-dark">#{i + 1}</span>
-                  <span className="text-sm font-semibold text-ink">{t.nav[id as "gallery" | "team" | "services" | "reviews"]}</span>
-                  <div className="ms-auto flex items-center gap-1">
-                    <button type="button" onClick={() => moveSection(i, -1)} disabled={i === 0} aria-label="up" className="grid size-7 place-items-center rounded-md border border-line text-muted transition hover:border-brand disabled:opacity-30">↑</button>
-                    <button type="button" onClick={() => moveSection(i, 1)} disabled={i === sectionOrder.length - 1} aria-label="down" className="grid size-7 place-items-center rounded-md border border-line text-muted transition hover:border-brand disabled:opacity-30">↓</button>
-                  </div>
-                </div>
-              ))}
-            </div>
           )}
 
           {tab === "footer" && (
