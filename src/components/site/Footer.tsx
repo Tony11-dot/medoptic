@@ -6,6 +6,9 @@ import { Logo } from "@/components/ui/Logo";
 import { styleToCss } from "@/lib/textStyle";
 import { SocialIcon, socialHref } from "./SocialIcon";
 
+// Waze navigation link to the clinic.
+const WAZE_URL = "https://waze.com/ul?q=Ha-Ta%27asiya%20St%201%2C%20Yokne%27am%20Illit%2C%202069200&navigate=yes";
+
 export function Footer({ footer, styles }: { footer: SiteContent["footer"]; styles?: SiteContent["styles"] }) {
   const { t, pick } = useI18n();
 
@@ -17,7 +20,15 @@ export function Footer({ footer, styles }: { footer: SiteContent["footer"]; styl
             <span className="inline-flex">
               <Logo className="h-28 w-auto brightness-0 invert" />
             </span>
-            <p className="mt-4 max-w-xs whitespace-pre-line text-sm text-white/75" style={styleToCss(styles?.["footer.address"])}>{pick(footer.address)}</p>
+            <a
+              href={WAZE_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mt-4 block max-w-xs whitespace-pre-line text-sm text-white/75 underline-offset-2 transition hover:text-white hover:underline"
+              style={styleToCss(styles?.["footer.address"])}
+            >
+              📍 {pick(footer.address)}
+            </a>
           </div>
 
           <div>

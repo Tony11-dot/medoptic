@@ -12,6 +12,12 @@ function localized(v: unknown): Localized {
   };
 }
 
+// Parse an array of image URLs, dropping anything non-string or empty.
+function imageList(v: unknown): string[] {
+  if (!Array.isArray(v)) return [];
+  return v.filter((x): x is string => typeof x === "string" && x.trim() !== "");
+}
+
 // GET — list services. Public callers (the booking form) only need enabled ones;
 // the admin panel passes ?all=1 to also see disabled services.
 export async function GET(request: Request) {
@@ -46,6 +52,7 @@ export async function POST(request: Request) {
     label,
     description: localized(body.description),
     image: typeof body.image === "string" ? body.image : "",
+    images: imageList(body.images),
     imagePosition: typeof body.imagePosition === "string" ? body.imagePosition : undefined,
     aspectRatio: typeof body.aspectRatio === "string" ? body.aspectRatio : undefined,
     detailBg: typeof body.detailBg === "string" ? body.detailBg : undefined,

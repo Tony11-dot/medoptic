@@ -8,7 +8,7 @@ import { useI18n } from "@/lib/i18n/LanguageProvider";
 import type { SiteContent } from "@/lib/types";
 
 // Every reorderable / hideable page section (matches the home page + nav tabs).
-const SECTION_IDS = ["home", "gallery", "team", "services", "reviews", "book", "contact"] as const;
+const SECTION_IDS = ["home", "gallery", "team", "services", "reviews", "essays", "book", "contact"] as const;
 type SId = (typeof SECTION_IDS)[number];
 
 export default function SectionsAdmin() {
@@ -60,9 +60,9 @@ export default function SectionsAdmin() {
         body: JSON.stringify(content),
       });
       if (!res.ok) throw new Error();
-      toast.success("Saved — live on the site");
+      toast.success(t.admin.toasts.saved);
     } catch {
-      toast.error("Could not save");
+      toast.error(t.admin.toasts.saveError);
     } finally {
       setSaving(false);
     }
@@ -73,7 +73,7 @@ export default function SectionsAdmin() {
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
           <h1 className="text-2xl font-extrabold text-ink">{t.admin.nav.sections}</h1>
-          <p className="mt-1 text-sm text-muted">Show/hide sections and reorder them. This controls both the page and the nav tabs.</p>
+          <p className="mt-1 text-sm text-muted">{t.admin.sections.subtitle}</p>
         </div>
         <Button onClick={save} disabled={saving}>{saving ? t.admin.saving : t.admin.save}</Button>
       </div>
@@ -91,20 +91,20 @@ export default function SectionsAdmin() {
                   onClick={() => toggle(id)}
                   role="switch"
                   aria-checked={!isHidden}
-                  aria-label={isHidden ? "Hidden" : "Shown"}
-                  title={isHidden ? "Hidden — tap to show" : "Shown — tap to hide"}
+                  aria-label={isHidden ? t.admin.sections.hidden : t.admin.sections.shown}
+                  title={isHidden ? t.admin.sections.showHint : t.admin.sections.hideHint}
                   className={`relative inline-flex h-6 w-11 items-center rounded-full transition ${isHidden ? "bg-line" : "bg-emerald-500"}`}
                 >
                   <span className={`inline-block size-4 transform rounded-full bg-white shadow transition ${isHidden ? "translate-x-1" : "translate-x-6"}`} />
                 </button>
-                <button type="button" onClick={() => move(i, -1)} disabled={i === 0} aria-label="Move up" className="grid size-8 place-items-center rounded-md border border-line text-muted transition hover:border-brand disabled:opacity-30">↑</button>
-                <button type="button" onClick={() => move(i, 1)} disabled={i === order.length - 1} aria-label="Move down" className="grid size-8 place-items-center rounded-md border border-line text-muted transition hover:border-brand disabled:opacity-30">↓</button>
+                <button type="button" onClick={() => move(i, -1)} disabled={i === 0} aria-label={t.admin.sections.moveUp} className="grid size-8 place-items-center rounded-md border border-line text-muted transition hover:border-brand disabled:opacity-30">↑</button>
+                <button type="button" onClick={() => move(i, 1)} disabled={i === order.length - 1} aria-label={t.admin.sections.moveDown} className="grid size-8 place-items-center rounded-md border border-line text-muted transition hover:border-brand disabled:opacity-30">↓</button>
               </div>
             </div>
           );
         })}
       </div>
-      <p className="mt-4 max-w-xl text-xs text-muted">Tip: hiding Booking or Contact removes the booking form / contact details from the site — usually keep those on.</p>
+      <p className="mt-4 max-w-xl text-xs text-muted">{t.admin.sections.tip}</p>
     </AdminShell>
   );
 }

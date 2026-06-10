@@ -9,6 +9,7 @@ import { Gallery } from "@/components/site/Gallery";
 import { Optometrists } from "@/components/site/Optometrists";
 import { Services } from "@/components/site/Services";
 import { Reviews } from "@/components/site/Reviews";
+import { Essays } from "@/components/site/Essays";
 import { Booking } from "@/components/site/Booking";
 import { Footer } from "@/components/site/Footer";
 import { BlocksLive } from "@/components/site/Blocks";
@@ -49,10 +50,11 @@ export default async function HomePage() {
     team: <Optometrists key="team" team={content.team} styles={content.styles} bg={bg("team")} />,
     services: <Services key="services" services={enabledServices} bg={bg("services")} />,
     reviews: <Reviews key="reviews" reviews={reviews} placeId={content.googlePlaceId} bg={bg("reviews")} />,
+    essays: <Essays key="essays" essays={content.essays ?? []} />,
     book: <Booking key="book" bg={bg("book")} />,
     contact: <Footer key="contact" footer={content.footer} styles={content.styles} />,
   };
-  const DEFAULT_ORDER = ["home", "gallery", "team", "services", "reviews", "book", "contact"];
+  const DEFAULT_ORDER = ["home", "gallery", "team", "services", "reviews", "essays", "book", "contact"];
   const order = (content.sectionOrder ?? DEFAULT_ORDER).filter((id) => id in sectionEls);
   for (const id of DEFAULT_ORDER) if (!order.includes(id)) order.push(id);
   const hidden = new Set(content.hiddenSections ?? []);

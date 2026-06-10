@@ -1,7 +1,7 @@
 "use client";
 
 import { AnimatePresence, motion } from "framer-motion";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useI18n } from "@/lib/i18n/LanguageProvider";
 import type { Service } from "@/lib/types";
 import { ImageBlock } from "@/components/ui/ImageBlock";
@@ -9,11 +9,23 @@ import { SectionHeading } from "./SectionHeading";
 import { SectionBg } from "./SectionBg";
 
 // Public "Our Services" section. Each card opens a full-screen detail view (with
-// its own editable background) showing the same photo, title and description.
+// its own editable background) showing the photo(s), title and description.
 export function Services({ services, bg }: { services: Service[]; bg?: string }) {
   const { t, pick } = useI18n();
   const [openId, setOpenId] = useState<string | null>(null);
   const open = services.find((s) => s.id === openId) ?? null;
+  const [slide, setSlide] = useState(0);
+
+  // The detail gallery: the card thumbnail plus any extra photos (de-duped).
+  const detailImages = useMemo(() => {
+    if (!open) return [] as string[];
+    return [open.image, ...(open.images ?? [])].filter(
+      (v, i, a): v is string => !!v && a.indexOf(v) === i,
+    );
+  }, [open]);
+
+  // Reset to the first photo whenever a different service is opened.
+  useEffect(() => setSlide(0), [openId]);
 
   // Close the detail on Escape.
   useEffect(() => {
@@ -93,7 +105,7 @@ export function Services({ services, bg }: { services: Service[]; bg?: string })
             ) : (
               <div className="fixed inset-0 brand-gradient" />
             )}
-            <div className="fixed inset-0 bg-black/20 backdrop-blur-[2px]" />
+            <div className="fixed inset-0 bg-black/20" />
 
             <button
               type="button"
@@ -113,9 +125,46 @@ export function Services({ services, bg }: { services: Service[]; bg?: string })
                 onClick={(e) => e.stopPropagation()}
                 className="w-full max-w-lg text-center text-white"
               >
-                {open.image && (
-                  <div className="mx-auto mb-6 w-full max-w-md overflow-hidden rounded-2xl shadow-2xl" style={{ aspectRatio: open.aspectRatio ?? "16 / 10" }}>
-                    <ImageBlock src={open.image} alt={pick(open.label)} icon="glasses" rounded="rounded-none" objectPosition={open.imagePosition} />
+                {detailImages.length > 0 && (
+                  <div className="relative mx-auto mb-6 w-full max-w-md">
+                    <div className="overflow-hidden rounded-2xl shadow-2xl" style={{ aspectRatio: open.aspectRatio ?? "16 / 10" }}>
+                      <ImageBlock src={detailImages[Math.min(slide, detailImages.length - 1)]} alt={pick(open.label)} icon="glasses" rounded="rounded-none" objectPosition={open.imagePosition} />
+                    </div>
+
+                    {detailImages.length > 1 && (
+                      <>
+                        {/* Prev / next — large, high-contrast tap targets */}
+                        <button
+                          type="button"
+                          onClick={(e) => { e.stopPropagation(); setSlide((n) => (n - 1 + detailImages.length) % detailImages.length); }}
+                          aria-label="Previous photo"
+                          className="absolute left-2 top-1/2 grid size-12 -translate-y-1/2 place-items-center rounded-full bg-white/90 text-2xl text-ink shadow-lg transition hover:bg-white"
+                        >
+                          ‹
+                        </button>
+                        <button
+                          type="button"
+                          onClick={(e) => { e.stopPropagation(); setSlide((n) => (n + 1) % detailImages.length); }}
+                          aria-label="Next photo"
+                          className="absolute right-2 top-1/2 grid size-12 -translate-y-1/2 place-items-center rounded-full bg-white/90 text-2xl text-ink shadow-lg transition hover:bg-white"
+                        >
+                          ›
+                        </button>
+
+                        {/* Dots */}
+                        <div className="mt-3 flex items-center justify-center gap-2">
+                          {detailImages.map((_, idx) => (
+                            <button
+                              key={idx}
+                              type="button"
+                              onClick={(e) => { e.stopPropagation(); setSlide(idx); }}
+                              aria-label={`Photo ${idx + 1}`}
+                              className={`size-3 rounded-full transition ${idx === Math.min(slide, detailImages.length - 1) ? "bg-white" : "bg-white/40 hover:bg-white/70"}`}
+                            />
+                          ))}
+                        </div>
+                      </>
+                    )}
                   </div>
                 )}
                 <h3 className="whitespace-pre-line text-3xl font-extrabold drop-shadow md:text-4xl">{pick(open.label)}</h3>

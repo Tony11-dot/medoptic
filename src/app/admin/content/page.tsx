@@ -15,7 +15,7 @@ import type { Block, BlocksPosition, GalleryImage, Localized, Review, Service, S
 import { STYLE_KEYS } from "@/lib/textStyle";
 import { cn } from "@/lib/cn";
 
-type Tab = "hero" | "gallery" | "team" | "services" | "reviews" | "footer" | "blocks" | "backgrounds";
+type Tab = "hero" | "gallery" | "team" | "services" | "reviews" | "essays" | "footer" | "blocks" | "backgrounds";
 
 const BG_SECTIONS = ["home", "gallery", "team", "services", "reviews", "book"] as const;
 
@@ -42,6 +42,7 @@ export default function ContentAdmin() {
     { id: "team", label: t.admin.contentTabs.team },
     { id: "services", label: t.admin.contentTabs.services },
     { id: "reviews", label: t.admin.contentTabs.reviews },
+    { id: "essays", label: t.admin.contentTabs.essays },
     { id: "blocks", label: t.admin.contentTabs.blocks },
     { id: "backgrounds", label: t.admin.contentTabs.backgrounds },
     { id: "footer", label: t.admin.contentTabs.footer },
@@ -67,6 +68,7 @@ export default function ContentAdmin() {
           label: s.label,
           description: s.description,
           image: s.image ?? "",
+          images: (s.images ?? []).filter(Boolean),
           imagePosition: s.imagePosition,
           aspectRatio: s.aspectRatio,
           detailBg: s.detailBg ?? "",
@@ -98,9 +100,9 @@ export default function ContentAdmin() {
       setServices(fresh.services ?? []);
       setServicesOriginal(fresh.services ?? []);
       setPreviewKey((k) => k + 1); // reload the live preview with saved changes
-      toast.success("Content saved — live on the site");
+      toast.success(t.admin.toasts.saved);
     } catch {
-      toast.error("Could not save content");
+      toast.error(t.admin.toasts.saveError);
     } finally {
       setSaving(false);
     }
@@ -124,6 +126,13 @@ export default function ContentAdmin() {
         createdAt: new Date().toISOString(),
       },
     ]);
+  // Extra detail-gallery photos for a service.
+  const addServiceImage = (id: string) =>
+    setServices((list) => list.map((s) => (s.id === id ? { ...s, images: [...(s.images ?? []), ""] } : s)));
+  const setServiceImage = (id: string, idx: number, url: string) =>
+    setServices((list) => list.map((s) => (s.id === id ? { ...s, images: (s.images ?? []).map((im, i) => (i === idx ? url : im)) } : s)));
+  const removeServiceImage = (id: string, idx: number) =>
+    setServices((list) => list.map((s) => (s.id === id ? { ...s, images: (s.images ?? []).filter((_, i) => i !== idx) } : s)));
   const moveService = (index: number, dir: -1 | 1) => {
     const target = index + dir;
     if (target < 0 || target >= services.length) return;
@@ -159,6 +168,15 @@ export default function ContentAdmin() {
   const updateReview = (id: string, patch: Partial<Review>) =>
     setReviews(reviews.map((r) => (r.id === id ? { ...r, ...patch } : r)));
   const removeReview = (id: string) => setReviews(reviews.filter((r) => r.id !== id));
+
+  // Essays (text over a background image).
+  const essays = content?.essays ?? [];
+  const setEssays = (next: typeof essays) => setContent((c) => (c ? { ...c, essays: next } : c));
+  const addEssay = () =>
+    setEssays([...essays, { id: `e-${Date.now()}`, title: emptyLocalized(), body: emptyLocalized(), image: "", imagePosition: "center" }]);
+  const updateEssay = (id: string, patch: Partial<(typeof essays)[number]>) =>
+    setEssays(essays.map((e) => (e.id === id ? { ...e, ...patch } : e)));
+  const removeEssay = (id: string) => setEssays(essays.filter((e) => e.id !== id));
 
   function updateMember(id: string, patch: Partial<TeamMember>) {
     setContent((c) =>
@@ -293,7 +311,7 @@ export default function ContentAdmin() {
                 {content.footer.social.map((s, i) => (
                   <div key={i} className="flex items-center gap-2">
                     <input
-                      placeholder="Label"
+                      placeholder={t.admin.fields.linkLabel}
                       value={s.label}
                       onChange={(e) => setFooter({ social: content.footer.social.map((x, j) => (j === i ? { ...x, label: e.target.value } : x)) })}
                       className={cn(plainInput, "max-w-40")}
@@ -362,9 +380,30 @@ export default function ContentAdmin() {
                   )}
                   <LocalizedField label={t.admin.svc.name} value={s.label} onChange={(label) => updateService(s.id, { label })} />
                   <LocalizedField label={t.admin.svc.description} textarea value={s.description} onChange={(description) => updateService(s.id, { description })} />
+                  <div className="space-y-2 border-t border-line pt-3">
+                    <span className="block text-sm font-semibold text-ink">
+                      {t.admin.svc.gallery} <span className="font-normal text-muted">— {t.admin.svc.galleryHint}</span>
+                    </span>
+                    {(s.images ?? []).map((img, idx) => (
+                      <div key={idx} className="flex items-start gap-2">
+                        <div className="flex-1">
+                          <ImageUpload value={img} icon="glasses" onChange={(url) => setServiceImage(s.id, idx, url)} />
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => removeServiceImage(s.id, idx)}
+                          aria-label={t.admin.actions.delete}
+                          className="grid size-7 shrink-0 place-items-center rounded-md bg-rose-50 text-rose-600 transition hover:bg-rose-100"
+                        >
+                          ✕
+                        </button>
+                      </div>
+                    ))}
+                    <Button size="sm" variant="subtle" onClick={() => addServiceImage(s.id)}>+ {t.admin.svc.addPhoto}</Button>
+                  </div>
                   <div>
                     <span className="mb-1.5 block text-sm font-semibold text-ink">
-                      Detail background <span className="font-normal text-muted">— shown full-screen when the card is tapped</span>
+                      {t.admin.svc.detailBg} <span className="font-normal text-muted">— {t.admin.svc.detailBgHint}</span>
                     </span>
                     <ImageUpload value={s.detailBg ?? ""} icon="eye" onChange={(detailBg) => updateService(s.id, { detailBg })} />
                   </div>
@@ -372,6 +411,29 @@ export default function ContentAdmin() {
                     <input type="checkbox" checked={s.enabled} onChange={(e) => updateService(s.id, { enabled: e.target.checked })} className="size-4" />
                     <span className="text-sm font-semibold text-ink">{t.admin.svc.show}</span>
                   </label>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {tab === "essays" && (
+            <div className="space-y-4">
+              <div className="flex items-center justify-between gap-2">
+                <p className="text-sm text-muted">{t.admin.essay.subtitle}</p>
+                <Button size="sm" variant="subtle" onClick={addEssay}>+ {t.admin.essay.add}</Button>
+              </div>
+              {essays.length === 0 && <p className="text-sm text-muted">{t.admin.essay.none}</p>}
+              {essays.map((e) => (
+                <div key={e.id} className="space-y-3 rounded-xl border border-line p-4">
+                  <ImageUpload value={e.image ?? ""} icon="eye" onChange={(image) => updateEssay(e.id, { image })} />
+                  {e.image && (
+                    <ImagePositioner src={e.image} value={e.imagePosition} onChange={(imagePosition) => updateEssay(e.id, { imagePosition })} aspectRatio="16 / 9" />
+                  )}
+                  <LocalizedField label={t.admin.essay.titleField} value={e.title} onChange={(title) => updateEssay(e.id, { title })} />
+                  <LocalizedField label={t.admin.essay.bodyField} textarea rows={5} value={e.body} onChange={(body) => updateEssay(e.id, { body })} />
+                  <button onClick={() => removeEssay(e.id)} className="text-sm font-medium text-rose-600 hover:underline">
+                    {t.admin.essay.remove}
+                  </button>
                 </div>
               ))}
             </div>
@@ -481,13 +543,13 @@ export default function ContentAdmin() {
         {/* Live preview — the real site, reloaded after each save */}
         <div className="lg:sticky lg:top-6">
           <div className="mb-2 flex items-center justify-between gap-2 rounded-lg bg-surface px-3 py-1.5">
-            <span className="text-xs font-semibold text-muted">Live preview — updates when you Save</span>
+            <span className="text-xs font-semibold text-muted">{t.admin.preview.label}</span>
             <button
               type="button"
               onClick={() => setPreviewKey((k) => k + 1)}
               className="rounded-md bg-white px-2.5 py-1 text-xs font-semibold text-brand-dark shadow-sm transition hover:text-brand"
             >
-              ↻ Refresh
+              ↻ {t.admin.refresh}
             </button>
           </div>
           <div className="overflow-hidden rounded-2xl border border-line bg-white shadow-sm">

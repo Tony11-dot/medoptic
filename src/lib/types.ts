@@ -31,6 +31,8 @@ export interface Service {
   description: Localized;
   /** Optional photo shown on the service card (URL or /uploads path). */
   image?: string;
+  /** Extra photos shown as a gallery inside the full-screen detail view. */
+  images?: string[];
   /** CSS object-position for the cropped photo, e.g. "center top". */
   imagePosition?: string;
   /** CSS aspect-ratio for the photo frame, e.g. "16 / 10". */
@@ -150,6 +152,17 @@ export interface Block {
 /** Where the custom block section sits on the public page. */
 export type BlocksPosition = "afterHero" | "afterProducts" | "beforeBooking" | "beforeFooter";
 
+/** An "essay" — a block of admin-written text shown over a background image. */
+export interface Essay {
+  id: string;
+  title: Localized;
+  body: Localized;
+  /** Background image behind the text. */
+  image?: string;
+  /** CSS object-position for the background, e.g. "center". */
+  imagePosition?: string;
+}
+
 /** A slide in the admin-managed hero gallery / carousel. */
 export interface GalleryImage {
   id: string;
@@ -191,6 +204,8 @@ export interface SiteContent {
   blocksPosition?: BlocksPosition;
   /** Hero gallery / carousel slides, managed in the admin. */
   gallery?: GalleryImage[];
+  /** Admin-written essays (text over a background image). */
+  essays?: Essay[];
   /** Optional background image per section, keyed by section id
    * (home/gallery/team/services/reviews/book). */
   backgrounds?: Record<string, string>;

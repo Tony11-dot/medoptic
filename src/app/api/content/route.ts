@@ -29,6 +29,7 @@ export async function PATCH(request: Request) {
     blocks: body.blocks ?? c.blocks,
     blocksPosition: body.blocksPosition ?? c.blocksPosition,
     gallery: body.gallery ?? c.gallery,
+    essays: body.essays ?? c.essays,
     backgrounds: body.backgrounds ?? c.backgrounds,
     reviews: body.reviews ?? c.reviews,
     googlePlaceId: body.googlePlaceId ?? c.googlePlaceId,

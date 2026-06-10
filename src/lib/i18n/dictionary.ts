@@ -13,6 +13,7 @@ export interface Dict {
     team: string;
     services: string;
     reviews: string;
+    essays: string;
     book: string;
     contact: string;
   };
@@ -153,8 +154,39 @@ export interface Dict {
       content: string;
       contentSub: string;
     };
-    contentTabs: { hero: string; gallery: string; team: string; services: string; reviews: string; blocks: string; footer: string; backgrounds: string; layout: string };
+    contentTabs: { hero: string; gallery: string; team: string; services: string; reviews: string; essays: string; blocks: string; footer: string; backgrounds: string; layout: string };
+    essay: { subtitle: string; titleField: string; bodyField: string; add: string; remove: string; none: string };
     bg: { subtitle: string };
+    preview: { label: string };
+    toasts: { saved: string; saveError: string };
+    imageUpload: { upload: string; replace: string; remove: string; uploading: string; failed: string };
+    positioner: { label: string; hint: string; reset: string; frameShape: string; align: string };
+    sections: { subtitle: string; tip: string; shown: string; hidden: string; showHint: string; hideHint: string; moveUp: string; moveDown: string };
+    prod: {
+      colImage: string;
+      colName: string;
+      colCategory: string;
+      colPrice: string;
+      colActions: string;
+      none: string;
+      addTitle: string;
+      editTitle: string;
+      nameLabel: string;
+      descLabel: string;
+      priceLabel: string;
+      priceHint: string;
+      categoryLabel: string;
+      saveProduct: string;
+      deleteTitle: string;
+      deleteConfirmPre: string;
+      deleteConfirmPost: string;
+      nameRequired: string;
+      updated: string;
+      added: string;
+      saveError: string;
+      deleted: string;
+      deleteError: string;
+    };
     reviews: {
       subtitle: string;
       author: string;
@@ -196,6 +228,7 @@ export interface Dict {
       hours: string;
       socialLinks: string;
       addLink: string;
+      linkLabel: string;
       previewLanguage: string;
       visibleOnSite: string;
     };
@@ -211,6 +244,11 @@ export interface Dict {
       show: string;
       deleteTitle: string;
       deleteWarn: string;
+      gallery: string;
+      galleryHint: string;
+      addPhoto: string;
+      detailBg: string;
+      detailBgHint: string;
     };
     overview: { total: string; thisMonth: string; latest: string; viewAll: string; none: string };
     queue: {
@@ -263,7 +301,7 @@ export const dictionaries: Record<Locale, Dict> = {
   he: {
     dir: "rtl",
     langName: "עברית",
-    nav: { home: "מי אנחנו", products: "המוצרים שלנו", gallery: "גלריה", team: "האופטומטריסטים", services: "השירותים שלנו", reviews: "ביקורות", book: "קביעת תור", contact: "צור קשר" },
+    nav: { home: "מי אנחנו", products: "המוצרים שלנו", gallery: "גלריה", team: "האופטומטריסטים", services: "השירותים שלנו", reviews: "ביקורות", essays: "מאמרים", book: "קביעת תור", contact: "צור קשר" },
     hero: { badge: "ברוכים הבאים ל-MEDOPTIC", cta: "קביעת תור עכשיו", secondary: "לגלריה" },
     gallery: { eyebrow: "הצצה אלינו", heading: "גלריה", subheading: "רגעים, מוצרים והאווירה אצלנו בחנות." },
     services: { eyebrow: "מה אנחנו מציעים", heading: "השירותים שלנו", subheading: "בחרו את השירות המתאים לכם וקבעו תור בקלות.", book: "קביעת תור", empty: "אין שירותים זמינים כרגע." },
@@ -385,8 +423,48 @@ export const dictionaries: Record<Locale, Dict> = {
         content: "תוכן",
         contentSub: "עריכת טקסט, גופנים ותמונות. התצוגה מתעדכנת תוך כדי; השינויים נשמרים בלחיצה.",
       },
-      contentTabs: { hero: "מי אנחנו", gallery: "גלריה", team: "אופטומטריסטים", services: "שירותים", reviews: "ביקורות", blocks: "בלוקים", footer: "כותרת תחתונה", backgrounds: "רקעים", layout: "סדר" },
+      contentTabs: { hero: "מי אנחנו", gallery: "גלריה", team: "אופטומטריסטים", services: "שירותים", reviews: "ביקורות", essays: "מאמרים", blocks: "בלוקים", footer: "כותרת תחתונה", backgrounds: "רקעים", layout: "סדר" },
+      essay: { subtitle: "הוסיפו מקטעי טקסט עם תמונת רקע.", titleField: "כותרת", bodyField: "טקסט", add: "הוספת מאמר", remove: "הסרה", none: "אין מאמרים עדיין." },
       bg: { subtitle: "העלו תמונת רקע לכל מקטע. התמונה תופיע מטושטשת מאחורי התוכן." },
+      preview: { label: "תצוגה חיה — מתעדכנת בעת שמירה" },
+      toasts: { saved: "נשמר — באתר עכשיו", saveError: "השמירה נכשלה" },
+      imageUpload: { upload: "העלאת תמונה", replace: "החלפת תמונה", remove: "הסרה", uploading: "מעלה…", failed: "ההעלאה נכשלה" },
+      positioner: { label: "מיקום התמונה", hint: "גררו את התמונה כדי למסגר אותה", reset: "איפוס", frameShape: "צורת המסגרת:", align: "יישור:" },
+      sections: {
+        subtitle: "הצגה/הסתרה של מקטעים ושינוי הסדר. זה משפיע גם על העמוד וגם על לשוניות הניווט.",
+        tip: "טיפ: הסתרת קביעת תור או צור קשר מסירה מהאתר את טופס קביעת התור / פרטי הקשר — בדרך כלל כדאי להשאיר אותם מוצגים.",
+        shown: "מוצג",
+        hidden: "מוסתר",
+        showHint: "מוסתר — לחצו כדי להציג",
+        hideHint: "מוצג — לחצו כדי להסתיר",
+        moveUp: "העברה למעלה",
+        moveDown: "העברה למטה",
+      },
+      prod: {
+        colImage: "תמונה",
+        colName: "שם",
+        colCategory: "קטגוריה",
+        colPrice: "מחיר",
+        colActions: "פעולות",
+        none: "אין מוצרים עדיין.",
+        addTitle: "הוספת מוצר",
+        editTitle: "עריכת מוצר",
+        nameLabel: "שם",
+        descLabel: "תיאור",
+        priceLabel: "מחיר (₪)",
+        priceHint: "0 = \"לפרטים בחנות\"",
+        categoryLabel: "קטגוריה",
+        saveProduct: "שמירת מוצר",
+        deleteTitle: "מחיקת מוצר",
+        deleteConfirmPre: "למחוק את ",
+        deleteConfirmPost: "? לא ניתן לבטל פעולה זו.",
+        nameRequired: "נא להזין שם מוצר",
+        updated: "המוצר עודכן",
+        added: "המוצר נוסף",
+        saveError: "שמירת המוצר נכשלה",
+        deleted: "המוצר נמחק",
+        deleteError: "מחיקת המוצר נכשלה",
+      },
       reviews: {
         subtitle: "הוסיפו ביקורות לקוחות ידנית, או חברו את גוגל כדי למשוך ביקורות אוטומטית.",
         author: "שם הלקוח",
@@ -428,6 +506,7 @@ export const dictionaries: Record<Locale, Dict> = {
         hours: "שעות פעילות",
         socialLinks: "רשתות חברתיות",
         addLink: "הוספת קישור",
+        linkLabel: "שם הקישור",
         previewLanguage: "שפת תצוגה",
         visibleOnSite: "מוצג באתר",
       },
@@ -443,6 +522,11 @@ export const dictionaries: Record<Locale, Dict> = {
         show: "הצגת השירות בטופס קביעת התור",
         deleteTitle: "מחיקת סוג תור",
         deleteWarn: "למחוק? לקוחות חדשים לא יוכלו לבחור בו. תורים קיימים יישארו.",
+        gallery: "תמונות נוספות",
+        galleryHint: "מוצגות כגלריה במסך המלא של השירות",
+        addPhoto: "הוספת תמונה",
+        detailBg: "רקע מסך מלא",
+        detailBgHint: "מוצג במסך מלא בלחיצה על הכרטיס",
       },
       overview: { total: "סך התורים", thisMonth: "החודש", latest: "בקשות אחרונות", viewAll: "הצגת הכל", none: "אין תורים עדיין." },
       queue: {
@@ -470,7 +554,7 @@ export const dictionaries: Record<Locale, Dict> = {
   en: {
     dir: "ltr",
     langName: "English",
-    nav: { home: "Who We Are", products: "Our Products", gallery: "Gallery", team: "Optometrists", services: "Our Services", reviews: "Reviews", book: "Book", contact: "Contact" },
+    nav: { home: "Who We Are", products: "Our Products", gallery: "Gallery", team: "Optometrists", services: "Our Services", reviews: "Reviews", essays: "Essays", book: "Book", contact: "Contact" },
     hero: { badge: "Welcome to MEDOPTIC", cta: "Book Appointment Now", secondary: "See gallery" },
     gallery: { eyebrow: "A look inside", heading: "Gallery", subheading: "Moments, frames and the atmosphere at our store." },
     services: { eyebrow: "What we offer", heading: "Our Services", subheading: "Choose the service that fits you and book in a few taps.", book: "Book this", empty: "No services available right now." },
@@ -592,8 +676,48 @@ export const dictionaries: Record<Locale, Dict> = {
         content: "Content",
         contentSub: "Edit text, fonts and images. The preview updates as you type; changes go live on save.",
       },
-      contentTabs: { hero: "Who We Are", gallery: "Gallery", team: "Optometrists", services: "Services", reviews: "Reviews", blocks: "Blocks", footer: "Footer", backgrounds: "Backgrounds", layout: "Layout" },
+      contentTabs: { hero: "Who We Are", gallery: "Gallery", team: "Optometrists", services: "Services", reviews: "Reviews", essays: "Essays", blocks: "Blocks", footer: "Footer", backgrounds: "Backgrounds", layout: "Layout" },
+      essay: { subtitle: "Add blocks of text over a background image.", titleField: "Title", bodyField: "Text", add: "Add essay", remove: "Remove", none: "No essays yet." },
       bg: { subtitle: "Upload a background image for any section. It appears softly behind the content." },
+      preview: { label: "Live preview — updates when you Save" },
+      toasts: { saved: "Saved — live on the site", saveError: "Could not save" },
+      imageUpload: { upload: "Upload image", replace: "Replace image", remove: "Remove", uploading: "Uploading…", failed: "Upload failed" },
+      positioner: { label: "Reposition photo", hint: "drag the image to frame it", reset: "Reset", frameShape: "Frame shape:", align: "Align:" },
+      sections: {
+        subtitle: "Show/hide sections and reorder them. This controls both the page and the nav tabs.",
+        tip: "Tip: hiding Booking or Contact removes the booking form / contact details from the site — usually keep those on.",
+        shown: "Shown",
+        hidden: "Hidden",
+        showHint: "Hidden — tap to show",
+        hideHint: "Shown — tap to hide",
+        moveUp: "Move up",
+        moveDown: "Move down",
+      },
+      prod: {
+        colImage: "Image",
+        colName: "Name",
+        colCategory: "Category",
+        colPrice: "Price",
+        colActions: "Actions",
+        none: "No products yet.",
+        addTitle: "Add product",
+        editTitle: "Edit product",
+        nameLabel: "Name",
+        descLabel: "Description",
+        priceLabel: "Price (₪)",
+        priceHint: "0 = \"ask in store\"",
+        categoryLabel: "Category",
+        saveProduct: "Save product",
+        deleteTitle: "Delete product",
+        deleteConfirmPre: "Delete ",
+        deleteConfirmPost: "? This cannot be undone.",
+        nameRequired: "Please enter a product name",
+        updated: "Product updated",
+        added: "Product added",
+        saveError: "Could not save product",
+        deleted: "Product deleted",
+        deleteError: "Could not delete product",
+      },
       reviews: {
         subtitle: "Add customer reviews by hand, or connect Google to pull them in automatically.",
         author: "Customer name",
@@ -635,6 +759,7 @@ export const dictionaries: Record<Locale, Dict> = {
         hours: "Opening hours",
         socialLinks: "Social links",
         addLink: "Add link",
+        linkLabel: "Link label",
         previewLanguage: "Preview language",
         visibleOnSite: "Visible on site",
       },
@@ -650,6 +775,11 @@ export const dictionaries: Record<Locale, Dict> = {
         show: "Show this service on the booking form",
         deleteTitle: "Delete queue type",
         deleteWarn: "Delete it? New bookings can't choose it. Existing appointments stay.",
+        gallery: "More photos",
+        galleryHint: "shown as a gallery in the full-screen detail view",
+        addPhoto: "Add photo",
+        detailBg: "Detail background",
+        detailBgHint: "shown full-screen when the card is tapped",
       },
       overview: { total: "Total appointments", thisMonth: "This month", latest: "Latest requests", viewAll: "View all", none: "No appointments yet." },
       queue: {
@@ -677,7 +807,7 @@ export const dictionaries: Record<Locale, Dict> = {
   ru: {
     dir: "ltr",
     langName: "Русский",
-    nav: { home: "О нас", products: "Продукция", gallery: "Галерея", team: "Оптометристы", services: "Услуги", reviews: "Отзывы", book: "Запись", contact: "Контакты" },
+    nav: { home: "О нас", products: "Продукция", gallery: "Галерея", team: "Оптометристы", services: "Услуги", reviews: "Отзывы", essays: "Статьи", book: "Запись", contact: "Контакты" },
     hero: { badge: "Добро пожаловать в MEDOPTIC", cta: "Записаться сейчас", secondary: "Смотреть галерею" },
     gallery: { eyebrow: "Загляните к нам", heading: "Галерея", subheading: "Моменты, оправы и атмосфера нашего магазина." },
     services: { eyebrow: "Что мы предлагаем", heading: "Наши услуги", subheading: "Выберите подходящую услугу и запишитесь за пару касаний.", book: "Записаться", empty: "Сейчас нет доступных услуг." },
@@ -799,8 +929,48 @@ export const dictionaries: Record<Locale, Dict> = {
         content: "Контент",
         contentSub: "Редактирование текста, шрифтов и изображений. Предпросмотр обновляется на лету; изменения публикуются при сохранении.",
       },
-      contentTabs: { hero: "О нас", gallery: "Галерея", team: "Оптометристы", services: "Услуги", reviews: "Отзывы", blocks: "Блоки", footer: "Подвал", backgrounds: "Фоны", layout: "Порядок" },
+      contentTabs: { hero: "О нас", gallery: "Галерея", team: "Оптометристы", services: "Услуги", reviews: "Отзывы", essays: "Статьи", blocks: "Блоки", footer: "Подвал", backgrounds: "Фоны", layout: "Порядок" },
+      essay: { subtitle: "Добавьте блоки текста на фоновом изображении.", titleField: "Заголовок", bodyField: "Текст", add: "Добавить статью", remove: "Удалить", none: "Пока нет статей." },
       bg: { subtitle: "Загрузите фоновое изображение для раздела. Оно появится мягко за контентом." },
+      preview: { label: "Живой предпросмотр — обновляется при сохранении" },
+      toasts: { saved: "Сохранено — опубликовано на сайте", saveError: "Не удалось сохранить" },
+      imageUpload: { upload: "Загрузить фото", replace: "Заменить фото", remove: "Удалить", uploading: "Загрузка…", failed: "Не удалось загрузить" },
+      positioner: { label: "Положение фото", hint: "перетащите изображение, чтобы кадрировать", reset: "Сброс", frameShape: "Форма рамки:", align: "Выравнивание:" },
+      sections: {
+        subtitle: "Показать/скрыть разделы и изменить их порядок. Это влияет и на страницу, и на вкладки навигации.",
+        tip: "Совет: скрытие записи или контактов убирает с сайта форму записи / контактные данные — обычно их лучше оставить включёнными.",
+        shown: "Показан",
+        hidden: "Скрыт",
+        showHint: "Скрыт — нажмите, чтобы показать",
+        hideHint: "Показан — нажмите, чтобы скрыть",
+        moveUp: "Вверх",
+        moveDown: "Вниз",
+      },
+      prod: {
+        colImage: "Фото",
+        colName: "Название",
+        colCategory: "Категория",
+        colPrice: "Цена",
+        colActions: "Действия",
+        none: "Пока нет товаров.",
+        addTitle: "Добавить товар",
+        editTitle: "Изменить товар",
+        nameLabel: "Название",
+        descLabel: "Описание",
+        priceLabel: "Цена (₪)",
+        priceHint: "0 = «уточнить в магазине»",
+        categoryLabel: "Категория",
+        saveProduct: "Сохранить товар",
+        deleteTitle: "Удалить товар",
+        deleteConfirmPre: "Удалить ",
+        deleteConfirmPost: "? Это действие нельзя отменить.",
+        nameRequired: "Введите название товара",
+        updated: "Товар обновлён",
+        added: "Товар добавлен",
+        saveError: "Не удалось сохранить товар",
+        deleted: "Товар удалён",
+        deleteError: "Не удалось удалить товар",
+      },
       reviews: {
         subtitle: "Добавляйте отзывы клиентов вручную или подключите Google для автоматической загрузки.",
         author: "Имя клиента",
@@ -842,6 +1012,7 @@ export const dictionaries: Record<Locale, Dict> = {
         hours: "Часы работы",
         socialLinks: "Соцсети",
         addLink: "Добавить ссылку",
+        linkLabel: "Название ссылки",
         previewLanguage: "Язык предпросмотра",
         visibleOnSite: "Показывать на сайте",
       },
@@ -857,6 +1028,11 @@ export const dictionaries: Record<Locale, Dict> = {
         show: "Показывать услугу в форме записи",
         deleteTitle: "Удалить тип услуги",
         deleteWarn: "Удалить? Новые клиенты не смогут выбрать. Существующие записи останутся.",
+        gallery: "Дополнительные фото",
+        galleryHint: "показываются галереей на полноэкранной странице услуги",
+        addPhoto: "Добавить фото",
+        detailBg: "Полноэкранный фон",
+        detailBgHint: "показывается на весь экран при нажатии на карточку",
       },
       overview: { total: "Всего записей", thisMonth: "За месяц", latest: "Последние заявки", viewAll: "Показать все", none: "Пока нет записей." },
       queue: {

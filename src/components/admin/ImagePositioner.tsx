@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { useI18n } from "@/lib/i18n/LanguageProvider";
 import { cn } from "@/lib/cn";
 
 // Drag-to-reposition control: shows the photo in a frame and lets you drag it to
@@ -42,6 +43,7 @@ export function ImagePositioner({
   /** When provided, shows a frame-shape picker. */
   onAspectChange?: (v: string) => void;
 }) {
+  const { t } = useI18n();
   const boxRef = useRef<HTMLDivElement>(null);
   const onChangeRef = useRef(onChange);
   onChangeRef.current = onChange;
@@ -82,20 +84,20 @@ export function ImagePositioner({
     <div>
       <div className="mb-1.5 flex items-center justify-between gap-2">
         <span className="text-sm font-semibold text-ink">
-          Reposition photo <span className="font-normal text-muted">— drag the image to frame it</span>
+          {t.admin.positioner.label} <span className="font-normal text-muted">— {t.admin.positioner.hint}</span>
         </span>
         <button
           type="button"
           onClick={() => onChange("50% 50%")}
           className="rounded-md border border-line bg-white px-2 py-1 text-xs font-semibold text-brand-dark transition hover:border-brand"
         >
-          Reset
+          {t.admin.positioner.reset}
         </button>
       </div>
 
       {onAspectChange && (
         <div className="mb-2 flex flex-wrap items-center gap-1">
-          <span className="me-1 text-xs font-semibold text-muted">Frame shape:</span>
+          <span className="me-1 text-xs font-semibold text-muted">{t.admin.positioner.frameShape}</span>
           {ASPECTS.map((a) => (
             <button
               key={a.v}
@@ -113,7 +115,7 @@ export function ImagePositioner({
       )}
 
       <div className="mb-2 flex items-center gap-2">
-        <span className="text-xs font-semibold text-muted">Align:</span>
+        <span className="text-xs font-semibold text-muted">{t.admin.positioner.align}</span>
         <div className="inline-grid grid-cols-3 gap-0.5 rounded-md border border-line p-0.5">
           {[0, 50, 100].map((y) =>
             [0, 50, 100].map((x) => {

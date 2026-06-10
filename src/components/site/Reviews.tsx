@@ -1,9 +1,10 @@
 "use client";
 
 import { AnimatePresence, motion } from "framer-motion";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useI18n } from "@/lib/i18n/LanguageProvider";
 import type { Review } from "@/lib/types";
+import { cn } from "@/lib/cn";
 import { SectionHeading } from "./SectionHeading";
 import { SectionBg } from "./SectionBg";
 
@@ -26,7 +27,6 @@ function Stars({ rating }: { rating: number }) {
 // broken. `placeId` (when set) builds a direct "write a review" link.
 export function Reviews({
   reviews,
-  placeId,
   bg,
 }: {
   reviews: Review[];
@@ -34,9 +34,24 @@ export function Reviews({
   bg?: string;
 }) {
   const { t } = useI18n();
-  const writeUrl = placeId
-    ? `https://search.google.com/local/writereview?placeid=${placeId}`
-    : "https://www.google.com/maps/search/?api=1&query=מדאופטיק+Medoptic";
+  const writeUrl = "https://g.page/r/CS0DCpLShLONEBM/review";
+
+  // Auto-cycle the review cards like a train (every 7s).
+  const trackRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const el = trackRef.current;
+    if (!el || reviews.length <= 1) return;
+    const id = setInterval(() => {
+      const first = el.children[0] as HTMLElement | undefined;
+      const step = first ? first.getBoundingClientRect().width + 24 : el.clientWidth;
+      if (el.scrollLeft + el.clientWidth >= el.scrollWidth - 12) {
+        el.scrollTo({ left: 0, behavior: "smooth" });
+      } else {
+        el.scrollBy({ left: step, behavior: "smooth" });
+      }
+    }, 7000);
+    return () => clearInterval(id);
+  }, [reviews.length]);
 
   const [open, setOpen] = useState(false);
   const [name, setName] = useState("");
@@ -98,7 +113,11 @@ export function Reviews({
           </div>
         ) : (
           <>
-            <div className="mx-auto mt-12 grid max-w-5xl gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            <div
+              ref={trackRef}
+              dir="ltr"
+              className="mx-auto mt-12 flex max-w-5xl snap-x snap-mandatory gap-6 overflow-x-auto scroll-smooth pb-2 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+            >
               {reviews.map((rev, i) => {
                 const isPhoto = (rev.source ?? (rev.image ? "google" : "manual")) === "google";
                 if (isPhoto && !rev.image) return null;
@@ -109,7 +128,7 @@ export function Reviews({
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true, amount: 0.2 }}
                   transition={{ duration: 0.5, delay: (i % 3) * 0.1, ease: [0.22, 1, 0.36, 1] }}
-                  className={`flex flex-col rounded-2xl border border-line bg-white shadow-sm ${isPhoto ? "self-start overflow-hidden" : "p-6"}`}
+                  className={`flex shrink-0 snap-start basis-[85%] flex-col rounded-2xl border border-line bg-white shadow-sm sm:basis-[calc(50%-12px)] lg:basis-[calc(33.333%-16px)] ${isPhoto ? "self-start overflow-hidden" : "p-6"}`}
                 >
                   {isPhoto ? (
                     // A photo review is a screenshot of a real Google review — shown

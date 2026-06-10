@@ -37,6 +37,9 @@ export async function PATCH(
         label: localized(body.label, s.label),
         description: localized(body.description, s.description),
         image: typeof body.image === "string" ? body.image : s.image,
+        images: Array.isArray(body.images)
+          ? body.images.filter((x): x is string => typeof x === "string" && x.trim() !== "")
+          : s.images,
         imagePosition: typeof body.imagePosition === "string" ? body.imagePosition : s.imagePosition,
         aspectRatio: typeof body.aspectRatio === "string" ? body.aspectRatio : s.aspectRatio,
         detailBg: typeof body.detailBg === "string" ? body.detailBg : s.detailBg,

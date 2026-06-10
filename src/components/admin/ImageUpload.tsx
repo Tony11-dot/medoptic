@@ -4,6 +4,7 @@ import { useRef, useState } from "react";
 import { upload as blobUpload } from "@vercel/blob/client";
 import { ImageBlock } from "@/components/ui/ImageBlock";
 import { useToast } from "@/components/ui/Toast";
+import { useI18n } from "@/lib/i18n/LanguageProvider";
 import { cn } from "@/lib/cn";
 
 // Uploads an image and reports the resulting URL. In production it goes straight
@@ -21,6 +22,7 @@ export function ImageUpload({
   className?: string;
 }) {
   const toast = useToast();
+  const { t } = useI18n();
   const inputRef = useRef<HTMLInputElement>(null);
   const [busy, setBusy] = useState(false);
 
@@ -49,10 +51,10 @@ export function ImageUpload({
       fd.append("file", file);
       const res = await fetch("/api/upload-local", { method: "POST", body: fd });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error ?? "Upload failed");
+      if (!res.ok) throw new Error(data.error ?? t.admin.imageUpload.failed);
       onChange(data.url);
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Upload failed");
+      toast.error(e instanceof Error ? e.message : t.admin.imageUpload.failed);
     } finally {
       setBusy(false);
     }
@@ -80,11 +82,11 @@ export function ImageUpload({
           disabled={busy}
           className="rounded-lg border border-line bg-white px-3 py-2 text-sm font-semibold text-brand-dark transition hover:border-brand disabled:opacity-60"
         >
-          {busy ? "Uploading…" : value ? "Replace image" : "Upload image"}
+          {busy ? t.admin.imageUpload.uploading : value ? t.admin.imageUpload.replace : t.admin.imageUpload.upload}
         </button>
         {value && (
           <button type="button" onClick={() => onChange("")} className="text-start text-xs font-medium text-rose-600 hover:underline">
-            Remove
+            {t.admin.imageUpload.remove}
           </button>
         )}
       </div>

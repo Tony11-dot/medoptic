@@ -52,7 +52,7 @@ export default function ProductsAdmin() {
   async function save() {
     if (!draft) return;
     if (!draft.name.he && !draft.name.en && !draft.name.ru) {
-      toast.error("Please enter a product name");
+      toast.error(t.admin.prod.nameRequired);
       return;
     }
     setSaving(true);
@@ -64,11 +64,11 @@ export default function ProductsAdmin() {
         body: JSON.stringify(draft),
       });
       if (!res.ok) throw new Error();
-      toast.success(isEdit ? "Product updated" : "Product added");
+      toast.success(isEdit ? t.admin.prod.updated : t.admin.prod.added);
       setDraft(null);
       await load();
     } catch {
-      toast.error("Could not save product");
+      toast.error(t.admin.prod.saveError);
     } finally {
       setSaving(false);
     }
@@ -78,11 +78,11 @@ export default function ProductsAdmin() {
     try {
       const res = await fetch(`/api/products/${p.id}`, { method: "DELETE" });
       if (!res.ok) throw new Error();
-      toast.success("Product deleted");
+      toast.success(t.admin.prod.deleted);
       setConfirmDelete(null);
       await load();
     } catch {
-      toast.error("Could not delete product");
+      toast.error(t.admin.prod.deleteError);
     }
   }
 
@@ -101,18 +101,18 @@ export default function ProductsAdmin() {
           <table className="w-full min-w-[640px] text-sm">
             <thead>
               <tr className="border-b border-line bg-surface text-left text-xs uppercase tracking-wide text-muted">
-                <th className="px-4 py-3">Image</th>
-                <th className="px-4 py-3">Name</th>
-                <th className="px-4 py-3">Category</th>
-                <th className="px-4 py-3">Price</th>
-                <th className="px-4 py-3 text-right">Actions</th>
+                <th className="px-4 py-3">{t.admin.prod.colImage}</th>
+                <th className="px-4 py-3">{t.admin.prod.colName}</th>
+                <th className="px-4 py-3">{t.admin.prod.colCategory}</th>
+                <th className="px-4 py-3">{t.admin.prod.colPrice}</th>
+                <th className="px-4 py-3 text-right">{t.admin.prod.colActions}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-line">
               {loading ? (
-                <tr><td colSpan={5} className="px-4 py-10 text-center text-muted">Loading…</td></tr>
+                <tr><td colSpan={5} className="px-4 py-10 text-center text-muted">{t.admin.loading}</td></tr>
               ) : products.length === 0 ? (
-                <tr><td colSpan={5} className="px-4 py-10 text-center text-muted">No products yet.</td></tr>
+                <tr><td colSpan={5} className="px-4 py-10 text-center text-muted">{t.admin.prod.none}</td></tr>
               ) : (
                 products.map((p) => (
                   <tr key={p.id} className="transition hover:bg-surface/60">
@@ -122,15 +122,15 @@ export default function ProductsAdmin() {
                       </div>
                     </td>
                     <td className="px-4 py-3 font-medium text-ink">{p.name.en || p.name.he || p.name.ru}</td>
-                    <td className="px-4 py-3 capitalize text-muted">{p.category}</td>
+                    <td className="px-4 py-3 text-muted">{t.products.categories[p.category] ?? p.category}</td>
                     <td className="px-4 py-3">{p.price > 0 ? `₪${p.price}` : "—"}</td>
                     <td className="px-4 py-3">
                       <div className="flex justify-end gap-1.5">
                         <button onClick={() => setDraft({ ...p })} className="rounded-lg px-2.5 py-1.5 text-xs font-semibold text-brand-dark transition hover:bg-brand-50">
-                          Edit
+                          {t.admin.actions.edit}
                         </button>
                         <button onClick={() => setConfirmDelete(p)} className="rounded-lg bg-rose-50 px-2.5 py-1.5 text-xs font-semibold text-rose-700 transition hover:bg-rose-100">
-                          Delete
+                          {t.admin.actions.delete}
                         </button>
                       </div>
                     </td>
@@ -143,18 +143,18 @@ export default function ProductsAdmin() {
       </div>
 
       {/* Editor */}
-      <Modal open={!!draft} onClose={() => setDraft(null)} title={draft?.id ? "Edit product" : "Add product"} className="max-w-2xl">
+      <Modal open={!!draft} onClose={() => setDraft(null)} title={draft?.id ? t.admin.prod.editTitle : t.admin.prod.addTitle} className="max-w-2xl">
         {draft && (
           <div className="space-y-5">
             <ImageUpload value={draft.image} onChange={(image) => setDraft({ ...draft, image })} />
 
             <LocalizedField
-              label="Name"
+              label={t.admin.prod.nameLabel}
               value={draft.name}
               onChange={(name) => setDraft({ ...draft, name })}
             />
             <LocalizedField
-              label="Description"
+              label={t.admin.prod.descLabel}
               textarea
               value={draft.description}
               onChange={(description) => setDraft({ ...draft, description })}
@@ -162,7 +162,7 @@ export default function ProductsAdmin() {
 
             <div className="grid grid-cols-2 gap-4">
               <label className="block">
-                <span className="mb-1.5 block text-sm font-semibold text-ink">Price (₪)</span>
+                <span className="mb-1.5 block text-sm font-semibold text-ink">{t.admin.prod.priceLabel}</span>
                 <input
                   type="number"
                   min={0}
@@ -170,36 +170,36 @@ export default function ProductsAdmin() {
                   onChange={(e) => setDraft({ ...draft, price: Number(e.target.value) })}
                   className="h-10 w-full rounded-xl border border-line bg-white px-3 text-sm outline-none focus:border-brand focus:ring-4 focus:ring-brand/10"
                 />
-                <span className="mt-1 block text-xs text-muted">0 = &quot;ask in store&quot;</span>
+                <span className="mt-1 block text-xs text-muted">{t.admin.prod.priceHint}</span>
               </label>
               <label className="block">
-                <span className="mb-1.5 block text-sm font-semibold text-ink">Category</span>
+                <span className="mb-1.5 block text-sm font-semibold text-ink">{t.admin.prod.categoryLabel}</span>
                 <select
                   value={draft.category}
                   onChange={(e) => setDraft({ ...draft, category: e.target.value })}
-                  className="h-10 w-full rounded-xl border border-line bg-white px-3 text-sm capitalize outline-none focus:border-brand"
+                  className="h-10 w-full rounded-xl border border-line bg-white px-3 text-sm outline-none focus:border-brand"
                 >
-                  {CATEGORIES.map((c) => <option key={c} value={c}>{c}</option>)}
+                  {CATEGORIES.map((c) => <option key={c} value={c}>{t.products.categories[c] ?? c}</option>)}
                 </select>
               </label>
             </div>
 
             <div className="flex justify-end gap-2 border-t border-line pt-4">
-              <Button variant="ghost" onClick={() => setDraft(null)}>Cancel</Button>
-              <Button onClick={save} disabled={saving}>{saving ? "Saving…" : "Save product"}</Button>
+              <Button variant="ghost" onClick={() => setDraft(null)}>{t.admin.actions.cancel}</Button>
+              <Button onClick={save} disabled={saving}>{saving ? t.admin.saving : t.admin.prod.saveProduct}</Button>
             </div>
           </div>
         )}
       </Modal>
 
       {/* Delete confirm */}
-      <Modal open={!!confirmDelete} onClose={() => setConfirmDelete(null)} title="Delete product">
+      <Modal open={!!confirmDelete} onClose={() => setConfirmDelete(null)} title={t.admin.prod.deleteTitle}>
         <p className="text-sm text-muted">
-          Delete <strong className="text-ink">{confirmDelete?.name.en || confirmDelete?.name.he}</strong>? This cannot be undone.
+          {t.admin.prod.deleteConfirmPre}<strong className="text-ink">{confirmDelete?.name.he || confirmDelete?.name.en || confirmDelete?.name.ru}</strong>{t.admin.prod.deleteConfirmPost}
         </p>
         <div className="mt-4 flex justify-end gap-2">
-          <Button variant="ghost" onClick={() => setConfirmDelete(null)}>Cancel</Button>
-          <Button variant="danger" onClick={() => confirmDelete && remove(confirmDelete)}>Delete</Button>
+          <Button variant="ghost" onClick={() => setConfirmDelete(null)}>{t.admin.actions.cancel}</Button>
+          <Button variant="danger" onClick={() => confirmDelete && remove(confirmDelete)}>{t.admin.actions.delete}</Button>
         </div>
       </Modal>
     </AdminShell>
