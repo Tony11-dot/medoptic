@@ -33,6 +33,7 @@ export interface Dict {
     subheading: string;
     book: string;
     readMore: string;
+    readLess: string;
     empty: string;
   };
   products: {
@@ -308,7 +309,7 @@ export const dictionaries: Record<Locale, Dict> = {
     nav: { home: "מי אנחנו", products: "המוצרים שלנו", gallery: "גלריה", team: "האופטומטריסטים", services: "השירותים שלנו", reviews: "ביקורות", essays: "מאמרים", book: "קביעת תור", contact: "צור קשר" },
     hero: { badge: "ברוכים הבאים ל-MEDOPTIC", cta: "קביעת תור עכשיו", secondary: "לגלריה" },
     gallery: { eyebrow: "הצצה אלינו", heading: "גלריה", subheading: "רגעים, מוצרים והאווירה אצלנו בחנות." },
-    services: { eyebrow: "מה אנחנו מציעים", heading: "השירותים שלנו", subheading: "בחרו את השירות המתאים לכם וקבעו תור בקלות.", book: "קביעת תור", readMore: "קרא עוד", empty: "אין שירותים זמינים כרגע." },
+    services: { eyebrow: "מה אנחנו מציעים", heading: "השירותים שלנו", subheading: "בחרו את השירות המתאים לכם וקבעו תור בקלות.", book: "קביעת תור", readMore: "קרא עוד", readLess: "הצג פחות", empty: "אין שירותים זמינים כרגע." },
     products: {
       eyebrow: "הקולקציה שלנו",
       heading: "המוצרים שלנו",
@@ -564,7 +565,7 @@ export const dictionaries: Record<Locale, Dict> = {
     nav: { home: "Who We Are", products: "Our Products", gallery: "Gallery", team: "Optometrists", services: "Our Services", reviews: "Reviews", essays: "Essays", book: "Book", contact: "Contact" },
     hero: { badge: "Welcome to MEDOPTIC", cta: "Book Appointment Now", secondary: "See gallery" },
     gallery: { eyebrow: "A look inside", heading: "Gallery", subheading: "Moments, frames and the atmosphere at our store." },
-    services: { eyebrow: "What we offer", heading: "Our Services", subheading: "Choose the service that fits you and book in a few taps.", book: "Book this", readMore: "Read more", empty: "No services available right now." },
+    services: { eyebrow: "What we offer", heading: "Our Services", subheading: "Choose the service that fits you and book in a few taps.", book: "Book this", readMore: "Read more", readLess: "Show less", empty: "No services available right now." },
     products: {
       eyebrow: "Our collection",
       heading: "Our Products",
@@ -820,7 +821,7 @@ export const dictionaries: Record<Locale, Dict> = {
     nav: { home: "О нас", products: "Продукция", gallery: "Галерея", team: "Оптометристы", services: "Услуги", reviews: "Отзывы", essays: "Статьи", book: "Запись", contact: "Контакты" },
     hero: { badge: "Добро пожаловать в MEDOPTIC", cta: "Записаться сейчас", secondary: "Смотреть галерею" },
     gallery: { eyebrow: "Загляните к нам", heading: "Галерея", subheading: "Моменты, оправы и атмосфера нашего магазина." },
-    services: { eyebrow: "Что мы предлагаем", heading: "Наши услуги", subheading: "Выберите подходящую услугу и запишитесь за пару касаний.", book: "Записаться", readMore: "Подробнее", empty: "Сейчас нет доступных услуг." },
+    services: { eyebrow: "Что мы предлагаем", heading: "Наши услуги", subheading: "Выберите подходящую услугу и запишитесь за пару касаний.", book: "Записаться", readMore: "Подробнее", readLess: "Свернуть", empty: "Сейчас нет доступных услуг." },
     products: {
       eyebrow: "Наша коллекция",
       heading: "Наша продукция",

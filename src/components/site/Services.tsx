@@ -15,6 +15,16 @@ export function Services({ services, bg }: { services: Service[]; bg?: string })
   const [openId, setOpenId] = useState<string | null>(null);
   const open = services.find((s) => s.id === openId) ?? null;
 
+  // Cards whose description is expanded inline (via "Read more").
+  const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
+  const toggleExpand = (id: string) =>
+    setExpandedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+
   // The detail gallery: the card "face" photo plus any extra photos (de-duped).
   const detailImages = useMemo(() => {
     if (!open) return [] as string[];
@@ -62,6 +72,7 @@ export function Services({ services, bg }: { services: Service[]; bg?: string })
             {services.map((s, i) => {
               const desc = pick(s.description);
               const isLong = desc.length > 150;
+              const expanded = expandedIds.has(s.id);
               return (
               <motion.article
                 key={s.id}
@@ -89,15 +100,15 @@ export function Services({ services, bg }: { services: Service[]; bg?: string })
                 <div className="flex flex-1 flex-col p-5 pt-4">
                   <h3 className="whitespace-pre-line text-xl font-bold text-ink">{pick(s.label)}</h3>
                   {desc && (
-                    <p className="mt-2 line-clamp-3 whitespace-pre-line text-base leading-relaxed text-muted">{desc}</p>
+                    <p className={`mt-2 whitespace-pre-line text-base leading-relaxed text-muted ${expanded ? "" : "line-clamp-3"}`}>{desc}</p>
                   )}
                   {isLong && (
                     <button
                       type="button"
-                      onClick={(e) => { e.stopPropagation(); setOpenId(s.id); }}
+                      onClick={(e) => { e.stopPropagation(); toggleExpand(s.id); }}
                       className="mt-2 self-start text-sm font-bold text-brand-dark transition hover:text-brand"
                     >
-                      {t.services.readMore} ←
+                      {expanded ? t.services.readLess : t.services.readMore}
                     </button>
                   )}
                   <a
@@ -132,7 +143,6 @@ export function Services({ services, bg }: { services: Service[]; bg?: string })
             ) : (
               <div className="fixed inset-0 brand-gradient" />
             )}
-            <div className="fixed inset-0 bg-black/5" />
 
             <button
               type="button"
@@ -176,9 +186,9 @@ export function Services({ services, bg }: { services: Service[]; bg?: string })
                     ))}
                   </div>
                 )}
-                <h3 className="whitespace-pre-line text-3xl font-extrabold drop-shadow md:text-4xl">{pick(open.label)}</h3>
+                <h3 className="whitespace-pre-line text-3xl font-extrabold [text-shadow:0_2px_14px_rgba(0,0,0,0.7)] md:text-4xl">{pick(open.label)}</h3>
                 {pick(open.description) && (
-                  <p className="mx-auto mt-4 max-w-md whitespace-pre-line text-lg leading-relaxed text-white/90 drop-shadow">{pick(open.description)}</p>
+                  <p className="mx-auto mt-4 max-w-md whitespace-pre-line text-lg leading-relaxed text-white [text-shadow:0_2px_12px_rgba(0,0,0,0.7)]">{pick(open.description)}</p>
                 )}
                 <a
                   href="#book"
