@@ -14,6 +14,9 @@ export function Services({ services, bg }: { services: Service[]; bg?: string })
   const { t, pick } = useI18n();
   const [openId, setOpenId] = useState<string | null>(null);
   const open = services.find((s) => s.id === openId) ?? null;
+  // With a detail background photo we use the soft, faded section-style backdrop
+  // (white overlay) — so the foreground text is dark, like the normal sections.
+  const light = !!open?.detailBg;
 
   // Cards whose description is expanded inline (via "Read more").
   const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
@@ -136,10 +139,9 @@ export function Services({ services, bg }: { services: Service[]; bg?: string })
             onClick={() => setOpenId(null)}
             className="fixed inset-0 z-[70] overflow-y-auto"
           >
-            {/* background */}
+            {/* background — same soft, faded treatment as the section backgrounds */}
             {open.detailBg ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img src={open.detailBg} alt="" className="fixed inset-0 h-full w-full object-cover" />
+              <SectionBg url={open.detailBg} />
             ) : (
               <div className="fixed inset-0 brand-gradient" />
             )}
@@ -160,7 +162,7 @@ export function Services({ services, bg }: { services: Service[]; bg?: string })
                 exit={{ scale: 0.96, opacity: 0 }}
                 transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
                 onClick={(e) => e.stopPropagation()}
-                className={`w-full text-center text-white ${detailImages.length > 1 ? "max-w-3xl" : "max-w-lg"}`}
+                className={`w-full text-center ${detailImages.length > 1 ? "max-w-3xl" : "max-w-lg"}`}
               >
                 {detailImages.length === 1 && (
                   <div className="mx-auto mb-6 w-full max-w-md overflow-hidden rounded-2xl shadow-2xl" style={{ aspectRatio: open.aspectRatio ?? "16 / 10" }}>
@@ -186,14 +188,14 @@ export function Services({ services, bg }: { services: Service[]; bg?: string })
                     ))}
                   </div>
                 )}
-                <h3 className="whitespace-pre-line text-3xl font-extrabold [text-shadow:0_2px_14px_rgba(0,0,0,0.7)] md:text-4xl">{pick(open.label)}</h3>
+                <h3 className={`whitespace-pre-line text-3xl font-extrabold md:text-4xl ${light ? "text-ink" : "text-white [text-shadow:0_2px_14px_rgba(0,0,0,0.7)]"}`}>{pick(open.label)}</h3>
                 {pick(open.description) && (
-                  <p className="mx-auto mt-4 max-w-md whitespace-pre-line text-lg leading-relaxed text-white [text-shadow:0_2px_12px_rgba(0,0,0,0.7)]">{pick(open.description)}</p>
+                  <p className={`mx-auto mt-4 max-w-md whitespace-pre-line text-lg leading-relaxed ${light ? "text-muted" : "text-white [text-shadow:0_2px_12px_rgba(0,0,0,0.7)]"}`}>{pick(open.description)}</p>
                 )}
                 <a
                   href="#book"
                   onClick={() => setOpenId(null)}
-                  className="mt-8 inline-flex h-12 items-center justify-center rounded-xl bg-white px-7 text-base font-semibold text-brand-dark shadow-lg transition hover:-translate-y-0.5"
+                  className={`mt-8 inline-flex h-12 items-center justify-center rounded-xl px-7 text-base font-semibold shadow-lg transition hover:-translate-y-0.5 ${light ? "bg-brand text-white hover:bg-brand-dark" : "bg-white text-brand-dark"}`}
                 >
                   {t.services.book}
                 </a>
