@@ -32,6 +32,7 @@ export interface Dict {
     heading: string;
     subheading: string;
     book: string;
+    readMore: string;
     empty: string;
   };
   products: {
@@ -249,6 +250,9 @@ export interface Dict {
       addPhoto: string;
       detailBg: string;
       detailBgHint: string;
+      cover: string;
+      coverHint: string;
+      setCover: string;
     };
     overview: { total: string; thisMonth: string; latest: string; viewAll: string; none: string };
     queue: {
@@ -304,7 +308,7 @@ export const dictionaries: Record<Locale, Dict> = {
     nav: { home: "מי אנחנו", products: "המוצרים שלנו", gallery: "גלריה", team: "האופטומטריסטים", services: "השירותים שלנו", reviews: "ביקורות", essays: "מאמרים", book: "קביעת תור", contact: "צור קשר" },
     hero: { badge: "ברוכים הבאים ל-MEDOPTIC", cta: "קביעת תור עכשיו", secondary: "לגלריה" },
     gallery: { eyebrow: "הצצה אלינו", heading: "גלריה", subheading: "רגעים, מוצרים והאווירה אצלנו בחנות." },
-    services: { eyebrow: "מה אנחנו מציעים", heading: "השירותים שלנו", subheading: "בחרו את השירות המתאים לכם וקבעו תור בקלות.", book: "קביעת תור", empty: "אין שירותים זמינים כרגע." },
+    services: { eyebrow: "מה אנחנו מציעים", heading: "השירותים שלנו", subheading: "בחרו את השירות המתאים לכם וקבעו תור בקלות.", book: "קביעת תור", readMore: "קרא עוד", empty: "אין שירותים זמינים כרגע." },
     products: {
       eyebrow: "הקולקציה שלנו",
       heading: "המוצרים שלנו",
@@ -523,10 +527,13 @@ export const dictionaries: Record<Locale, Dict> = {
         deleteTitle: "מחיקת סוג תור",
         deleteWarn: "למחוק? לקוחות חדשים לא יוכלו לבחור בו. תורים קיימים יישארו.",
         gallery: "תמונות נוספות",
-        galleryHint: "מוצגות כגלריה במסך המלא של השירות",
+        galleryHint: "מוצגות כקרוסלה במסך המלא של השירות",
         addPhoto: "הוספת תמונה",
         detailBg: "רקע מסך מלא",
         detailBgHint: "מוצג במסך מלא בלחיצה על הכרטיס",
+        cover: "התמונה הראשית",
+        coverHint: "מוצגת על הכרטיס בעמוד",
+        setCover: "קבע כראשית",
       },
       overview: { total: "סך התורים", thisMonth: "החודש", latest: "בקשות אחרונות", viewAll: "הצגת הכל", none: "אין תורים עדיין." },
       queue: {
@@ -557,7 +564,7 @@ export const dictionaries: Record<Locale, Dict> = {
     nav: { home: "Who We Are", products: "Our Products", gallery: "Gallery", team: "Optometrists", services: "Our Services", reviews: "Reviews", essays: "Essays", book: "Book", contact: "Contact" },
     hero: { badge: "Welcome to MEDOPTIC", cta: "Book Appointment Now", secondary: "See gallery" },
     gallery: { eyebrow: "A look inside", heading: "Gallery", subheading: "Moments, frames and the atmosphere at our store." },
-    services: { eyebrow: "What we offer", heading: "Our Services", subheading: "Choose the service that fits you and book in a few taps.", book: "Book this", empty: "No services available right now." },
+    services: { eyebrow: "What we offer", heading: "Our Services", subheading: "Choose the service that fits you and book in a few taps.", book: "Book this", readMore: "Read more", empty: "No services available right now." },
     products: {
       eyebrow: "Our collection",
       heading: "Our Products",
@@ -776,10 +783,13 @@ export const dictionaries: Record<Locale, Dict> = {
         deleteTitle: "Delete queue type",
         deleteWarn: "Delete it? New bookings can't choose it. Existing appointments stay.",
         gallery: "More photos",
-        galleryHint: "shown as a gallery in the full-screen detail view",
+        galleryHint: "shown as a carousel in the full-screen detail view",
         addPhoto: "Add photo",
         detailBg: "Detail background",
         detailBgHint: "shown full-screen when the card is tapped",
+        cover: "Cover photo",
+        coverHint: "the face shown on the card",
+        setCover: "Make cover",
       },
       overview: { total: "Total appointments", thisMonth: "This month", latest: "Latest requests", viewAll: "View all", none: "No appointments yet." },
       queue: {
@@ -810,7 +820,7 @@ export const dictionaries: Record<Locale, Dict> = {
     nav: { home: "О нас", products: "Продукция", gallery: "Галерея", team: "Оптометристы", services: "Услуги", reviews: "Отзывы", essays: "Статьи", book: "Запись", contact: "Контакты" },
     hero: { badge: "Добро пожаловать в MEDOPTIC", cta: "Записаться сейчас", secondary: "Смотреть галерею" },
     gallery: { eyebrow: "Загляните к нам", heading: "Галерея", subheading: "Моменты, оправы и атмосфера нашего магазина." },
-    services: { eyebrow: "Что мы предлагаем", heading: "Наши услуги", subheading: "Выберите подходящую услугу и запишитесь за пару касаний.", book: "Записаться", empty: "Сейчас нет доступных услуг." },
+    services: { eyebrow: "Что мы предлагаем", heading: "Наши услуги", subheading: "Выберите подходящую услугу и запишитесь за пару касаний.", book: "Записаться", readMore: "Подробнее", empty: "Сейчас нет доступных услуг." },
     products: {
       eyebrow: "Наша коллекция",
       heading: "Наша продукция",
@@ -1029,10 +1039,13 @@ export const dictionaries: Record<Locale, Dict> = {
         deleteTitle: "Удалить тип услуги",
         deleteWarn: "Удалить? Новые клиенты не смогут выбрать. Существующие записи останутся.",
         gallery: "Дополнительные фото",
-        galleryHint: "показываются галереей на полноэкранной странице услуги",
+        galleryHint: "показываются каруселью на полноэкранной странице услуги",
         addPhoto: "Добавить фото",
         detailBg: "Полноэкранный фон",
         detailBgHint: "показывается на весь экран при нажатии на карточку",
+        cover: "Главное фото",
+        coverHint: "показывается на карточке",
+        setCover: "Сделать главным",
       },
       overview: { total: "Всего записей", thisMonth: "За месяц", latest: "Последние заявки", viewAll: "Показать все", none: "Пока нет записей." },
       queue: {

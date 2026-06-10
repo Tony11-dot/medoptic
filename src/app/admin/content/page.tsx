@@ -133,6 +133,19 @@ export default function ContentAdmin() {
     setServices((list) => list.map((s) => (s.id === id ? { ...s, images: (s.images ?? []).map((im, i) => (i === idx ? url : im)) } : s)));
   const removeServiceImage = (id: string, idx: number) =>
     setServices((list) => list.map((s) => (s.id === id ? { ...s, images: (s.images ?? []).filter((_, i) => i !== idx) } : s)));
+  // Promote a gallery photo to be the card "face": swap it into the cover slot
+  // (the old cover, if any, moves back into the gallery).
+  const setServiceCover = (id: string, idx: number) =>
+    setServices((list) =>
+      list.map((s) => {
+        if (s.id !== id) return s;
+        const imgs = [...(s.images ?? [])];
+        const chosen = imgs[idx];
+        if (!chosen) return s;
+        imgs[idx] = s.image ?? "";
+        return { ...s, image: chosen, images: imgs.filter(Boolean) };
+      }),
+    );
   const moveService = (index: number, dir: -1 | 1) => {
     const target = index + dir;
     if (target < 0 || target >= services.length) return;
@@ -374,6 +387,9 @@ export default function ContentAdmin() {
                       <button type="button" onClick={() => removeService(s.id)} aria-label="delete" className="grid size-7 place-items-center rounded-md bg-rose-50 text-rose-600 transition hover:bg-rose-100">✕</button>
                     </div>
                   </div>
+                  <span className="block text-sm font-semibold text-ink">
+                    {t.admin.svc.cover} <span className="font-normal text-muted">— {t.admin.svc.coverHint}</span>
+                  </span>
                   <ImageUpload value={s.image ?? ""} icon="glasses" onChange={(image) => updateService(s.id, { image })} />
                   {s.image && (
                     <ImagePositioner src={s.image} value={s.imagePosition} onChange={(imagePosition) => updateService(s.id, { imagePosition })} aspectRatio={s.aspectRatio ?? "16 / 10"} onAspectChange={(aspectRatio) => updateService(s.id, { aspectRatio })} />
@@ -389,6 +405,16 @@ export default function ContentAdmin() {
                         <div className="flex-1">
                           <ImageUpload value={img} icon="glasses" onChange={(url) => setServiceImage(s.id, idx, url)} />
                         </div>
+                        {img && (
+                          <button
+                            type="button"
+                            onClick={() => setServiceCover(s.id, idx)}
+                            title={t.admin.svc.setCover}
+                            className="shrink-0 rounded-md border border-line px-2 py-1 text-xs font-semibold text-brand-dark transition hover:border-brand"
+                          >
+                            ★ {t.admin.svc.setCover}
+                          </button>
+                        )}
                         <button
                           type="button"
                           onClick={() => removeServiceImage(s.id, idx)}

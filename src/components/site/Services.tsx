@@ -1,7 +1,7 @@
 "use client";
 
 import { AnimatePresence, motion } from "framer-motion";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useI18n } from "@/lib/i18n/LanguageProvider";
 import type { Service } from "@/lib/types";
 import { ImageBlock } from "@/components/ui/ImageBlock";
@@ -14,9 +14,8 @@ export function Services({ services, bg }: { services: Service[]; bg?: string })
   const { t, pick } = useI18n();
   const [openId, setOpenId] = useState<string | null>(null);
   const open = services.find((s) => s.id === openId) ?? null;
-  const [slide, setSlide] = useState(0);
 
-  // The detail gallery: the card thumbnail plus any extra photos (de-duped).
+  // The detail gallery: the card "face" photo plus any extra photos (de-duped).
   const detailImages = useMemo(() => {
     if (!open) return [] as string[];
     return [open.image, ...(open.images ?? [])].filter(
@@ -24,8 +23,23 @@ export function Services({ services, bg }: { services: Service[]; bg?: string })
     );
   }, [open]);
 
-  // Reset to the first photo whenever a different service is opened.
-  useEffect(() => setSlide(0), [openId]);
+  // Auto-cycle the detail photos "like a train" (every 4s) when there's more
+  // than one — they sit 3-up and scroll horizontally.
+  const trackRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const el = trackRef.current;
+    if (!el || detailImages.length <= 1) return;
+    const id = setInterval(() => {
+      const first = el.children[0] as HTMLElement | undefined;
+      const step = first ? first.getBoundingClientRect().width + 16 : el.clientWidth;
+      if (el.scrollLeft + el.clientWidth >= el.scrollWidth - 8) {
+        el.scrollTo({ left: 0, behavior: "smooth" });
+      } else {
+        el.scrollBy({ left: step, behavior: "smooth" });
+      }
+    }, 4000);
+    return () => clearInterval(id);
+  }, [detailImages.length, openId]);
 
   // Close the detail on Escape.
   useEffect(() => {
@@ -44,8 +58,11 @@ export function Services({ services, bg }: { services: Service[]; bg?: string })
         {services.length === 0 ? (
           <p className="mt-12 text-center text-muted">{t.services.empty}</p>
         ) : (
-          <div className="mx-auto mt-12 grid max-w-5xl gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {services.map((s, i) => (
+          <div className="mx-auto mt-12 grid max-w-5xl items-start gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {services.map((s, i) => {
+              const desc = pick(s.description);
+              const isLong = desc.length > 150;
+              return (
               <motion.article
                 key={s.id}
                 initial={{ opacity: 0, y: 24 }}
@@ -69,21 +86,31 @@ export function Services({ services, bg }: { services: Service[]; bg?: string })
                     </span>
                   </div>
                 )}
-                <div className="flex flex-1 flex-col p-6 pt-4">
+                <div className="flex flex-1 flex-col p-5 pt-4">
                   <h3 className="whitespace-pre-line text-xl font-bold text-ink">{pick(s.label)}</h3>
-                  {pick(s.description) && (
-                    <p className="mt-2 flex-1 whitespace-pre-line text-base leading-relaxed text-muted">{pick(s.description)}</p>
+                  {desc && (
+                    <p className="mt-2 line-clamp-3 whitespace-pre-line text-base leading-relaxed text-muted">{desc}</p>
+                  )}
+                  {isLong && (
+                    <button
+                      type="button"
+                      onClick={(e) => { e.stopPropagation(); setOpenId(s.id); }}
+                      className="mt-2 self-start text-sm font-bold text-brand-dark transition hover:text-brand"
+                    >
+                      {t.services.readMore} ←
+                    </button>
                   )}
                   <a
                     href="#book"
                     onClick={(e) => e.stopPropagation()}
-                    className="mt-5 inline-flex h-11 items-center justify-center rounded-xl bg-brand px-5 text-base font-semibold text-white transition hover:bg-brand-dark"
+                    className="mt-4 inline-flex h-11 items-center justify-center rounded-xl bg-brand px-5 text-base font-semibold text-white transition hover:bg-brand-dark"
                   >
                     {t.services.book}
                   </a>
                 </div>
               </motion.article>
-            ))}
+              );
+            })}
           </div>
         )}
       </div>
@@ -105,7 +132,7 @@ export function Services({ services, bg }: { services: Service[]; bg?: string })
             ) : (
               <div className="fixed inset-0 brand-gradient" />
             )}
-            <div className="fixed inset-0 bg-black/20" />
+            <div className="fixed inset-0 bg-black/5" />
 
             <button
               type="button"
@@ -123,48 +150,30 @@ export function Services({ services, bg }: { services: Service[]; bg?: string })
                 exit={{ scale: 0.96, opacity: 0 }}
                 transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
                 onClick={(e) => e.stopPropagation()}
-                className="w-full max-w-lg text-center text-white"
+                className={`w-full text-center text-white ${detailImages.length > 1 ? "max-w-3xl" : "max-w-lg"}`}
               >
-                {detailImages.length > 0 && (
-                  <div className="relative mx-auto mb-6 w-full max-w-md">
-                    <div className="overflow-hidden rounded-2xl shadow-2xl" style={{ aspectRatio: open.aspectRatio ?? "16 / 10" }}>
-                      <ImageBlock src={detailImages[Math.min(slide, detailImages.length - 1)]} alt={pick(open.label)} icon="glasses" rounded="rounded-none" objectPosition={open.imagePosition} />
-                    </div>
-
-                    {detailImages.length > 1 && (
-                      <>
-                        {/* Prev / next — large, high-contrast tap targets */}
-                        <button
-                          type="button"
-                          onClick={(e) => { e.stopPropagation(); setSlide((n) => (n - 1 + detailImages.length) % detailImages.length); }}
-                          aria-label="Previous photo"
-                          className="absolute left-2 top-1/2 grid size-12 -translate-y-1/2 place-items-center rounded-full bg-white/90 text-2xl text-ink shadow-lg transition hover:bg-white"
-                        >
-                          ‹
-                        </button>
-                        <button
-                          type="button"
-                          onClick={(e) => { e.stopPropagation(); setSlide((n) => (n + 1) % detailImages.length); }}
-                          aria-label="Next photo"
-                          className="absolute right-2 top-1/2 grid size-12 -translate-y-1/2 place-items-center rounded-full bg-white/90 text-2xl text-ink shadow-lg transition hover:bg-white"
-                        >
-                          ›
-                        </button>
-
-                        {/* Dots */}
-                        <div className="mt-3 flex items-center justify-center gap-2">
-                          {detailImages.map((_, idx) => (
-                            <button
-                              key={idx}
-                              type="button"
-                              onClick={(e) => { e.stopPropagation(); setSlide(idx); }}
-                              aria-label={`Photo ${idx + 1}`}
-                              className={`size-3 rounded-full transition ${idx === Math.min(slide, detailImages.length - 1) ? "bg-white" : "bg-white/40 hover:bg-white/70"}`}
-                            />
-                          ))}
-                        </div>
-                      </>
-                    )}
+                {detailImages.length === 1 && (
+                  <div className="mx-auto mb-6 w-full max-w-md overflow-hidden rounded-2xl shadow-2xl" style={{ aspectRatio: open.aspectRatio ?? "16 / 10" }}>
+                    <ImageBlock src={detailImages[0]} alt={pick(open.label)} icon="glasses" rounded="rounded-none" objectPosition={open.imagePosition} />
+                  </div>
+                )}
+                {detailImages.length > 1 && (
+                  // 3-up auto-cycling photo "train" (horizontal scroll). All the
+                  // service's photos show here; the card outside shows just the face.
+                  <div
+                    ref={trackRef}
+                    dir="ltr"
+                    className="mb-6 flex snap-x snap-mandatory gap-4 overflow-x-auto scroll-smooth pb-2 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+                  >
+                    {detailImages.map((src, idx) => (
+                      <div
+                        key={idx}
+                        className="shrink-0 basis-[80%] snap-center overflow-hidden rounded-2xl shadow-2xl sm:basis-[48%] lg:basis-[31.5%]"
+                        style={{ aspectRatio: open.aspectRatio ?? "16 / 10" }}
+                      >
+                        <ImageBlock src={src} alt={`${pick(open.label)} ${idx + 1}`} icon="glasses" rounded="rounded-none" />
+                      </div>
+                    ))}
                   </div>
                 )}
                 <h3 className="whitespace-pre-line text-3xl font-extrabold drop-shadow md:text-4xl">{pick(open.label)}</h3>
