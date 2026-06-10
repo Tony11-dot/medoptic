@@ -65,7 +65,7 @@ export function Navbar({ sections = SECTIONS_DEFAULT }: { sections?: string[] })
         scrolled ? "py-1" : "py-2",
       )}
     >
-      <nav className="container-x flex items-center justify-between gap-4">
+      <nav className="container-x flex items-center justify-between gap-2">
         <a href="#home" aria-label="MEDOPTIC home" className="group relative transition hover:opacity-90">
           {/* soft spotlight behind the logo */}
           <span
@@ -82,7 +82,7 @@ export function Navbar({ sections = SECTIONS_DEFAULT }: { sections?: string[] })
               <a
                 href={`#${id}`}
                 className={cn(
-                  "relative rounded-lg px-3.5 py-2 text-sm font-semibold transition",
+                  "relative whitespace-nowrap rounded-lg px-3 py-2 text-sm font-semibold transition",
                   active === id ? "text-brand-dark" : "text-ink/70 hover:text-brand-dark",
                 )}
               >
@@ -99,7 +99,7 @@ export function Navbar({ sections = SECTIONS_DEFAULT }: { sections?: string[] })
           ))}
         </ul>
 
-        <div className="flex items-center gap-2">
+        <div className="-me-1 flex shrink-0 items-center gap-2">
           <a
             href={WHATSAPP_URL}
             target="_blank"
