@@ -11,6 +11,7 @@ import { cn } from "@/lib/cn";
 const NAV = [
   { href: "/admin", key: "overview", icon: "▦" },
   { href: "/admin/queue", key: "appointments", icon: "🗓" },
+  { href: "/admin/schedule", key: "schedule", icon: "🕑" },
   { href: "/admin/content", key: "content", icon: "✎" },
   { href: "/admin/sections", key: "sections", icon: "≣" },
   { href: "/admin/settings", key: "settings", icon: "⚙" },

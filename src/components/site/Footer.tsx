@@ -1,16 +1,29 @@
 "use client";
 
 import { useI18n } from "@/lib/i18n/LanguageProvider";
-import type { SiteContent } from "@/lib/types";
+import type { OpeningRule, SiteContent } from "@/lib/types";
 import { Logo } from "@/components/ui/Logo";
 import { styleToCss } from "@/lib/textStyle";
+import { formatOpeningLines } from "@/lib/schedule";
 import { SocialIcon, socialHref } from "./SocialIcon";
 
 // Waze navigation link to the clinic.
 const WAZE_URL = "https://waze.com/ul?q=Ha-Ta%27asiya%20St%201%2C%20Yokne%27am%20Illit%2C%202069200&navigate=yes";
 
-export function Footer({ footer, styles }: { footer: SiteContent["footer"]; styles?: SiteContent["styles"] }) {
+export function Footer({
+  footer,
+  styles,
+  openingRules,
+}: {
+  footer: SiteContent["footer"];
+  styles?: SiteContent["styles"];
+  /** Admin-managed opening hours (Admin → Schedule). When present they replace
+   * the manually-typed footer hours, so the footer always matches the booking
+   * system automatically. */
+  openingRules?: OpeningRule[];
+}) {
   const { t, pick } = useI18n();
+  const hourLines = formatOpeningLines(openingRules ?? [], t.weekdaysShort);
 
   return (
     <footer id="contact" className="scroll-mt-20 brand-gradient text-white">
@@ -49,7 +62,15 @@ export function Footer({ footer, styles }: { footer: SiteContent["footer"]; styl
 
           <div>
             <h3 className="text-sm font-bold uppercase tracking-wider text-white/60">{t.footer.hours}</h3>
-            <p className="mt-4 whitespace-pre-line text-sm text-white/90" style={styleToCss(styles?.["footer.hours"])}>{pick(footer.hours)}</p>
+            {hourLines.length > 0 ? (
+              <div className="mt-4 space-y-1 text-sm text-white/90" style={styleToCss(styles?.["footer.hours"])}>
+                {hourLines.map((line, i) => (
+                  <p key={i}>{line}</p>
+                ))}
+              </div>
+            ) : (
+              <p className="mt-4 whitespace-pre-line text-sm text-white/90" style={styleToCss(styles?.["footer.hours"])}>{pick(footer.hours)}</p>
+            )}
           </div>
 
           <div>

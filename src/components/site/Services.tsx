@@ -162,10 +162,10 @@ export function Services({ services, bg }: { services: Service[]; bg?: string })
                 exit={{ scale: 0.96, opacity: 0 }}
                 transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
                 onClick={(e) => e.stopPropagation()}
-                className={`w-full text-center ${detailImages.length > 1 ? "max-w-3xl" : "max-w-lg"}`}
+                className={`w-full text-center ${detailImages.length > 1 ? "max-w-5xl" : "max-w-3xl"}`}
               >
                 {detailImages.length === 1 && (
-                  <div className="mx-auto mb-6 w-full max-w-md overflow-hidden rounded-2xl shadow-2xl" style={{ aspectRatio: open.aspectRatio ?? "16 / 10" }}>
+                  <div className="mx-auto mb-6 w-full max-w-3xl overflow-hidden rounded-2xl shadow-2xl" style={{ aspectRatio: open.aspectRatio ?? "16 / 10" }}>
                     <ImageBlock src={detailImages[0]} alt={pick(open.label)} icon="glasses" rounded="rounded-none" objectPosition={open.imagePosition} />
                   </div>
                 )}
@@ -180,7 +180,7 @@ export function Services({ services, bg }: { services: Service[]; bg?: string })
                     {detailImages.map((src, idx) => (
                       <div
                         key={idx}
-                        className="shrink-0 basis-[80%] snap-center overflow-hidden rounded-2xl shadow-2xl sm:basis-[48%] lg:basis-[31.5%]"
+                        className="shrink-0 basis-[88%] snap-center overflow-hidden rounded-2xl shadow-2xl sm:basis-[78%] lg:basis-[62%]"
                         style={{ aspectRatio: open.aspectRatio ?? "16 / 10" }}
                       >
                         <ImageBlock src={src} alt={`${pick(open.label)} ${idx + 1}`} icon="glasses" rounded="rounded-none" />

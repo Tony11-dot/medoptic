@@ -20,6 +20,27 @@ export interface AdminSettings {
 }
 
 /**
+ * One opening-hours rule: a set of weekdays that share the same time window,
+ * e.g. days [0..4] (Sun–Thu) 09:00–19:00. Weekdays are 0=Sunday … 6=Saturday.
+ */
+export interface OpeningRule {
+  id: string;
+  days: number[];
+  start: string; // "HH:MM"
+  end: string; // "HH:MM"
+}
+
+/**
+ * Scheduling settings managed from the admin. They drive the customer slot
+ * picker, the conflict checks on booking, and the opening hours in the footer.
+ */
+export interface BookingSettings {
+  rules: OpeningRule[];
+  /** How many days ahead customers can book (rolling window). */
+  windowDays: number;
+}
+
+/**
  * A bookable service / queue type, fully managed by admins. `id` is what an
  * appointment references in {@link Appointment.service}; the set is not fixed in
  * code, so new types can be added or removed from the admin panel.
@@ -39,6 +60,9 @@ export interface Service {
   aspectRatio?: string;
   /** Optional background image for the full-screen detail view (tap a service). */
   detailBg?: string;
+  /** How long one appointment of this service takes, in minutes. Slots on the
+   * scheduling grid are offered and reserved in blocks of this size. */
+  durationMinutes?: number;
   /** When false the service is hidden from the public booking form. */
   enabled: boolean;
   /** Sort order in the booking form and admin list (ascending). */
@@ -83,6 +107,9 @@ export interface Appointment {
   reminderChannels: ReminderChannel[];
   /** Confirmed slot the customer picked on the scheduling calendar (ISO). */
   appointmentAt?: string;
+  /** Minutes this appointment blocks on the grid (snapshot of the service's
+   * duration at booking time, so later edits don't shift existing bookings). */
+  durationMinutes?: number;
   /** Set when an admin approves/declines; reason used for declines. */
   decisionAt?: string;
   decisionReason?: string;

@@ -1,5 +1,6 @@
 import { updateServices } from "@/lib/db";
 import { isAuthed } from "@/lib/auth";
+import { parseDurationInput } from "@/lib/schedule";
 import type { Localized, Service } from "@/lib/types";
 
 function localized(v: unknown, fallback: Localized): Localized {
@@ -43,6 +44,7 @@ export async function PATCH(
         imagePosition: typeof body.imagePosition === "string" ? body.imagePosition : s.imagePosition,
         aspectRatio: typeof body.aspectRatio === "string" ? body.aspectRatio : s.aspectRatio,
         detailBg: typeof body.detailBg === "string" ? body.detailBg : s.detailBg,
+        durationMinutes: body.durationMinutes != null ? parseDurationInput(body.durationMinutes) ?? s.durationMinutes : s.durationMinutes,
         enabled: body.enabled != null ? Boolean(body.enabled) : s.enabled,
         order: typeof body.order === "number" ? body.order : s.order,
       };

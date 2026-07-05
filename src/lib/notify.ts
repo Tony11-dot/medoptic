@@ -2,8 +2,8 @@
 // plugs in where marked below; until credentials are set it logs the message
 // instead of throwing, so the admin approve/decline flow stays complete.
 import "server-only";
+import { BUSINESS_TZ } from "./schedule";
 import type { Appointment, ReminderChannel } from "./types";
-import { SCHEDULING_URL } from "./config";
 
 // Business sender identity — the account that messages reach customers from.
 // Override in production via env vars; these are the MEDOPTIC defaults.
@@ -13,6 +13,10 @@ export const BUSINESS = {
   email: process.env.MEDOPTIC_EMAIL ?? "Medoptic24@gmail.com",
 };
 
+// Inbox that gets a heads-up whenever a new booking comes in. Follows the
+// business inbox unless a dedicated alerts address is configured.
+const ADMIN_EMAIL = process.env.MEDOPTIC_ADMIN_EMAIL ?? BUSINESS.email;
+
 interface NotifyResult {
   ok: boolean;
   channels: ("sms" | "email")[];
@@ -20,15 +24,17 @@ interface NotifyResult {
   preview: string;
 }
 
-/** Human-friendly date+time for the confirmed slot. */
+/** Human-friendly date+time for the confirmed slot, in the business timezone
+ * (the server may run in UTC — never format appointment times in server-local). */
 function whenText(appt: Appointment): string | null {
   if (!appt.appointmentAt) return null;
   const d = new Date(appt.appointmentAt);
   if (isNaN(d.getTime())) return null;
   return d.toLocaleString("he-IL", {
-    weekday: "short",
+    timeZone: BUSINESS_TZ,
+    weekday: "long",
     day: "2-digit",
-    month: "short",
+    month: "long",
     hour: "2-digit",
     minute: "2-digit",
   });
@@ -42,7 +48,7 @@ function buildMessage(appt: Appointment): string {
   if (appt.status === "approved") {
     const slot = when
       ? `התור שלך נקבע ל-${when}.`
-      : `לבחירת מועד שנוח לך: ${SCHEDULING_URL}`;
+      : `נחזור אליך לתיאום מועד.`;
     return `${BUSINESS.name}: שלום ${name}, התור שלך אושר. ${slot} ${signoff}`;
   }
   if (appt.status === "declined") {
@@ -115,8 +121,7 @@ function buildEmailHtml(appt: Appointment): string {
     }
     return emailShell(
       `שלום ${name}, התור שלך אושר 🎉`,
-      `נותר שלב אחד — בחרו את המועד שנוח לכם ונאשר אותו.`,
-      buttonHtml(SCHEDULING_URL, "בחירת מועד"),
+      `נחזור אליכם בהקדם לתיאום המועד שנוח לכם.`,
     );
   }
   if (appt.status === "declined") {
@@ -250,4 +255,58 @@ export function notifyReminder(appt: Appointment): Promise<NotifyResult> {
     subject: `${BUSINESS.name} — appointment reminder`,
     html: buildReminderHtml(appt),
   });
+}
+
+// ---- Admin "new booking" alert ---------------------------------------------
+
+// One detail row in the admin alert table.
+function detailRow(label: string, value: string): string {
+  return `<tr>
+    <td style="padding:8px 0;font-size:14px;color:#8a94a3;white-space:nowrap;vertical-align:top;">${esc(label)}</td>
+    <td style="padding:8px 0 8px 14px;font-size:15px;color:#1a2330;font-weight:bold;">${esc(value) || "—"}</td>
+  </tr>`;
+}
+
+/** Branded Hebrew HTML alerting the office that a new booking arrived, with a
+ * button that opens this exact appointment in the admin queue. */
+function buildAdminEmailHtml(appt: Appointment, serviceLabel: string): string {
+  const name = `${appt.firstName} ${appt.lastName}`.trim();
+  const when = whenText(appt);
+  const channels = (appt.reminderChannels ?? [])
+    .map((c) => (c === "sms" ? "SMS" : "אימייל"))
+    .join(", ");
+  const duration = appt.durationMinutes ? `${appt.durationMinutes} דקות` : "";
+  const rows = [
+    detailRow("מועד התור", when ?? ""),
+    detailRow("שירות", serviceLabel),
+    detailRow("משך", duration),
+    detailRow("שם", name),
+    detailRow("טלפון", appt.phone),
+    detailRow("אימייל", appt.email ?? ""),
+    detailRow("הערות", appt.notes ?? ""),
+    detailRow("תזכורת", channels),
+  ].join("");
+  const body = `נקבע תור חדש דרך מערכת התורים באתר. הפרטים:
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-top:14px;border-top:1px solid #e6eaef;">
+      ${rows}
+    </table>`;
+  return emailShell(
+    "📥 תור חדש נקבע באתר",
+    body,
+    buttonHtml(`${SITE_URL}/admin/queue?appt=${encodeURIComponent(appt.id)}`, "פתיחת התור בניהול"),
+  );
+}
+
+/** Notify the office that a new booking came in. Sent only by email, to the
+ * MEDOPTIC inbox. `serviceLabel` is the human-readable (Hebrew) service name. */
+export async function notifyAdminNewBooking(appt: Appointment, serviceLabel: string): Promise<void> {
+  const name = `${appt.firstName} ${appt.lastName}`.trim();
+  const when = whenText(appt);
+  const text = `תור חדש: ${name}, טלפון ${appt.phone}, שירות: ${serviceLabel}${when ? `, מועד: ${when}` : ""}. לניהול: ${SITE_URL}/admin/queue?appt=${encodeURIComponent(appt.id)}`;
+  await sendEmail(
+    ADMIN_EMAIL,
+    `${BUSINESS.name} — תור חדש${when ? ` ל${when}` : ""} · ${name}`,
+    text,
+    buildAdminEmailHtml(appt, serviceLabel),
+  );
 }

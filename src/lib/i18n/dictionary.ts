@@ -82,21 +82,28 @@ export interface Dict {
     reminderSms: string;
     reminderEmail: string;
     submit: string;
-    submitPickTime: string;
     submitHint: string;
     submitting: string;
     successTitle: string;
     successBody: string;
-    pickTimeCta: string;
-    pickTimeHelp: string;
-    warnPickTime: string;
     bookAnother: string;
-    enterTimeLabel: string;
-    enterTimeSave: string;
-    enterTimeSaving: string;
-    timeSaved: string;
     cancel: string;
     cancelledTitle: string;
+    /* Built-in hour system (slot picker) */
+    continueToTime: string;
+    stepTime: string;
+    back: string;
+    chooseDay: string;
+    chooseHour: string;
+    loadingSlots: string;
+    noSlotsDay: string;
+    noSlotsAtAll: string;
+    slotTaken: string;
+    yourSlot: string;
+    durationLabel: string;
+    minutesShort: string;
+    closed: string;
+    full: string;
     services: Record<ServiceType, string>;
     errors: {
       required: string;
@@ -113,6 +120,9 @@ export interface Dict {
     rights: string;
     adminLink: string;
   };
+  /** Localized weekday names, Sunday first (index 0 = Sunday). */
+  weekdaysShort: string[];
+  weekdaysLong: string[];
   admin: {
     loading: string;
     viewSite: string;
@@ -121,7 +131,26 @@ export interface Dict {
     saving: string;
     refresh: string;
     actions: { approve: string; decline: string; add: string; edit: string; delete: string; cancel: string; search: string };
-    nav: { overview: string; appointments: string; queueTypes: string; products: string; content: string; sections: string; settings: string };
+    nav: { overview: string; appointments: string; schedule: string; queueTypes: string; products: string; content: string; sections: string; settings: string };
+    schedule: {
+      title: string;
+      subtitle: string;
+      openingTitle: string;
+      openingHint: string;
+      addRule: string;
+      daysLabel: string;
+      start: string;
+      end: string;
+      windowLabel: string;
+      windowHint: string;
+      durationsTitle: string;
+      durationsHint: string;
+      minutes: string;
+      footerNote: string;
+      noRules: string;
+      invalidRule: string;
+      saved: string;
+    };
     settings: {
       title: string;
       subtitle: string;
@@ -228,6 +257,7 @@ export interface Dict {
       email: string;
       address: string;
       hours: string;
+      hoursAuto: string;
       socialLinks: string;
       addLink: string;
       linkLabel: string;
@@ -271,6 +301,7 @@ export interface Dict {
       reminderBy: string;
       notes: string;
       notified: string;
+      duration: string;
       setTime: string;
       setTimeDesc: string;
       dateTime: string;
@@ -353,22 +384,28 @@ export const dictionaries: Record<Locale, Dict> = {
       reminderLabel: "איך לשלוח לכם תזכורת? (אפשר לבחור בשניהם)",
       reminderSms: "ב-SMS",
       reminderEmail: "באימייל",
-      submit: "שליחת בקשה",
-      submitPickTime: "בחירת שעה ושליחה",
-      submitHint: "ייפתח יומן לבחירת השעה שנוחה לכם.",
-      submitting: "פותח יומן…",
-      successTitle: "הבקשה התקבלה!",
-      successBody: "פתחנו עבורכם את היומן — בחרו את השעה שנוחה לכם.",
-      pickTimeCta: "פתיחת היומן",
-      pickTimeHelp: "השעה שתבחרו היא שעת התור. נשלח לכם אישור ותזכורת.",
-      warnPickTime: "⚠️ חשוב: יש לבחור תאריך ושעה ביומן, אחרת לא נוכל לשמור לכם תור. לא בחרתם? לחצו למעלה.",
+      submit: "אישור וקביעת התור",
+      submitHint: "בחרו יום ושעה — והתור שלכם נקבע מיד.",
+      submitting: "קובע את התור…",
+      successTitle: "התור נקבע!",
+      successBody: "שלחנו לכם אישור, ונזכיר לכם יום לפני התור.",
       bookAnother: "קביעת תור נוסף",
-      enterTimeLabel: "בחרתם מועד ביומן? הזינו אותו כאן והוא יישמר אוטומטית במערכת:",
-      enterTimeSave: "שמירת המועד",
-      enterTimeSaving: "שומר…",
-      timeSaved: "✓ המועד נשמר! נשלח לכם תזכורת לפני התור.",
       cancel: "ביטול התור",
       cancelledTitle: "התור בוטל",
+      continueToTime: "המשך לבחירת יום ושעה",
+      stepTime: "בחירת יום ושעה",
+      back: "חזרה לפרטים",
+      chooseDay: "באיזה יום נוח לכם?",
+      chooseHour: "באיזו שעה?",
+      loadingSlots: "טוען שעות פנויות…",
+      noSlotsDay: "אין שעות פנויות ביום זה",
+      noSlotsAtAll: "אין כרגע תורים פנויים. חייגו אלינו ונשמח לעזור.",
+      slotTaken: "השעה הזו נתפסה הרגע — בחרו שעה אחרת.",
+      yourSlot: "התור שלכם",
+      durationLabel: "משך התור",
+      minutesShort: "דק׳",
+      closed: "סגור",
+      full: "מלא",
       services: services_he,
       errors: {
         required: "שדה חובה",
@@ -385,6 +422,8 @@ export const dictionaries: Record<Locale, Dict> = {
       rights: "כל הזכויות שמורות.",
       adminLink: "ניהול",
     },
+    weekdaysShort: ["א׳", "ב׳", "ג׳", "ד׳", "ה׳", "ו׳", "ש׳"],
+    weekdaysLong: ["ראשון", "שני", "שלישי", "רביעי", "חמישי", "שישי", "שבת"],
     admin: {
       loading: "טוען…",
       viewSite: "צפייה באתר",
@@ -393,7 +432,26 @@ export const dictionaries: Record<Locale, Dict> = {
       saving: "שומר…",
       refresh: "רענון",
       actions: { approve: "אישור", decline: "דחייה", add: "הוספה", edit: "עריכה", delete: "מחיקה", cancel: "ביטול", search: "חיפוש" },
-      nav: { overview: "סקירה", appointments: "תורים", queueTypes: "סוגי תורים", products: "מוצרים", content: "תוכן", sections: "מקטעים", settings: "הגדרות" },
+      nav: { overview: "סקירה", appointments: "תורים", schedule: "יומן ושעות", queueTypes: "סוגי תורים", products: "מוצרים", content: "תוכן", sections: "מקטעים", settings: "הגדרות" },
+      schedule: {
+        title: "יומן ושעות פתיחה",
+        subtitle: "הגדירו מתי אפשר לקבוע תורים — הלקוחות יראו רק שעות פנויות.",
+        openingTitle: "שעות פתיחה",
+        openingHint: "בחרו ימים וטווח שעות. אפשר להוסיף כמה שורות (למשל שישי בנפרד).",
+        addRule: "הוספת שורה",
+        daysLabel: "ימים",
+        start: "משעה",
+        end: "עד שעה",
+        windowLabel: "כמה ימים קדימה אפשר לקבוע תור",
+        windowHint: "לקוחות יוכלו לבחור מועד רק בטווח הזה.",
+        durationsTitle: "משך תור לכל שירות",
+        durationsHint: "כמה דקות תופס כל תור — המערכת שומרת את הזמן הזה אוטומטית ביומן.",
+        minutes: "דקות",
+        footerNote: "שעות הפתיחה מתעדכנות אוטומטית בתחתית האתר (הפוטר).",
+        noRules: "אין שעות פתיחה מוגדרות — הוסיפו שורה כדי שלקוחות יוכלו לקבוע תור.",
+        invalidRule: "בכל שורה יש לבחור לפחות יום אחד ושעת התחלה מוקדמת משעת הסיום.",
+        saved: "היומן נשמר",
+      },
       settings: {
         title: "הגדרות",
         subtitle: "שינוי סיסמת הניהול.",
@@ -509,6 +567,7 @@ export const dictionaries: Record<Locale, Dict> = {
         email: "אימייל",
         address: "כתובת",
         hours: "שעות פעילות",
+        hoursAuto: "שעות הפעילות בפוטר מתעדכנות אוטומטית מתוך ניהול ← יומן ושעות.",
         socialLinks: "רשתות חברתיות",
         addLink: "הוספת קישור",
         linkLabel: "שם הקישור",
@@ -552,10 +611,11 @@ export const dictionaries: Record<Locale, Dict> = {
         reminderBy: "תזכורת ב",
         notes: "הערות",
         notified: "נשלחה הודעה",
-        setTime: "קביעת מועד",
-        setTimeDesc: "קבעו את מועד התור — הוא נכלל ב-SMS/אימייל ובתזכורת.",
+        duration: "משך",
+        setTime: "עדכון מועד",
+        setTimeDesc: "עדכון ידני של מועד התור — הלקוח יקבל הודעה עם המועד החדש.",
         dateTime: "תאריך ושעה",
-        dateTimeHint: "לא חובה — אם ריק, יישלח קישור ללקוח לבחירת מועד.",
+        dateTimeHint: "הלקוח כבר בחר מועד באתר; שנו כאן רק אם צריך להזיז את התור.",
       },
     },
   },
@@ -609,22 +669,28 @@ export const dictionaries: Record<Locale, Dict> = {
       reminderLabel: "How should we remind you? (pick one or both)",
       reminderSms: "By SMS",
       reminderEmail: "By email",
-      submit: "Send request",
-      submitPickTime: "Pick a time & send",
-      submitHint: "A calendar opens so you can choose the time that suits you.",
-      submitting: "Opening calendar…",
-      successTitle: "Request received!",
-      successBody: "We opened the calendar — choose the time that suits you.",
-      pickTimeCta: "Open the calendar",
-      pickTimeHelp: "The time you pick is your appointment time. We'll send a confirmation and a reminder.",
-      warnPickTime: "⚠️ Important: you must pick a date & time on the calendar, or we can't hold your appointment. Didn't choose one? Tap above.",
+      submit: "Confirm & book",
+      submitHint: "Pick a day and time — your appointment is booked instantly.",
+      submitting: "Booking…",
+      successTitle: "Appointment booked!",
+      successBody: "We've sent you a confirmation, and we'll remind you the day before.",
       bookAnother: "Book another",
-      enterTimeLabel: "Picked a time on the calendar? Enter it here and it's saved automatically:",
-      enterTimeSave: "Save my time",
-      enterTimeSaving: "Saving…",
-      timeSaved: "✓ Saved! We'll send you a reminder before your appointment.",
       cancel: "Cancel appointment",
       cancelledTitle: "Appointment cancelled",
+      continueToTime: "Continue to pick a day & time",
+      stepTime: "Pick a day & time",
+      back: "Back to details",
+      chooseDay: "Which day suits you?",
+      chooseHour: "What time?",
+      loadingSlots: "Loading available times…",
+      noSlotsDay: "No free times on this day",
+      noSlotsAtAll: "No free appointments right now. Give us a call and we'll help.",
+      slotTaken: "That time was just taken — please pick another.",
+      yourSlot: "Your appointment",
+      durationLabel: "Duration",
+      minutesShort: "min",
+      closed: "Closed",
+      full: "Full",
       services: services_en,
       errors: {
         required: "Required field",
@@ -641,6 +707,8 @@ export const dictionaries: Record<Locale, Dict> = {
       rights: "All rights reserved.",
       adminLink: "Admin",
     },
+    weekdaysShort: ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"],
+    weekdaysLong: ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"],
     admin: {
       loading: "Loading…",
       viewSite: "View site",
@@ -649,7 +717,26 @@ export const dictionaries: Record<Locale, Dict> = {
       saving: "Saving…",
       refresh: "Refresh",
       actions: { approve: "Approve", decline: "Decline", add: "Add", edit: "Edit", delete: "Delete", cancel: "Cancel", search: "Search" },
-      nav: { overview: "Overview", appointments: "Appointments", queueTypes: "Queue Types", products: "Products", content: "Content", sections: "Sections", settings: "Settings" },
+      nav: { overview: "Overview", appointments: "Appointments", schedule: "Schedule", queueTypes: "Queue Types", products: "Products", content: "Content", sections: "Sections", settings: "Settings" },
+      schedule: {
+        title: "Schedule & opening hours",
+        subtitle: "Define when appointments can be booked — customers only see free slots.",
+        openingTitle: "Opening hours",
+        openingHint: "Pick days and an hour range. Add several rows (e.g. Friday separately).",
+        addRule: "Add row",
+        daysLabel: "Days",
+        start: "From",
+        end: "Until",
+        windowLabel: "How many days ahead can be booked",
+        windowHint: "Customers can only pick a slot within this range.",
+        durationsTitle: "Appointment duration per service",
+        durationsHint: "How many minutes each appointment takes — the system reserves this time automatically.",
+        minutes: "minutes",
+        footerNote: "Opening hours update automatically in the site footer.",
+        noRules: "No opening hours defined — add a row so customers can book.",
+        invalidRule: "Each row needs at least one day and a start time before the end time.",
+        saved: "Schedule saved",
+      },
       settings: {
         title: "Settings",
         subtitle: "Change the admin password.",
@@ -765,6 +852,7 @@ export const dictionaries: Record<Locale, Dict> = {
         email: "Email",
         address: "Address",
         hours: "Opening hours",
+        hoursAuto: "Footer opening hours update automatically from Admin → Schedule.",
         socialLinks: "Social links",
         addLink: "Add link",
         linkLabel: "Link label",
@@ -808,10 +896,11 @@ export const dictionaries: Record<Locale, Dict> = {
         reminderBy: "Reminder by",
         notes: "Notes",
         notified: "Notified",
-        setTime: "Set time",
-        setTimeDesc: "Set the appointment time — it's included in the SMS/email and the reminder.",
+        duration: "Duration",
+        setTime: "Reschedule",
+        setTimeDesc: "Manually change the appointment time — the customer is notified with the new time.",
         dateTime: "Date & time",
-        dateTimeHint: "Optional — if empty, the customer gets the link to pick a time.",
+        dateTimeHint: "The customer already picked a time on the site; change it here only to move the appointment.",
       },
     },
   },
@@ -865,22 +954,28 @@ export const dictionaries: Record<Locale, Dict> = {
       reminderLabel: "Как напомнить вам? (можно выбрать оба)",
       reminderSms: "По SMS",
       reminderEmail: "По эл. почте",
-      submit: "Отправить заявку",
-      submitPickTime: "Выбрать время и отправить",
-      submitHint: "Откроется календарь, чтобы выбрать удобное время.",
-      submitting: "Открываем календарь…",
-      successTitle: "Заявка принята!",
-      successBody: "Мы открыли календарь — выберите удобное вам время.",
-      pickTimeCta: "Открыть календарь",
-      pickTimeHelp: "Выбранное время — это время приёма. Мы пришлём подтверждение и напоминание.",
-      warnPickTime: "⚠️ Важно: выберите дату и время в календаре, иначе мы не сможем закрепить приём. Не выбрали? Нажмите выше.",
+      submit: "Подтвердить запись",
+      submitHint: "Выберите день и время — запись подтверждается сразу.",
+      submitting: "Записываем…",
+      successTitle: "Вы записаны!",
+      successBody: "Мы отправили подтверждение и напомним за день до приёма.",
       bookAnother: "Записаться ещё раз",
-      enterTimeLabel: "Выбрали время в календаре? Введите его здесь — оно сохранится автоматически:",
-      enterTimeSave: "Сохранить время",
-      enterTimeSaving: "Сохранение…",
-      timeSaved: "✓ Сохранено! Мы пришлём напоминание перед приёмом.",
       cancel: "Отменить запись",
       cancelledTitle: "Запись отменена",
+      continueToTime: "Далее: выбрать день и время",
+      stepTime: "Выбор дня и времени",
+      back: "Назад к данным",
+      chooseDay: "Какой день вам удобен?",
+      chooseHour: "Во сколько?",
+      loadingSlots: "Загружаем свободное время…",
+      noSlotsDay: "В этот день нет свободного времени",
+      noSlotsAtAll: "Сейчас нет свободных мест. Позвоните нам — мы поможем.",
+      slotTaken: "Это время только что заняли — выберите другое.",
+      yourSlot: "Ваша запись",
+      durationLabel: "Длительность",
+      minutesShort: "мин",
+      closed: "Закрыто",
+      full: "Занято",
       services: services_ru,
       errors: {
         required: "Обязательное поле",
@@ -897,6 +992,8 @@ export const dictionaries: Record<Locale, Dict> = {
       rights: "Все права защищены.",
       adminLink: "Админ",
     },
+    weekdaysShort: ["Вс", "Пн", "Вт", "Ср", "Чт", "Пт", "Сб"],
+    weekdaysLong: ["Воскресенье", "Понедельник", "Вторник", "Среда", "Четверг", "Пятница", "Суббота"],
     admin: {
       loading: "Загрузка…",
       viewSite: "Открыть сайт",
@@ -905,7 +1002,26 @@ export const dictionaries: Record<Locale, Dict> = {
       saving: "Сохранение…",
       refresh: "Обновить",
       actions: { approve: "Подтвердить", decline: "Отклонить", add: "Добавить", edit: "Изменить", delete: "Удалить", cancel: "Отмена", search: "Поиск" },
-      nav: { overview: "Обзор", appointments: "Записи", queueTypes: "Типы услуг", products: "Товары", content: "Контент", sections: "Разделы", settings: "Настройки" },
+      nav: { overview: "Обзор", appointments: "Записи", schedule: "Расписание", queueTypes: "Типы услуг", products: "Товары", content: "Контент", sections: "Разделы", settings: "Настройки" },
+      schedule: {
+        title: "Расписание и часы работы",
+        subtitle: "Определите, когда можно записаться — клиенты видят только свободные слоты.",
+        openingTitle: "Часы работы",
+        openingHint: "Выберите дни и диапазон часов. Можно добавить несколько строк (например, пятницу отдельно).",
+        addRule: "Добавить строку",
+        daysLabel: "Дни",
+        start: "С",
+        end: "До",
+        windowLabel: "На сколько дней вперёд можно записаться",
+        windowHint: "Клиенты смогут выбрать время только в этом диапазоне.",
+        durationsTitle: "Длительность приёма по услугам",
+        durationsHint: "Сколько минут занимает приём — система автоматически резервирует это время.",
+        minutes: "минут",
+        footerNote: "Часы работы автоматически обновляются в подвале сайта.",
+        noRules: "Часы работы не заданы — добавьте строку, чтобы клиенты могли записаться.",
+        invalidRule: "В каждой строке выберите хотя бы один день; время начала должно быть раньше конца.",
+        saved: "Расписание сохранено",
+      },
       settings: {
         title: "Настройки",
         subtitle: "Изменить пароль администратора.",
@@ -1021,6 +1137,7 @@ export const dictionaries: Record<Locale, Dict> = {
         email: "Эл. почта",
         address: "Адрес",
         hours: "Часы работы",
+        hoursAuto: "Часы работы в подвале обновляются автоматически из раздела Админ → Расписание.",
         socialLinks: "Соцсети",
         addLink: "Добавить ссылку",
         linkLabel: "Название ссылки",
@@ -1064,10 +1181,11 @@ export const dictionaries: Record<Locale, Dict> = {
         reminderBy: "Напоминание",
         notes: "Примечания",
         notified: "Уведомление",
-        setTime: "Указать время",
-        setTimeDesc: "Укажите время приёма — оно войдёт в SMS/письмо и напоминание.",
+        duration: "Длительность",
+        setTime: "Перенести",
+        setTimeDesc: "Ручное изменение времени приёма — клиент получит уведомление с новым временем.",
         dateTime: "Дата и время",
-        dateTimeHint: "Необязательно — если пусто, клиент получит ссылку для выбора времени.",
+        dateTimeHint: "Клиент уже выбрал время на сайте; меняйте здесь только чтобы перенести приём.",
       },
     },
   },

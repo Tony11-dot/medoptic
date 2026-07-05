@@ -1,7 +1,17 @@
 // Default seed data used to initialise the JSON "database" on first run.
-import type { Appointment, Product, Service, SiteContent } from "./types";
+import type { Appointment, BookingSettings, Product, Service, SiteContent } from "./types";
 
 export const seedAppointments: Appointment[] = [];
+
+// Default opening hours (admin-editable in Admin → Schedule): Sun–Thu 09:00–19:00,
+// Fri 09:00–13:00 — these drive the customer slot picker and the footer.
+export const seedBookingSettings: BookingSettings = {
+  rules: [
+    { id: "r-weekdays", days: [0, 1, 2, 3, 4], start: "09:00", end: "19:00" },
+    { id: "r-friday", days: [5], start: "09:00", end: "13:00" },
+  ],
+  windowDays: 21,
+};
 
 // Starting set of bookable services / queue types. Admins can edit, reorder,
 // disable, delete or add their own from the admin panel.
@@ -15,6 +25,7 @@ export const seedServices: Service[] = [
       ru: "Комплексная проверка зрения у оптометриста.",
     },
     image: "",
+    durationMinutes: 20,
     enabled: true,
     order: 0,
     createdAt: "2026-01-01T09:00:00.000Z",
@@ -28,6 +39,7 @@ export const seedServices: Service[] = [
       ru: "Подбор оправы и линз с личной консультацией.",
     },
     image: "",
+    durationMinutes: 15,
     enabled: true,
     order: 1,
     createdAt: "2026-01-01T09:00:00.000Z",
@@ -41,6 +53,7 @@ export const seedServices: Service[] = [
       ru: "Профессиональная консультация по выбору решения.",
     },
     image: "",
+    durationMinutes: 15,
     enabled: true,
     order: 2,
     createdAt: "2026-01-01T09:00:00.000Z",
@@ -54,6 +67,7 @@ export const seedServices: Service[] = [
       ru: "Ремонт, чистка и подгонка имеющихся очков.",
     },
     image: "",
+    durationMinutes: 10,
     enabled: true,
     order: 3,
     createdAt: "2026-01-01T09:00:00.000Z",

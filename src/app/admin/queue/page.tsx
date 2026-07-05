@@ -7,25 +7,28 @@ import { Modal } from "@/components/ui/Modal";
 import { useToast } from "@/components/ui/Toast";
 import { useI18n } from "@/lib/i18n/LanguageProvider";
 import type { Appointment, Service } from "@/lib/types";
-import { SCHEDULING_URL } from "@/lib/config";
+import { BUSINESS_TZ, dateStrInTz, timeStrInTz } from "@/lib/schedule";
 import { cn } from "@/lib/cn";
 
+// All appointment times are shown and edited in the shop's timezone, so the
+// admin sees the same clock as the customer slot picker — no matter where the
+// browser or server happens to run.
 const fmtDate = (iso: string) =>
-  new Date(iso).toLocaleString("en-GB", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" });
+  new Date(iso).toLocaleString("en-GB", { timeZone: BUSINESS_TZ, day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" });
 
 const fmtSlot = (iso?: string) => {
   if (!iso) return "—";
   const d = new Date(iso);
   if (isNaN(d.getTime())) return "—";
-  return d.toLocaleString("en-GB", { weekday: "short", day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" });
+  return d.toLocaleString("en-GB", { timeZone: BUSINESS_TZ, weekday: "short", day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" });
 };
 
-// ISO -> value for <input type="datetime-local"> in the admin's local timezone.
+// ISO -> value for <input type="datetime-local">, as shop wall-clock time.
+// (The PATCH API interprets naive values as shop time, so this round-trips.)
 const isoToLocalInput = (iso: string) => {
   const d = new Date(iso);
   if (isNaN(d.getTime())) return "";
-  const pad = (n: number) => String(n).padStart(2, "0");
-  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+  return `${dateStrInTz(d)}T${timeStrInTz(d)}`;
 };
 
 export default function QueuePage() {
@@ -47,7 +50,17 @@ export default function QueuePage() {
     const res = await fetch("/api/appointments");
     if (res.ok) {
       const data = await res.json();
-      setItems(data.appointments ?? []);
+      const list: Appointment[] = data.appointments ?? [];
+      setItems(list);
+      // Deep link from the "new booking" email: /admin/queue?appt=<id> opens
+      // that appointment's details. Consume the param so refreshes and later
+      // actions don't keep re-opening the modal.
+      const wanted = new URLSearchParams(window.location.search).get("appt");
+      if (wanted) {
+        window.history.replaceState(null, "", window.location.pathname);
+        const hit = list.find((a) => a.id === wanted);
+        if (hit) setViewing(hit);
+      }
     }
     setLoading(false);
   }, []);
@@ -110,6 +123,11 @@ export default function QueuePage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ status: "approved", appointmentAt: timeValue || undefined }),
       });
+      if (res.status === 409) {
+        // The target time overlaps another booking — keep the modal open.
+        toast.error(t.booking.slotTaken);
+        return;
+      }
       if (!res.ok) throw new Error();
       toast.success("✓");
       setTimeFor(null);
@@ -129,14 +147,6 @@ export default function QueuePage() {
           <p className="mt-1 text-sm text-muted">{t.admin.titles.appointmentsSub}</p>
         </div>
         <div className="flex items-center gap-2">
-          <a
-            href={SCHEDULING_URL}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex h-9 items-center gap-1.5 rounded-lg border border-line bg-white px-3 text-sm font-semibold text-brand-dark transition hover:border-brand"
-          >
-            📅 {t.booking.pickTimeCta}
-          </a>
           <Button variant="secondary" size="sm" onClick={load}>↻ {t.admin.refresh}</Button>
         </div>
       </div>
@@ -217,6 +227,9 @@ export default function QueuePage() {
             <Row label={t.admin.queue.email}>{viewing.email || "—"}</Row>
             <Row label={t.admin.queue.service}>{serviceLabel(viewing.service)}</Row>
             <Row label={t.admin.queue.appointment}>{fmtSlot(viewing.appointmentAt)}</Row>
+            {viewing.durationMinutes != null && (
+              <Row label={t.admin.queue.duration}>{viewing.durationMinutes} {t.booking.minutesShort}</Row>
+            )}
             <Row label={t.admin.queue.reminderBy}>{(viewing.reminderChannels ?? []).map((c) => (c === "email" ? "Email" : "SMS")).join(" + ") || "SMS"}</Row>
             <Row label={t.admin.queue.booked}>{fmtDate(viewing.createdAt)}</Row>
             {viewing.notifiedAt && <Row label={t.admin.queue.notified}>{fmtDate(viewing.notifiedAt)}</Row>}

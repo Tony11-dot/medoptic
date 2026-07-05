@@ -312,7 +312,12 @@ export default function ContentAdmin() {
                 </label>
               </div>
               {styled(t.admin.fields.address, content.footer.address, (address) => setFooter({ address }), "footer.address")}
-              {styled(t.admin.fields.hours, content.footer.hours, (hours) => setFooter({ hours }), "footer.hours")}
+              {/* Opening hours are no longer typed here — they come straight from
+                  the scheduling settings so the footer can never drift. */}
+              <p className="rounded-xl bg-brand-50 px-4 py-3 text-sm font-medium text-brand-dark">
+                🕑 {t.admin.fields.hoursAuto}{" "}
+                <a href="/admin/schedule" className="font-bold underline underline-offset-2">{t.admin.nav.schedule}</a>
+              </p>
 
               <div className="space-y-3 border-t border-line pt-4">
                 <div className="flex items-center justify-between">

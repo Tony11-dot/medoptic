@@ -14,10 +14,15 @@ export interface AppointmentInput {
   lastName: string;
   phone: string;
   service: string;
+  /** Slot start the customer picked on the hour grid (UTC ISO). */
+  appointmentAt: string;
   reminderChannels: ReminderChannel[];
   email?: string;
   notes?: string;
 }
+
+/** Cap free-text fields so a hostile client can't store unbounded blobs. */
+const clip = (s: string, max: number) => s.slice(0, max);
 
 /**
  * Validate a booking submission. `validServiceIds` is the set of currently
@@ -29,12 +34,13 @@ export function validateAppointment(
 ): { ok: true; value: AppointmentInput } | { ok: false; error: string } {
   if (typeof body !== "object" || body === null) return { ok: false, error: "Invalid body" };
   const b = body as Record<string, unknown>;
-  const firstName = String(b.firstName ?? "").trim();
-  const lastName = String(b.lastName ?? "").trim();
-  const phone = String(b.phone ?? "").trim();
-  const service = String(b.service ?? "").trim();
-  const email = b.email ? String(b.email).trim() : undefined;
-  const notes = b.notes ? String(b.notes).trim() : undefined;
+  const firstName = clip(String(b.firstName ?? "").trim(), 80);
+  const lastName = clip(String(b.lastName ?? "").trim(), 80);
+  const phone = clip(String(b.phone ?? "").trim(), 25);
+  const service = clip(String(b.service ?? "").trim(), 60);
+  const email = b.email ? clip(String(b.email).trim(), 120) : undefined;
+  const notes = b.notes ? clip(String(b.notes).trim(), 1000) : undefined;
+  const appointmentAtRaw = String(b.appointmentAt ?? "").trim();
 
   // Reminder channels: accept an array (multi-select). Email needs an email
   // address; if it's missing we drop email and keep SMS.
@@ -50,5 +56,12 @@ export function validateAppointment(
     return { ok: false, error: "valid service is required" };
   if (email && !isValidEmail(email)) return { ok: false, error: "invalid email" };
 
-  return { ok: true, value: { firstName, lastName, phone, service, reminderChannels, email, notes } };
+  // The slot comes from the site's own hour picker; whether it's actually an
+  // open, free slot is checked against the schedule in the API route.
+  const slot = new Date(appointmentAtRaw);
+  if (!appointmentAtRaw || isNaN(slot.getTime()))
+    return { ok: false, error: "valid appointmentAt is required" };
+  const appointmentAt = slot.toISOString();
+
+  return { ok: true, value: { firstName, lastName, phone, service, appointmentAt, reminderChannels, email, notes } };
 }

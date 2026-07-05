@@ -21,6 +21,44 @@ export function Navbar({ sections = SECTIONS_DEFAULT }: { sections?: string[] })
   // Nav tabs follow the admin's Sections order/visibility (all sections).
   const SECTIONS = sections as SectionId[];
 
+  // Drive the scroll ourselves with a computed offset instead of relying on the
+  // native #anchor jump or scrollIntoView, whose `behavior: "smooth"` is often
+  // dropped on Android. We animate with our own rAF loop (per-frame scrollTo),
+  // which no browser's smooth-scroll heuristic can interrupt. The mobile menu is
+  // an overlay inside the fixed header, so closing it never shifts the section
+  // anchors — we can scroll the instant the link is tapped (see goToSection).
+  const HEADER_OFFSET = 84; // matches scroll-padding-top in globals.css
+  const scrollToSection = (id: string) => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    const targetY = Math.max(0, el.getBoundingClientRect().top + window.scrollY - HEADER_OFFSET);
+    history.replaceState(null, "", `#${id}`);
+
+    const startY = window.scrollY;
+    const dist = targetY - startY;
+    if (Math.abs(dist) < 2) return;
+    const duration = 500;
+    const easeInOut = (t: number) => (t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2);
+    let start: number | null = null;
+    const step = (now: number) => {
+      if (start === null) start = now;
+      const p = Math.min(1, (now - start) / duration);
+      window.scrollTo(0, startY + dist * easeInOut(p));
+      if (p < 1) requestAnimationFrame(step);
+    };
+    requestAnimationFrame(step);
+  };
+  const goToSection = (e: React.MouseEvent<HTMLAnchorElement>, id: string) => {
+    if (!document.getElementById(id)) return; // let the browser handle it
+    e.preventDefault();
+    setMenuOpen(false);
+    // Scroll right away — don't gate it on the menu's close animation. Relying on
+    // AnimatePresence's onExitComplete used to break on Android/Samsung, where
+    // that callback often never fired and nothing scrolled. One rAF lets React
+    // commit the close first; the section anchors don't move (overlay menu).
+    requestAnimationFrame(() => scrollToSection(id));
+  };
+
   const labels: Record<SectionId, string> = {
     home: t.nav.home,
     gallery: t.nav.gallery,
@@ -140,16 +178,16 @@ export function Navbar({ sections = SECTIONS_DEFAULT }: { sections?: string[] })
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: "auto" }}
             exit={{ opacity: 0, height: 0 }}
-            className="overflow-hidden border-t border-line bg-white/95 backdrop-blur-xl md:hidden"
+            className="relative z-10 overflow-hidden border-t border-line bg-white md:hidden"
           >
             <ul className="container-x flex flex-col gap-1 py-3">
               {SECTIONS.map((id) => (
                 <li key={id}>
                   <a
                     href={`#${id}`}
-                    onClick={() => setMenuOpen(false)}
+                    onClick={(e) => goToSection(e, id)}
                     className={cn(
-                      "block rounded-lg px-3 py-3 text-sm font-semibold transition",
+                      "block touch-manipulation rounded-lg px-3 py-3 text-sm font-semibold transition [-webkit-tap-highlight-color:transparent]",
                       active === id ? "bg-brand-50 text-brand-dark" : "text-ink/80 hover:bg-surface",
                     )}
                   >

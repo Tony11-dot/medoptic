@@ -1,6 +1,7 @@
 import { randomUUID } from "crypto";
 import { getServices, updateServices } from "@/lib/db";
 import { isAuthed } from "@/lib/auth";
+import { parseDurationInput } from "@/lib/schedule";
 import type { Localized, Service } from "@/lib/types";
 
 function localized(v: unknown): Localized {
@@ -56,6 +57,7 @@ export async function POST(request: Request) {
     imagePosition: typeof body.imagePosition === "string" ? body.imagePosition : undefined,
     aspectRatio: typeof body.aspectRatio === "string" ? body.aspectRatio : undefined,
     detailBg: typeof body.detailBg === "string" ? body.detailBg : undefined,
+    durationMinutes: parseDurationInput(body.durationMinutes),
     enabled: body.enabled === undefined ? true : Boolean(body.enabled),
     order: typeof body.order === "number" ? body.order : maxOrder + 1,
     createdAt: new Date().toISOString(),

@@ -4,8 +4,8 @@
 import "server-only";
 import { promises as fs } from "fs";
 import path from "path";
-import type { AdminSettings, Appointment, Product, Service, SiteContent } from "./types";
-import { seedAppointments, seedProducts, seedServices, seedContent } from "./seed";
+import type { AdminSettings, Appointment, BookingSettings, Product, Service, SiteContent } from "./types";
+import { seedAppointments, seedProducts, seedServices, seedContent, seedBookingSettings } from "./seed";
 
 const useRedis = !!process.env.KV_REST_API_URL && !!process.env.KV_REST_API_TOKEN;
 
@@ -57,8 +57,37 @@ async function write<T>(key: string, value: T): Promise<void> {
   await fs.writeFile(path.join(DATA_DIR, `${key}.json`), JSON.stringify(value, null, 2), "utf8");
 }
 
-/** Run a read-modify-write against a key under a per-key lock. */
+// Compare-and-set guard for Redis: write the new value only if the version
+// counter is unchanged since we read it. This makes read-modify-write safe
+// across serverless instances (the in-process lock below can't reach that far —
+// without it two concurrent bookings could both pass the slot-conflict check).
+const CAS_SCRIPT = `
+local v = redis.call('GET', KEYS[2])
+if (v == false and ARGV[2] == '0') or v == ARGV[2] then
+  redis.call('SET', KEYS[1], ARGV[1])
+  redis.call('INCR', KEYS[2])
+  return 1
+end
+return 0`;
+
+async function mutateRedis<T>(key: string, fn: (current: T) => T | Promise<T>, fallback: T): Promise<T> {
+  const r = await redis();
+  const verKey = `${key}:ver`;
+  for (let attempt = 0; attempt < 6; attempt++) {
+    const [current, ver] = await Promise.all([r.get<T>(key), r.get<number>(verKey)]);
+    const updated = await fn(current ?? fallback);
+    const ok = await r.eval(CAS_SCRIPT, [key, verKey], [JSON.stringify(updated), String(ver ?? 0)]);
+    if (ok === 1) return updated;
+    // Lost the race — back off briefly, then re-read and re-apply fn against
+    // the fresh state (jitter de-synchronizes competing writers).
+    await new Promise((resolve) => setTimeout(resolve, 20 * (attempt + 1) + Math.random() * 40));
+  }
+  throw new Error(`mutate(${key}): persistent write contention`);
+}
+
+/** Run a read-modify-write atomically (CAS on Redis, per-key lock on files). */
 async function mutate<T>(key: string, fn: (current: T) => T | Promise<T>, fallback: T): Promise<T> {
+  if (useRedis) return mutateRedis(key, fn, fallback);
   const prev = locks.get(key) ?? Promise.resolve();
   let release!: () => void;
   const next = new Promise<void>((r) => (release = r));
@@ -101,6 +130,13 @@ export const getContent = () => read<SiteContent>("content", seedContent);
 
 export const updateContent = (fn: (c: SiteContent) => SiteContent) =>
   mutate<SiteContent>("content", fn, seedContent);
+
+// ---- Booking / scheduling settings -------------------------------------------
+
+export const getBookingSettings = () => read<BookingSettings>("bookingSettings", seedBookingSettings);
+
+export const updateBookingSettings = (fn: (s: BookingSettings) => BookingSettings) =>
+  mutate<BookingSettings>("bookingSettings", fn, seedBookingSettings);
 
 // ---- Admin settings ---------------------------------------------------------
 

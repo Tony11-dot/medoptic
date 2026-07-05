@@ -1,7 +1,7 @@
 import { Fragment } from "react";
 import { promises as fs } from "fs";
 import path from "path";
-import { getContent, getServices } from "@/lib/db";
+import { getBookingSettings, getContent, getServices } from "@/lib/db";
 import { Navbar } from "@/components/site/Navbar";
 import { ScrollProgress } from "@/components/site/ScrollProgress";
 import { Hero } from "@/components/site/Hero";
@@ -30,7 +30,7 @@ async function fileBg(name: string): Promise<string | undefined> {
 }
 
 export default async function HomePage() {
-  const [content, services] = await Promise.all([getContent(), getServices()]);
+  const [content, services, bookingSettings] = await Promise.all([getContent(), getServices(), getBookingSettings()]);
   const enabledServices = services.filter((s) => s.enabled).sort((a, b) => a.order - b.order);
 
   const position: BlocksPosition = content.blocksPosition ?? "afterProducts";
@@ -52,7 +52,7 @@ export default async function HomePage() {
     reviews: <Reviews key="reviews" reviews={reviews} placeId={content.googlePlaceId} bg={bg("reviews")} />,
     essays: <Essays key="essays" essays={content.essays ?? []} />,
     book: <Booking key="book" bg={bg("book")} />,
-    contact: <Footer key="contact" footer={content.footer} styles={content.styles} />,
+    contact: <Footer key="contact" footer={content.footer} styles={content.styles} openingRules={bookingSettings.rules} />,
   };
   const DEFAULT_ORDER = ["home", "gallery", "team", "services", "reviews", "essays", "book", "contact"];
   const order = (content.sectionOrder ?? DEFAULT_ORDER).filter((id) => id in sectionEls);
