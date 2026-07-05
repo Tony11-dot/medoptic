@@ -6,8 +6,9 @@ import { Button } from "@/components/ui/Button";
 import { Modal } from "@/components/ui/Modal";
 import { useToast } from "@/components/ui/Toast";
 import { useI18n } from "@/lib/i18n/LanguageProvider";
-import type { Appointment, Service } from "@/lib/types";
+import { localizedOr, type Appointment, type Service } from "@/lib/types";
 import { BUSINESS_TZ, dateStrInTz, timeStrInTz } from "@/lib/schedule";
+import { inputCls, inputClsFull } from "@/components/admin/adminUi";
 import { cn } from "@/lib/cn";
 
 // All appointment times are shown and edited in the shop's timezone, so the
@@ -76,8 +77,7 @@ export default function QueuePage() {
   const serviceLabel = useCallback(
     (id: string) => {
       const s = services.find((x) => x.id === id);
-      if (!s) return id;
-      return s.label.he || s.label.en || s.label.ru || id;
+      return s ? localizedOr(s.label, id) : id;
     },
     [services],
   );
@@ -157,13 +157,13 @@ export default function QueuePage() {
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder={`${t.admin.actions.search}…`}
-          className="h-10 min-w-56 flex-1 rounded-xl border border-line bg-white px-3.5 text-sm outline-none transition focus:border-brand focus:ring-4 focus:ring-brand/10"
+          className={cn(inputCls, "min-w-56 flex-1")}
         />
         <select
           value={serviceFilter}
           aria-label={t.admin.status.allServices}
           onChange={(e) => setServiceFilter(e.target.value)}
-          className="h-10 rounded-xl border border-line bg-white px-3 text-sm outline-none focus:border-brand"
+          className={inputCls}
         >
           <option value="all">{t.admin.status.allServices}</option>
           {services.map((s) => (
@@ -175,7 +175,7 @@ export default function QueuePage() {
       {/* Table */}
       <div className="mt-4 overflow-hidden rounded-2xl border border-line bg-white shadow-sm">
         <div className="overflow-x-auto">
-          <table className="w-full min-w-[680px] text-sm">
+          <table className="w-full min-w-170 text-sm">
             <thead>
               <tr className="border-b border-line bg-surface text-start text-xs uppercase tracking-wide text-muted">
                 <th className="px-4 py-3 text-start">{t.admin.queue.booked}</th>
@@ -221,7 +221,7 @@ export default function QueuePage() {
       {/* View details modal */}
       <Modal open={!!viewing} onClose={() => setViewing(null)} title={t.admin.queue.details}>
         {viewing && (
-          <dl className="space-y-3 text-sm">
+          <div className="space-y-3 text-sm">
             <Row label={t.admin.queue.name}>{viewing.firstName} {viewing.lastName}</Row>
             <Row label={t.admin.queue.phone}><span dir="ltr">{viewing.phone}</span></Row>
             <Row label={t.admin.queue.email}>{viewing.email || "—"}</Row>
@@ -239,7 +239,7 @@ export default function QueuePage() {
                 🕑 {t.admin.queue.setTime}
               </Button>
             </div>
-          </dl>
+          </div>
         )}
       </Modal>
 
@@ -272,7 +272,7 @@ export default function QueuePage() {
                 type="datetime-local"
                 value={timeValue}
                 onChange={(e) => setTimeValue(e.target.value)}
-                className="h-11 w-full rounded-xl border border-line bg-white px-3.5 text-sm outline-none transition focus:border-brand focus:ring-4 focus:ring-brand/10"
+                className={inputClsFull}
               />
               <span className="mt-1 block text-xs text-muted">{t.admin.queue.dateTimeHint}</span>
             </label>
@@ -290,8 +290,8 @@ export default function QueuePage() {
 function Row({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div className="flex gap-3">
-      <dt className="w-32 shrink-0 font-semibold text-muted">{label}</dt>
-      <dd className="text-ink">{children}</dd>
+      <span className="w-32 shrink-0 font-semibold text-muted">{label}</span>
+      <span className="text-ink">{children}</span>
     </div>
   );
 }

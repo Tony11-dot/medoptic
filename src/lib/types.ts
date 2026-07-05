@@ -4,6 +4,11 @@ export type Locale = "he" | "en" | "ru";
 
 export type Localized = Record<Locale, string>;
 
+/** First non-empty translation (Hebrew-first — the shop's primary language),
+ * or `fallback`. The one place that defines the fallback order. */
+export const localizedOr = (v: Localized, fallback: string): string =>
+  v.he || v.en || v.ru || fallback;
+
 // Built-in service keys used as the seed services' ids. Services are managed by
 // admins at runtime, so this union is only the *starting* set, not a hard limit.
 export type ServiceType = "eye_test" | "glasses" | "consultation" | "repair";

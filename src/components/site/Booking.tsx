@@ -156,6 +156,11 @@ export function Booking({ bg }: { bg?: string }) {
         await loadAvailability(values.service);
         return;
       }
+      if (res.status === 429) {
+        // Per-phone booking cap (or rate limit) — tell them to call instead.
+        toast.error(t.booking.tooMany);
+        return;
+      }
       if (!res.ok) throw new Error("request failed");
       const data = await res.json().catch(() => null);
       setApptId(data?.appointment?.id ?? null);
@@ -195,7 +200,7 @@ export function Booking({ bg }: { bg?: string }) {
               </li>
             ))}
           </ul>
-          <div className="pointer-events-none absolute -bottom-16 -end-16 size-56 rounded-full bg-white/10 blur-2xl" />
+          <div className="pointer-events-none absolute -bottom-16 -inset-e-16 size-56 rounded-full bg-white/10 blur-2xl" />
         </motion.div>
 
         {/* Right: details form -> hour picker -> success */}

@@ -99,6 +99,7 @@ export interface Dict {
     noSlotsDay: string;
     noSlotsAtAll: string;
     slotTaken: string;
+    tooMany: string;
     yourSlot: string;
     durationLabel: string;
     minutesShort: string;
@@ -401,6 +402,7 @@ export const dictionaries: Record<Locale, Dict> = {
       noSlotsDay: "אין שעות פנויות ביום זה",
       noSlotsAtAll: "אין כרגע תורים פנויים. חייגו אלינו ונשמח לעזור.",
       slotTaken: "השעה הזו נתפסה הרגע — בחרו שעה אחרת.",
+      tooMany: "כבר יש מספר תורים פעילים על מספר הטלפון הזה. לתיאום נוסף חייגו אלינו.",
       yourSlot: "התור שלכם",
       durationLabel: "משך התור",
       minutesShort: "דק׳",
@@ -686,6 +688,7 @@ export const dictionaries: Record<Locale, Dict> = {
       noSlotsDay: "No free times on this day",
       noSlotsAtAll: "No free appointments right now. Give us a call and we'll help.",
       slotTaken: "That time was just taken — please pick another.",
+      tooMany: "This phone number already has several active bookings. Please call us to arrange more.",
       yourSlot: "Your appointment",
       durationLabel: "Duration",
       minutesShort: "min",
@@ -971,6 +974,7 @@ export const dictionaries: Record<Locale, Dict> = {
       noSlotsDay: "В этот день нет свободного времени",
       noSlotsAtAll: "Сейчас нет свободных мест. Позвоните нам — мы поможем.",
       slotTaken: "Это время только что заняли — выберите другое.",
+      tooMany: "На этот номер телефона уже есть несколько активных записей. Позвоните нам, чтобы записаться ещё.",
       yourSlot: "Ваша запись",
       durationLabel: "Длительность",
       minutesShort: "мин",

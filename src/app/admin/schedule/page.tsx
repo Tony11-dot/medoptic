@@ -13,11 +13,9 @@ import {
   parseDurationInput,
   timeToMinutes,
 } from "@/lib/schedule";
-import type { BookingSettings, OpeningRule, Service } from "@/lib/types";
+import { localizedOr, type BookingSettings, type OpeningRule, type Service } from "@/lib/types";
+import { inputCls } from "@/components/admin/adminUi";
 import { cn } from "@/lib/cn";
-
-const inputCls =
-  "h-11 rounded-xl border border-line bg-white px-3.5 text-sm outline-none transition focus:border-brand focus:ring-4 focus:ring-brand/10";
 
 // Israel week: Sunday first.
 const WEEK = [0, 1, 2, 3, 4, 5, 6] as const;
@@ -236,7 +234,7 @@ export default function SchedulePage() {
               {services.map((s) => (
                 <div key={s.id} className="flex items-center justify-between gap-3 py-3">
                   <span className={cn("text-sm font-semibold", s.enabled ? "text-ink" : "text-ink/40 line-through")}>
-                    {s.label.he || s.label.en || s.label.ru || s.id}
+                    {localizedOr(s.label, s.id)}
                   </span>
                   <label className="flex items-center gap-2">
                     <input

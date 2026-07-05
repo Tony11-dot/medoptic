@@ -5,9 +5,7 @@ import { AdminShell } from "@/components/admin/AdminShell";
 import { Button } from "@/components/ui/Button";
 import { useToast } from "@/components/ui/Toast";
 import { useI18n } from "@/lib/i18n/LanguageProvider";
-
-const inputCls =
-  "h-11 w-full rounded-xl border border-line bg-white px-3.5 text-sm outline-none transition focus:border-brand focus:ring-4 focus:ring-brand/10";
+import { inputClsFull as inputCls } from "@/components/admin/adminUi";
 
 export default function SettingsPage() {
   const { t } = useI18n();
