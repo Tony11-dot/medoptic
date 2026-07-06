@@ -24,7 +24,6 @@ function blankDraft(): EyeTest {
     firstName: "",
     lastName: "",
     idNumber: "",
-    birthDate: "",
     previous: emptyTable(),
     current: emptyTable(),
     notes: "",
@@ -106,7 +105,6 @@ export default function TestsPage() {
         firstName: draft.firstName,
         lastName: draft.lastName,
         idNumber: draft.idNumber,
-        birthDate: draft.birthDate || undefined,
         previous: showPrevious ? draft.previous : undefined,
         current: draft.current,
         notes: draft.notes || undefined,
@@ -161,7 +159,7 @@ export default function TestsPage() {
       {draft ? (
         /* ---- Editor ---- */
         <div className="mt-6 space-y-5 rounded-2xl border border-line bg-white p-6 shadow-sm">
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             <label className="block">
               <span className="mb-1.5 block text-sm font-semibold text-ink">{t.admin.tests.date}</span>
               <input type="date" dir="ltr" value={draft.date} onChange={(e) => setField({ date: e.target.value })} className={inputClsFull} />
@@ -177,10 +175,6 @@ export default function TestsPage() {
             <label className="block">
               <span className="mb-1.5 block text-sm font-semibold text-ink">{t.admin.tests.idNumber}</span>
               <input dir="ltr" inputMode="numeric" value={draft.idNumber} onChange={(e) => setField({ idNumber: e.target.value })} className={inputClsFull} />
-            </label>
-            <label className="block">
-              <span className="mb-1.5 block text-sm font-semibold text-ink">{t.admin.tests.birthDate}</span>
-              <input type="date" dir="ltr" value={draft.birthDate ?? ""} onChange={(e) => setField({ birthDate: e.target.value })} className={inputClsFull} />
             </label>
           </div>
 

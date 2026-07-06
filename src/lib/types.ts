@@ -159,7 +159,6 @@ export interface EyeTest {
   lastName: string;
   /** תעודת זהות — the national ID the doctor searches by. */
   idNumber: string;
-  birthDate?: string; // "YYYY-MM-DD"
   /** מרשם קודם — the previous prescription, if recorded. */
   previous?: RxTable;
   /** The prescription resulting from this test. */

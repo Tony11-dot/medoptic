@@ -86,9 +86,6 @@ export default function PrintTestPage() {
         <div className="flex items-start justify-between gap-4">
           <div className="pt-2 text-sm leading-6">
             <div>תאריך: <span dir="ltr" className="font-semibold">{fmtDate(test.date)}</span></div>
-            {test.birthDate && (
-              <div>תאריך לידה: <span dir="ltr" className="font-semibold">{fmtDate(test.birthDate)}</span></div>
-            )}
           </div>
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src="/logo-web.png" alt="MEDOPTIC" className="h-16 w-auto" />
