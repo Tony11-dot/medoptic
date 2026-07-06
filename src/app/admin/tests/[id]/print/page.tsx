@@ -96,7 +96,6 @@ export default function PrintPage() {
           <div className="flex items-start justify-between gap-4">
             <div className="pt-3 text-base font-semibold leading-7">
               <div>תאריך: <span dir="ltr">{fmtDate(exam.date)}</span></div>
-              {patient.birthDate && <div>תאריך לידה: <span dir="ltr">{fmtDate(patient.birthDate)}</span></div>}
             </div>
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src="/logo-web.png" alt="MEDOPTIC" className="h-24 w-auto" />
@@ -110,10 +109,13 @@ export default function PrintPage() {
           <div className="mt-12 space-y-3 text-lg">
             <div>שם: <span className="inline-block min-w-48 border-b-2 border-[#111825] px-2 font-bold">{patient.firstName} {patient.lastName}</span></div>
             <div>תעודת זהות: <span dir="ltr" className="inline-block min-w-40 border-b-2 border-[#111825] px-2 text-start font-bold">{patient.idNumber}</span></div>
+            {patient.birthDate && (
+              <div>תאריך לידה: <span dir="ltr" className="inline-block min-w-40 border-b-2 border-[#111825] px-2 text-start font-bold">{fmtDate(patient.birthDate)}</span></div>
+            )}
           </div>
 
-          {/* Results */}
-          {exam.results.map((r) => (
+          {/* Results — oldest first, so previous prescriptions print above the newest */}
+          {[...exam.results].reverse().map((r) => (
             <div key={r.id} className="mt-12">
               {r.label && <h2 className="mb-2 text-base font-bold text-[#39424f]">{r.label}</h2>}
               <RxPrint result={r} />
@@ -124,9 +126,8 @@ export default function PrintPage() {
           <div className="mt-14 text-lg">הערות: <span className="font-bold">{exam.notes || ""}</span></div>
 
           {/* Signature */}
-          <div className="mt-24 flex items-end justify-between gap-8 text-lg">
+          <div className="mt-24 text-lg">
             <div>חתימה וחותמת:<span className="ms-3 inline-block w-64 border-b-2 border-[#111825]" /></div>
-            <div className="text-base text-[#39424f]">תאריך: <span dir="ltr">{fmtDate(exam.date)}</span></div>
           </div>
         </section>
       ))}
