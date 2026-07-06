@@ -59,12 +59,19 @@ export default function PrintTestPage() {
     );
   }
 
+  // The clinic address on the prescription is always Hebrew — fall back to the
+  // shop's real address when the admin-stored one was typed in another language.
+  const hebrewAddress =
+    footer?.address?.he && /[֐-׿]/.test(footer.address.he)
+      ? footer.address.he
+      : "התעשייה 1, יוקנעם עילית";
+
   return (
-    <div dir="rtl" className="min-h-screen bg-white text-[#1a2330]">
+    <div dir="rtl" className="min-h-screen bg-white text-[#111825]">
       <style>{`
         @media print {
           .no-print { display: none !important; }
-          @page { size: A4; margin: 14mm; }
+          @page { size: A4; margin: 0; }
         }
       `}</style>
 
@@ -80,57 +87,58 @@ export default function PrintTestPage() {
         </button>
       </div>
 
-      {/* The sheet */}
-      <div className="mx-auto max-w-[190mm] px-8 py-10 print:p-0">
-        {/* Header: address | logo | date */}
+      {/* The sheet — generous fixed padding so nothing sits at the paper edge,
+          even when the browser prints with zero page margins. */}
+      <div className="mx-auto max-w-[190mm] px-8 py-10 print:px-[14mm] print:pb-[14mm] print:pt-[16mm]">
+        {/* Header: date | logo | address (RTL: date lands on the right) */}
         <div className="flex items-start justify-between gap-4">
-          <div className="pt-2 text-sm leading-6">
-            <div>תאריך: <span dir="ltr" className="font-semibold">{fmtDate(test.date)}</span></div>
+          <div className="pt-3 text-base font-semibold leading-7">
+            <div>תאריך: <span dir="ltr">{fmtDate(test.date)}</span></div>
           </div>
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/logo-web.png" alt="MEDOPTIC" className="h-16 w-auto" />
-          <div className="max-w-40 pt-2 text-end text-sm leading-6 text-[#46505e]">
-            {footer?.address?.he && <div className="whitespace-pre-line">{footer.address.he}</div>}
+          <img src="/logo-web.png" alt="MEDOPTIC" className="h-24 w-auto" />
+          <div className="max-w-44 pt-3 text-end text-sm font-medium leading-6 text-[#39424f]">
+            <div className="whitespace-pre-line">{hebrewAddress}</div>
             {footer?.phone && <div dir="ltr">{footer.phone}</div>}
           </div>
         </div>
 
         {/* Patient */}
-        <div className="mt-10 space-y-2 text-base">
+        <div className="mt-12 space-y-3 text-lg">
           <div>
-            שם: <span className="border-b border-[#1a2330] px-2 font-bold">{test.firstName} {test.lastName}</span>
+            שם: <span className="inline-block min-w-48 border-b-2 border-[#111825] px-2 font-bold">{test.firstName} {test.lastName}</span>
           </div>
           <div>
-            תעודת זהות: <span dir="ltr" className="border-b border-[#1a2330] px-2 font-bold">{test.idNumber}</span>
+            תעודת זהות: <span dir="ltr" className="inline-block min-w-40 border-b-2 border-[#111825] px-2 text-start font-bold">{test.idNumber}</span>
           </div>
         </div>
 
         {/* Previous prescription (only if recorded) */}
         {test.previous && (
-          <div className="mt-10">
-            <h2 className="mb-2 text-sm font-bold text-[#46505e]">מרשם קודם</h2>
+          <div className="mt-12">
+            <h2 className="mb-2 text-base font-bold text-[#39424f]">מרשם קודם</h2>
             <RxPrint table={test.previous} />
           </div>
         )}
 
         {/* The prescription */}
-        <div className="mt-10">
-          {test.previous && <h2 className="mb-2 text-sm font-bold text-[#46505e]">מרשם</h2>}
+        <div className="mt-12">
+          {test.previous && <h2 className="mb-2 text-base font-bold text-[#39424f]">מרשם</h2>}
           <RxPrint table={test.current} />
         </div>
 
         {/* Notes */}
-        <div className="mt-12 text-base">
-          הערות: <span className="font-semibold">{test.notes || ""}</span>
+        <div className="mt-14 text-lg">
+          הערות: <span className="font-bold">{test.notes || ""}</span>
         </div>
 
         {/* Signature */}
-        <div className="mt-20 flex items-end justify-between gap-8 text-base">
+        <div className="mt-24 flex items-end justify-between gap-8 text-lg">
           <div>
             חתימה וחותמת:
-            <span className="ms-3 inline-block w-56 border-b border-[#1a2330]" />
+            <span className="ms-3 inline-block w-64 border-b-2 border-[#111825]" />
           </div>
-          <div className="text-sm text-[#46505e]">
+          <div className="text-base text-[#39424f]">
             תאריך: <span dir="ltr">{fmtDate(test.date)}</span>
           </div>
         </div>
@@ -148,7 +156,7 @@ function RxPrint({ table }: { table: RxTable }) {
           <tr>
             <th className="w-10" />
             {RX_FIELDS.map((f) => (
-              <th key={f} className="pb-1 text-center text-xs font-bold tracking-wide text-[#46505e]">
+              <th key={f} className="pb-1 text-center text-sm font-bold tracking-wide text-[#39424f]">
                 {f === "h" ? "H" : f.toUpperCase()}
               </th>
             ))}
@@ -157,10 +165,10 @@ function RxPrint({ table }: { table: RxTable }) {
         <tbody>
           {(["od", "os"] as const).map((eye) => (
             <tr key={eye}>
-              <td className="pe-1 text-base font-extrabold">{eye.toUpperCase()}</td>
+              <td className="pe-1 text-lg font-extrabold">{eye.toUpperCase()}</td>
               {RX_FIELDS.map((f) => (
                 <td key={f}>
-                  <div className="grid h-10 min-w-14 place-items-center rounded border border-[#c6ccd4] px-1 text-center text-sm font-semibold">
+                  <div className="grid h-12 min-w-14 place-items-center rounded-md border-2 border-[#9aa3af] px-1 text-center text-base font-bold">
                     {table[eye][f] ?? ""}
                   </div>
                 </td>

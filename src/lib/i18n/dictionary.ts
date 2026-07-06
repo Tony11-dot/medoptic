@@ -152,6 +152,14 @@ export interface Dict {
       required: string;
       back: string;
       searchHint: string;
+      import: string;
+      importHint: string;
+      importing: string;
+      importFound: string;
+      importAll: string;
+      importDone: string;
+      importFail: string;
+      importNone: string;
     };
     schedule: {
       title: string;
@@ -478,6 +486,14 @@ export const dictionaries: Record<Locale, Dict> = {
         required: "יש למלא תאריך, שם פרטי, שם משפחה ותעודת זהות.",
         back: "חזרה לרשימה",
         searchHint: "חיפוש לפי שם או תעודת זהות…",
+        import: "ייבוא מקובץ",
+        importHint: "PowerPoint (pptx), Excel (xlsx) או CSV — המערכת מזהה את הנתונים לבד ומציגה לאישור.",
+        importing: "קורא את הקובץ…",
+        importFound: "בדיקות זוהו בקובץ. בדקו את הרשימה, בטלו סימון של שורות לא נכונות, ואשרו:",
+        importAll: "ייבוא הנבחרות",
+        importDone: "בדיקות יובאו בהצלחה",
+        importFail: "לא הצלחנו לקרוא את הקובץ. ודאו שזה pptx / xlsx / csv.",
+        importNone: "לא זוהו נתוני בדיקות בקובץ.",
       },
       schedule: {
         title: "יומן ושעות פתיחה",
@@ -788,6 +804,14 @@ export const dictionaries: Record<Locale, Dict> = {
         required: "Date, first name, last name and ID number are required.",
         back: "Back to list",
         searchHint: "Search by name or ID…",
+        import: "Import from file",
+        importHint: "PowerPoint (pptx), Excel (xlsx) or CSV — the system detects the data and shows it for approval.",
+        importing: "Reading the file…",
+        importFound: "tests detected in the file. Review the list, untick wrong rows, then confirm:",
+        importAll: "Import selected",
+        importDone: "tests imported successfully",
+        importFail: "Couldn't read the file. Make sure it's pptx / xlsx / csv.",
+        importNone: "No test data detected in the file.",
       },
       schedule: {
         title: "Schedule & opening hours",
@@ -1098,6 +1122,14 @@ export const dictionaries: Record<Locale, Dict> = {
         required: "Обязательны дата, имя, фамилия и номер ID.",
         back: "К списку",
         searchHint: "Поиск по имени или номеру ID…",
+        import: "Импорт из файла",
+        importHint: "PowerPoint (pptx), Excel (xlsx) или CSV — система распознаёт данные и показывает их для подтверждения.",
+        importing: "Читаем файл…",
+        importFound: "проверок найдено в файле. Проверьте список, снимите неверные строки и подтвердите:",
+        importAll: "Импортировать выбранные",
+        importDone: "проверок импортировано",
+        importFail: "Не удалось прочитать файл. Убедитесь, что это pptx / xlsx / csv.",
+        importNone: "Данные проверок в файле не найдены.",
       },
       schedule: {
         title: "Расписание и часы работы",

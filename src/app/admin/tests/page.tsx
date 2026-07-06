@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { AdminShell } from "@/components/admin/AdminShell";
 import { Button } from "@/components/ui/Button";
 import { Modal } from "@/components/ui/Modal";
@@ -47,6 +47,12 @@ export default function TestsPage() {
   const [draft, setDraft] = useState<EyeTest | null>(null);
   const [showPrevious, setShowPrevious] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState<EyeTest | null>(null);
+
+  // File import: upload → parsed candidates preview → confirm.
+  const fileRef = useRef<HTMLInputElement>(null);
+  const [importing, setImporting] = useState(false);
+  const [preview, setPreview] = useState<{ tests: EyeTest[]; warnings: string[] } | null>(null);
+  const [picked, setPicked] = useState<boolean[]>([]);
 
   async function load() {
     const res = await fetch("/api/eye-tests");
@@ -124,6 +130,53 @@ export default function TestsPage() {
     }
   }
 
+  async function uploadFile(file: File) {
+    setImporting(true);
+    try {
+      const form = new FormData();
+      form.append("file", file);
+      const res = await fetch("/api/eye-tests/import", { method: "POST", body: form });
+      if (!res.ok) throw new Error();
+      const data: { tests: EyeTest[]; warnings: string[] } = await res.json();
+      if (!data.tests?.length) {
+        toast.error(t.admin.tests.importNone);
+        setPreview(data.warnings?.length ? { tests: [], warnings: data.warnings } : null);
+        return;
+      }
+      setPreview(data);
+      setPicked(data.tests.map(() => true));
+    } catch {
+      toast.error(t.admin.tests.importFail);
+    } finally {
+      setImporting(false);
+      if (fileRef.current) fileRef.current.value = "";
+    }
+  }
+
+  async function commitImport() {
+    if (!preview) return;
+    const chosen = preview.tests.filter((_, i) => picked[i]);
+    if (chosen.length === 0) return;
+    setBusy(true);
+    let ok = 0;
+    for (const rec of chosen) {
+      try {
+        const res = await fetch("/api/eye-tests", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(rec),
+        });
+        if (res.ok) ok++;
+      } catch {
+        /* count only successes */
+      }
+    }
+    setBusy(false);
+    setPreview(null);
+    toast.success(`${ok} ${t.admin.tests.importDone}`);
+    await load();
+  }
+
   async function remove(test: EyeTest) {
     setBusy(true);
     try {
@@ -151,10 +204,82 @@ export default function TestsPage() {
           {draft ? (
             <Button variant="secondary" size="sm" onClick={() => setDraft(null)}>← {t.admin.tests.back}</Button>
           ) : (
-            <Button onClick={openNew}>+ {t.admin.tests.newTest}</Button>
+            <>
+              <input
+                ref={fileRef}
+                type="file"
+                accept=".pptx,.xlsx,.xlsm,.csv,.txt"
+                aria-label={t.admin.tests.import}
+                className="hidden"
+                onChange={(e) => {
+                  const f = e.target.files?.[0];
+                  if (f) uploadFile(f);
+                }}
+              />
+              <Button variant="secondary" onClick={() => fileRef.current?.click()} disabled={importing}>
+                📥 {importing ? t.admin.tests.importing : t.admin.tests.import}
+              </Button>
+              <Button onClick={openNew}>+ {t.admin.tests.newTest}</Button>
+            </>
           )}
         </div>
       </div>
+
+      {/* Import preview — parsed candidates, confirmed by the admin before saving */}
+      {preview && !draft && (
+        <div className="mt-6 rounded-2xl border-2 border-brand-200 bg-brand-50/40 p-5">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <p className="text-sm font-bold text-ink">
+              {preview.tests.length > 0 && <span className="me-1 rounded-lg bg-brand px-2 py-0.5 text-white">{preview.tests.filter((_, i) => picked[i]).length}/{preview.tests.length}</span>}
+              {preview.tests.length > 0 ? t.admin.tests.importFound : t.admin.tests.importNone}
+            </p>
+            <div className="flex items-center gap-2">
+              <Button variant="ghost" size="sm" onClick={() => setPreview(null)}>{t.admin.actions.cancel}</Button>
+              {preview.tests.length > 0 && (
+                <Button size="sm" onClick={commitImport} disabled={busy || picked.every((p) => !p)}>
+                  {busy ? t.admin.saving : `✓ ${t.admin.tests.importAll}`}
+                </Button>
+              )}
+            </div>
+          </div>
+
+          {preview.warnings.length > 0 && (
+            <ul className="mt-3 space-y-1 rounded-xl bg-amber-50 px-4 py-2.5 text-xs font-medium text-amber-700">
+              {preview.warnings.slice(0, 8).map((w, i) => (
+                <li key={i}>⚠ {w}</li>
+              ))}
+            </ul>
+          )}
+
+          {preview.tests.length > 0 && (
+            <div className="mt-3 max-h-96 space-y-2 overflow-y-auto pe-1">
+              {preview.tests.map((x, i) => (
+                <label key={i} className={cn(
+                  "flex cursor-pointer items-center gap-3 rounded-xl border bg-white p-3 transition",
+                  picked[i] ? "border-brand-200" : "border-line opacity-50",
+                )}>
+                  <input
+                    type="checkbox"
+                    checked={picked[i] ?? false}
+                    onChange={(e) => setPicked((arr) => arr.map((v, j) => (j === i ? e.target.checked : v)))}
+                    className="size-4 shrink-0"
+                  />
+                  <span dir="ltr" className="w-20 shrink-0 text-xs font-semibold text-muted">{fmtDate(x.date)}</span>
+                  <span className="min-w-0 flex-1">
+                    <span className="block truncate text-sm font-bold text-ink">{x.firstName} {x.lastName}</span>
+                    <span className="block truncate text-xs text-muted" dir="ltr">
+                      {x.idNumber || "—"}
+                      {x.current?.od?.sph ? ` · OD ${x.current.od.sph}` : ""}
+                      {x.current?.os?.sph ? ` · OS ${x.current.os.sph}` : ""}
+                    </span>
+                  </span>
+                  {x.notes && <span className="hidden max-w-40 truncate text-xs text-muted sm:block">{x.notes}</span>}
+                </label>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
 
       {draft ? (
         /* ---- Editor ---- */
