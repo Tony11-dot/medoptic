@@ -208,7 +208,7 @@ export default function TestsPage() {
               <input
                 ref={fileRef}
                 type="file"
-                accept=".pptx,.xlsx,.xlsm,.csv,.txt"
+                accept=".pptx,.xlsx,.xlsm,.csv,.txt,.accdb,.mdb"
                 aria-label={t.admin.tests.import}
                 className="hidden"
                 onChange={(e) => {

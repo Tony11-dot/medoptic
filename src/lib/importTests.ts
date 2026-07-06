@@ -77,7 +77,51 @@ export async function importTestsFile(filename: string, buffer: Buffer): Promise
   if (ext === "pptx") {
     return parsePptx(buffer);
   }
-  return { tests: [], warnings: [`Unsupported file type: .${ext} (use .pptx, .xlsx or .csv)`] };
+  if (ext === "accdb" || ext === "mdb") {
+    return parseAccess(buffer);
+  }
+  return { tests: [], warnings: [`Unsupported file type: .${ext} (use .pptx, .xlsx, .csv or .accdb)`] };
+}
+
+// ---- Microsoft Access (.accdb / .mdb) ---------------------------------------------
+
+/** Read every user table and run it through the same header mapping as
+ * Excel/CSV — whichever tables hold test-like columns contribute records. */
+async function parseAccess(buffer: Buffer): Promise<ImportResult> {
+  const { default: MDBReader } = await import("mdb-reader");
+  const reader = new MDBReader(buffer);
+
+  const toCell = (v: unknown): string => {
+    if (v == null) return "";
+    if (v instanceof Date) return v.toISOString().slice(0, 10);
+    return String(v);
+  };
+
+  const tests: EyeTestInput[] = [];
+  const warnings: string[] = [];
+  const tableNames = reader.getTableNames(); // user tables only (no MSys*)
+  if (tableNames.length === 0) return { tests, warnings: ["No tables found in the database."] };
+
+  for (const name of tableNames) {
+    if (tests.length >= MAX_RECORDS) break;
+    try {
+      const table = reader.getTable(name);
+      const columns = table.getColumnNames();
+      const rows = table.getData().map((row) => columns.map((c) => toCell((row as Record<string, unknown>)[c])));
+      if (rows.length === 0) continue;
+      const result = tableToTests([columns, ...rows]);
+      if (result.tests.length > 0) {
+        tests.push(...result.tests.slice(0, MAX_RECORDS - tests.length));
+        warnings.push(...result.warnings.map((w) => `${name}: ${w}`));
+      }
+    } catch {
+      warnings.push(`Table "${name}" could not be read — skipped.`);
+    }
+  }
+  if (tests.length === 0) {
+    warnings.push(`No test-like columns recognized in any table (tables: ${tableNames.join(", ")}).`);
+  }
+  return { tests, warnings };
 }
 
 // ---- CSV -------------------------------------------------------------------------

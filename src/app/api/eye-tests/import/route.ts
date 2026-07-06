@@ -1,8 +1,9 @@
 import { isAuthed } from "@/lib/auth";
 import { importTestsFile } from "@/lib/importTests";
 
-// Files can carry hundreds of records; cap the upload itself.
-const MAX_FILE_BYTES = 15 * 1024 * 1024;
+// Files can carry hundreds of records; cap the upload itself. Access
+// databases have a large fixed overhead, so the cap is generous.
+const MAX_FILE_BYTES = 40 * 1024 * 1024;
 
 // POST — parse an uploaded .pptx / .xlsx / .csv into candidate test records.
 // Nothing is stored here: the client shows a preview and saves each confirmed
