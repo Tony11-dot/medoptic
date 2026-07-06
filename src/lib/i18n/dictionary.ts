@@ -303,6 +303,10 @@ export interface Dict {
       notes: string;
       notified: string;
       duration: string;
+      viewList: string;
+      viewGrid: string;
+      more: string;
+      dayNone: string;
       setTime: string;
       setTimeDesc: string;
       dateTime: string;
@@ -614,6 +618,10 @@ export const dictionaries: Record<Locale, Dict> = {
         notes: "הערות",
         notified: "נשלחה הודעה",
         duration: "משך",
+        viewList: "רשימה",
+        viewGrid: "יומן",
+        more: "עוד",
+        dayNone: "אין תורים ביום זה.",
         setTime: "עדכון מועד",
         setTimeDesc: "עדכון ידני של מועד התור — הלקוח יקבל הודעה עם המועד החדש.",
         dateTime: "תאריך ושעה",
@@ -900,6 +908,10 @@ export const dictionaries: Record<Locale, Dict> = {
         notes: "Notes",
         notified: "Notified",
         duration: "Duration",
+        viewList: "List",
+        viewGrid: "Calendar",
+        more: "more",
+        dayNone: "No appointments on this day.",
         setTime: "Reschedule",
         setTimeDesc: "Manually change the appointment time — the customer is notified with the new time.",
         dateTime: "Date & time",
@@ -1186,6 +1198,10 @@ export const dictionaries: Record<Locale, Dict> = {
         notes: "Примечания",
         notified: "Уведомление",
         duration: "Длительность",
+        viewList: "Список",
+        viewGrid: "Календарь",
+        more: "ещё",
+        dayNone: "В этот день нет записей.",
         setTime: "Перенести",
         setTimeDesc: "Ручное изменение времени приёма — клиент получит уведомление с новым временем.",
         dateTime: "Дата и время",

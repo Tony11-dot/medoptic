@@ -107,9 +107,6 @@ export const timeToMinutes = (t: string): number => {
   return h * 60 + m;
 };
 
-const minutesToTime = (min: number): string =>
-  `${String(Math.floor(min / 60)).padStart(2, "0")}:${String(min % 60).padStart(2, "0")}`;
-
 /** Parse + sanity-check admin-submitted settings. Returns null when invalid. */
 export function parseBookingSettings(body: unknown): BookingSettings | null {
   if (typeof body !== "object" || body === null) return null;
@@ -198,18 +195,15 @@ export function durationResolver(services: Service[]): (serviceId: string) => nu
   return (serviceId) => byId.get(serviceId);
 }
 
-/** All grid start times a rule offers for a service duration, as minutes. */
-function ruleGrid(rule: OpeningRule, durationMin: number): number[] {
-  const startMin = timeToMinutes(rule.start);
-  const endMin = timeToMinutes(rule.end);
-  const out: number[] = [];
-  for (let t = startMin; t + durationMin <= endMin; t += durationMin) out.push(t);
-  return out;
-}
-
 /**
- * Compute the bookable slots for one calendar day (cinema-style: a slot exists
- * on the opening-hours grid and disappears once an appointment overlaps it).
+ * Compute the bookable slots for one calendar day.
+ *
+ * Slots are not a fixed grid: within each opening window the walk advances by
+ * this service's duration, and whenever a step collides with an existing
+ * appointment (of any service/duration) it jumps to that appointment's exact
+ * end and chains from there. Mixed durations therefore pack back-to-back with
+ * zero dead time — a 45-minute visit ending 10:45 is followed by a 10:45
+ * offer for a 15-minute service, not 11:00.
  */
 export function daySlots(
   dateStr: string,
@@ -220,27 +214,40 @@ export function daySlots(
 ): DayAvailability {
   const weekday = weekdayOf(dateStr);
   const rules = settings.rules.filter((r) => r.days.includes(weekday));
+  const durationMs = durationMin * 60_000;
   const earliest = now + MIN_LEAD_MINUTES * 60_000;
 
   const slots: Slot[] = [];
-  const seen = new Set<string>();
-  // Slots still reachable time-wise, before the taken-check. Distinguishes a
+  const seen = new Set<number>();
+  // Slots still reachable time-wise, ignoring bookings. Distinguishes a
   // fully-booked day ("full") from a day that's simply over ("closed").
   let reachable = 0;
   for (const rule of rules) {
-    for (const min of ruleGrid(rule, durationMin)) {
-      const label = minutesToTime(min);
-      if (seen.has(label)) continue;
-      seen.add(label);
-      const startDate = zonedToUtc(dateStr, label);
-      const start = startDate.getTime();
-      if (start < earliest) continue;
-      reachable++;
-      if (overlapsBusy(busy, start, durationMin)) continue;
-      slots.push({ iso: startDate.toISOString(), label });
+    const opens = zonedToUtc(dateStr, rule.start).getTime();
+    const closes = zonedToUtc(dateStr, rule.end).getTime();
+    for (let s = opens; s + durationMs <= closes; s += durationMs) {
+      if (s >= earliest) reachable++;
+    }
+
+    // Greedy chaining walk (bounded: steps consume either a duration or a
+    // busy interval, both finite; the guard is a hard backstop).
+    let t = opens;
+    let guard = 0;
+    while (t + durationMs <= closes && guard++ < 2000) {
+      const blocker = busy.find((b) => t < b.end && b.start < t + durationMs);
+      if (blocker) {
+        t = blocker.end; // resume exactly where that appointment finishes
+        continue;
+      }
+      if (t >= earliest && !seen.has(t)) {
+        seen.add(t);
+        const d = new Date(t);
+        slots.push({ iso: d.toISOString(), label: timeStrInTz(d) });
+      }
+      t += durationMs;
     }
   }
-  slots.sort((a, b) => a.label.localeCompare(b.label));
+  slots.sort((a, b) => a.iso.localeCompare(b.iso));
   return { date: dateStr, weekday, open: reachable > 0, slots };
 }
 
@@ -264,33 +271,26 @@ export function windowAvailability(
 }
 
 /**
- * Check that a requested instant is a legal slot start: on the opening-hours
- * grid for this duration, inside the booking window, and not in the past.
- * (Conflicts with other appointments are checked separately, under the DB lock.)
+ * Check that a requested instant is one of the slots the hour system currently
+ * offers: inside the booking window and produced by the same chaining walk as
+ * the picker, against the same busy intervals. Because slot positions depend
+ * on existing bookings, this must run against the live appointment list —
+ * call it inside the DB mutation so the check-and-insert stays atomic.
  */
-export function isValidSlotStart(
+export function isOfferedSlot(
   iso: string,
   settings: BookingSettings,
   durationMin: number,
+  busy: BusyInterval[],
   now = Date.now(),
 ): boolean {
   const start = Date.parse(iso);
   if (Number.isNaN(start)) return false;
-  if (start < now + MIN_LEAD_MINUTES * 60_000) return false;
-
-  const date = new Date(start);
-  const dateStr = dateStrInTz(date);
+  const dateStr = dateStrInTz(new Date(start));
   const today = dateStrInTz(new Date(now));
   if (dateStr < today || dateStr > addDays(today, settings.windowDays - 1)) return false;
-
-  const label = timeStrInTz(date);
-  const weekday = weekdayOf(dateStr);
-  return settings.rules.some(
-    (r) =>
-      r.days.includes(weekday) &&
-      ruleGrid(r, durationMin).includes(timeToMinutes(label)) &&
-      // guard against ambiguous wall-clock times around DST changes
-      Math.abs(zonedToUtc(dateStr, label).getTime() - start) < 60_000,
+  return daySlots(dateStr, settings, durationMin, busy, now).slots.some(
+    (s) => Date.parse(s.iso) === start,
   );
 }
 

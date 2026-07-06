@@ -3,7 +3,7 @@ import { getAppointments, updateAppointments, getServices, getBookingSettings } 
 import { validateAppointment } from "@/lib/validation";
 import { isAuthed } from "@/lib/auth";
 import { notifyCustomer, notifyAdminNewBooking } from "@/lib/notify";
-import { busyIntervals, durationResolver, isValidSlotStart, overlapsBusy, serviceDuration } from "@/lib/schedule";
+import { busyIntervals, durationResolver, isOfferedSlot, serviceDuration } from "@/lib/schedule";
 import { clientIp, rateLimit } from "@/lib/rateLimit";
 import type { Appointment } from "@/lib/types";
 
@@ -60,11 +60,6 @@ export async function POST(request: Request) {
   const service = services.find((s) => s.id === result.value.service)!;
   const durationMinutes = serviceDuration(service);
 
-  // Structural slot check: on the opening-hours grid, inside the booking window.
-  if (!isValidSlotStart(result.value.appointmentAt, settings, durationMinutes)) {
-    return Response.json({ error: "slot is not available" }, { status: 422 });
-  }
-
   // Bookings are auto-approved — the slot picker is the approval.
   const now = new Date().toISOString();
   const appointment: Appointment = {
@@ -76,15 +71,19 @@ export async function POST(request: Request) {
     ...result.value,
   };
 
-  // Conflict check + insert run atomically (CAS on Redis, lock on files): if
-  // another booking overlapping this slot landed first, abort with 409.
+  // Slot check + insert run atomically (CAS on Redis, lock on files). Because
+  // slot positions chain off existing bookings, the requested time must be one
+  // of the slots the walk currently offers — this covers overlaps, the opening
+  // hours, the lead time, and the booking window in a single source of truth.
+  // If a booking that shifts the chain landed first, abort with 409.
   const byService = durationResolver(services);
   try {
     await updateAppointments((list) => {
       const nowMs = Date.now();
-      const start = Date.parse(appointment.appointmentAt!);
-      const busy = busyIntervals(list, { durationByService: byService });
-      if (overlapsBusy(busy, start, durationMinutes)) throw new SlotTakenError();
+      const busy = busyIntervals(list, { durationByService: byService }).filter((b) => b.end >= nowMs);
+      if (!isOfferedSlot(appointment.appointmentAt!, settings, durationMinutes, busy, nowMs)) {
+        throw new SlotTakenError();
+      }
 
       // One phone can't hoard the calendar (or spin a book→cancel notification loop).
       const key = phoneKey(appointment.phone);

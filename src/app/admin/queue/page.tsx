@@ -7,7 +7,7 @@ import { Modal } from "@/components/ui/Modal";
 import { useToast } from "@/components/ui/Toast";
 import { useI18n } from "@/lib/i18n/LanguageProvider";
 import { localizedOr, type Appointment, type Service } from "@/lib/types";
-import { BUSINESS_TZ, dateStrInTz, timeStrInTz } from "@/lib/schedule";
+import { BUSINESS_TZ, addDays, dateStrInTz, timeStrInTz, weekdayOf } from "@/lib/schedule";
 import { inputCls, inputClsFull } from "@/components/admin/adminUi";
 import { cn } from "@/lib/cn";
 
@@ -34,13 +34,19 @@ const isoToLocalInput = (iso: string) => {
 
 export default function QueuePage() {
   const toast = useToast();
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
   const [items, setItems] = useState<Appointment[]>([]);
   const [loading, setLoading] = useState(true);
   const [serviceFilter, setServiceFilter] = useState<string>("all");
   const [services, setServices] = useState<Service[]>([]);
   const [query, setQuery] = useState("");
   const [busy, setBusy] = useState(false);
+
+  // List view (rows, newest request first) vs calendar-grid view (month of
+  // day cells; tap a day to see its bookings earliest-first).
+  const [view, setView] = useState<"list" | "grid">("list");
+  const [month, setMonth] = useState(() => dateStrInTz(new Date()).slice(0, 7)); // "YYYY-MM"
+  const [dayOpen, setDayOpen] = useState<string | null>(null); // "YYYY-MM-DD"
 
   const [viewing, setViewing] = useState<Appointment | null>(null);
   const [timeFor, setTimeFor] = useState<Appointment | null>(null);
@@ -93,6 +99,48 @@ export default function QueuePage() {
       return true;
     });
   }, [items, serviceFilter, query]);
+
+  // Calendar view: bookings grouped by their shop-timezone calendar day,
+  // each day sorted by time (earliest first).
+  const byDay = useMemo(() => {
+    const map = new Map<string, Appointment[]>();
+    for (const a of filtered) {
+      if (!a.appointmentAt) continue;
+      const d = new Date(a.appointmentAt);
+      if (isNaN(d.getTime())) continue;
+      const key = dateStrInTz(d);
+      const arr = map.get(key) ?? [];
+      arr.push(a);
+      map.set(key, arr);
+    }
+    for (const arr of map.values()) arr.sort((a, b) => a.appointmentAt!.localeCompare(b.appointmentAt!));
+    return map;
+  }, [filtered]);
+
+  // Month grid cells: leading blanks so day 1 lands on its weekday (Sunday-first).
+  const monthDays = useMemo(() => {
+    const first = `${month}-01`;
+    const cells: (string | null)[] = Array.from({ length: weekdayOf(first) }, () => null);
+    for (let d = first; d.slice(0, 7) === month; d = addDays(d, 1)) cells.push(d);
+    return cells;
+  }, [month]);
+
+  const today = dateStrInTz(new Date());
+  const monthTitle = new Date(`${month}-01T12:00:00Z`).toLocaleDateString(locale, {
+    month: "long",
+    year: "numeric",
+    timeZone: "UTC",
+  });
+  const dayTitle = (d: string) =>
+    `${t.weekdaysLong[weekdayOf(d)]}, ${new Date(`${d}T12:00:00Z`).toLocaleDateString(locale, { day: "numeric", month: "long", timeZone: "UTC" })}`;
+  const shiftMonth = (dir: -1 | 1) => {
+    const [y, m] = month.split("-").map(Number);
+    const next = new Date(Date.UTC(y, m - 1 + dir, 1));
+    setMonth(next.toISOString().slice(0, 7));
+  };
+
+  const statusDot = (s: Appointment["status"]) =>
+    s === "approved" ? "bg-emerald-500" : s === "declined" ? "bg-rose-500" : "bg-amber-500";
 
   async function remove(a: Appointment) {
     setBusy(true);
@@ -147,6 +195,26 @@ export default function QueuePage() {
           <p className="mt-1 text-sm text-muted">{t.admin.titles.appointmentsSub}</p>
         </div>
         <div className="flex items-center gap-2">
+          {/* List ⇄ calendar flip switch */}
+          <div className="flex rounded-xl bg-surface p-1">
+            {([
+              { v: "list" as const, icon: "≣", label: t.admin.queue.viewList },
+              { v: "grid" as const, icon: "🗓", label: t.admin.queue.viewGrid },
+            ]).map((opt) => (
+              <button
+                key={opt.v}
+                type="button"
+                onClick={() => setView(opt.v)}
+                aria-pressed={view === opt.v ? "true" : "false"}
+                className={cn(
+                  "flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-semibold transition",
+                  view === opt.v ? "bg-white text-brand-dark shadow-sm" : "text-muted hover:text-ink",
+                )}
+              >
+                <span aria-hidden>{opt.icon}</span> {opt.label}
+              </button>
+            ))}
+          </div>
           <Button variant="secondary" size="sm" onClick={load}>↻ {t.admin.refresh}</Button>
         </div>
       </div>
@@ -172,8 +240,79 @@ export default function QueuePage() {
         </select>
       </div>
 
+      {/* Calendar grid view */}
+      {view === "grid" && (
+        <div className="mt-4 rounded-2xl border border-line bg-white p-4 shadow-sm">
+          <div className="flex items-center justify-between gap-2">
+            <button
+              type="button"
+              onClick={() => shiftMonth(-1)}
+              aria-label="previous month"
+              className="grid size-9 place-items-center rounded-lg border border-line text-lg text-ink/70 transition hover:border-brand rtl:rotate-180"
+            >
+              ‹
+            </button>
+            <h2 className="text-lg font-extrabold text-ink">{monthTitle}</h2>
+            <button
+              type="button"
+              onClick={() => shiftMonth(1)}
+              aria-label="next month"
+              className="grid size-9 place-items-center rounded-lg border border-line text-lg text-ink/70 transition hover:border-brand rtl:rotate-180"
+            >
+              ›
+            </button>
+          </div>
+
+          <div className="mt-3 grid grid-cols-7 gap-1 text-center text-xs font-bold uppercase tracking-wide text-muted">
+            {t.weekdaysShort.map((d) => (
+              <div key={d} className="py-1">{d}</div>
+            ))}
+          </div>
+          <div className="mt-1 grid grid-cols-7 gap-1">
+            {monthDays.map((date, i) => {
+              if (!date) return <div key={`blank-${i}`} />;
+              const appts = byDay.get(date) ?? [];
+              const isToday = date === today;
+              return (
+                <button
+                  key={date}
+                  type="button"
+                  disabled={appts.length === 0}
+                  onClick={() => setDayOpen(date)}
+                  className={cn(
+                    "flex min-h-20 flex-col items-stretch gap-0.5 rounded-xl border p-1.5 text-start transition md:min-h-24",
+                    appts.length > 0
+                      ? "border-brand-200 bg-brand-50/50 hover:border-brand hover:shadow-sm"
+                      : "cursor-default border-line/60 bg-surface/40",
+                    isToday && "ring-2 ring-brand/40",
+                  )}
+                >
+                  <span className={cn("text-sm font-extrabold", isToday ? "text-brand-dark" : appts.length > 0 ? "text-ink" : "text-ink/40")}>
+                    {Number(date.slice(8, 10))}
+                  </span>
+                  {appts.slice(0, 3).map((a) => (
+                    <span key={a.id} className="hidden truncate rounded bg-white px-1 py-0.5 text-[11px] font-medium text-ink shadow-sm md:block">
+                      <span dir="ltr" className="font-bold text-brand-dark">{timeStrInTz(new Date(a.appointmentAt!))}</span>{" "}
+                      {a.firstName} {a.lastName}
+                    </span>
+                  ))}
+                  {appts.length > 3 && (
+                    <span className="hidden text-[11px] font-semibold text-brand-dark md:block">+{appts.length - 3} {t.admin.queue.more}</span>
+                  )}
+                  {appts.length > 0 && (
+                    <span className="mt-auto inline-flex w-fit rounded-full bg-brand px-1.5 text-[11px] font-bold text-white md:hidden">
+                      {appts.length}
+                    </span>
+                  )}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
       {/* Table */}
-      <div className="mt-4 overflow-hidden rounded-2xl border border-line bg-white shadow-sm">
+      <div className={cn("mt-4 overflow-hidden rounded-2xl border border-line bg-white shadow-sm", view === "grid" && "hidden")}>
         <div className="overflow-x-auto">
           <table className="w-full min-w-170 text-sm">
             <thead>
@@ -217,6 +356,44 @@ export default function QueuePage() {
           </table>
         </div>
       </div>
+
+      {/* Day details modal — every booking that day, earliest first */}
+      <Modal open={!!dayOpen} onClose={() => setDayOpen(null)} title={dayOpen ? dayTitle(dayOpen) : ""}>
+        {dayOpen && (
+          <div className="space-y-2">
+            {(byDay.get(dayOpen) ?? []).length === 0 && (
+              <p className="py-6 text-center text-sm text-muted">{t.admin.queue.dayNone}</p>
+            )}
+            {(byDay.get(dayOpen) ?? []).map((a) => (
+              <button
+                key={a.id}
+                type="button"
+                onClick={() => {
+                  setDayOpen(null);
+                  setViewing(a);
+                }}
+                className="flex w-full items-center gap-3 rounded-xl border border-line bg-white p-3 text-start transition hover:border-brand hover:shadow-sm"
+              >
+                <span dir="ltr" className="w-14 shrink-0 text-base font-extrabold text-brand-dark">
+                  {timeStrInTz(new Date(a.appointmentAt!))}
+                </span>
+                <span className="min-w-0 flex-1">
+                  <span className="block truncate text-sm font-bold text-ink">{a.firstName} {a.lastName}</span>
+                  <span className="block truncate text-xs text-muted">
+                    {serviceLabel(a.service)}
+                    {a.durationMinutes ? ` · ${a.durationMinutes} ${t.booking.minutesShort}` : ""}
+                  </span>
+                </span>
+                <span
+                  aria-hidden
+                  title={t.admin.status[a.status]}
+                  className={cn("size-2.5 shrink-0 rounded-full", statusDot(a.status))}
+                />
+              </button>
+            ))}
+          </div>
+        )}
+      </Modal>
 
       {/* View details modal */}
       <Modal open={!!viewing} onClose={() => setViewing(null)} title={t.admin.queue.details}>

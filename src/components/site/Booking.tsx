@@ -8,7 +8,7 @@ import { useToast } from "@/components/ui/Toast";
 import type { ReminderChannel, Service } from "@/lib/types";
 // The /api/availability response shape comes straight from the shared slot
 // engine, so the picker can never drift from what the server returns.
-import type { DayAvailability, Slot } from "@/lib/schedule";
+import { serviceDuration, type DayAvailability, type Slot } from "@/lib/schedule";
 import { isValidEmail, isValidPhone } from "@/lib/validation";
 import { SectionBg } from "./SectionBg";
 import { cn } from "@/lib/cn";
@@ -196,7 +196,10 @@ export function Booking({ bg }: { bg?: string }) {
             {services.map((s) => (
               <li key={s.id} className="flex items-center gap-3">
                 <span className="grid size-6 place-items-center rounded-full bg-white/20 text-xs">✓</span>
-                {pick(s.label)}
+                <span className="flex-1">{pick(s.label)}</span>
+                <span className="rounded-full bg-white/15 px-2.5 py-0.5 text-xs font-semibold">
+                  {serviceDuration(s)} {t.booking.minutesShort}
+                </span>
               </li>
             ))}
           </ul>
@@ -448,7 +451,7 @@ export function Booking({ bg }: { bg?: string }) {
                     </option>
                     {services.map((s) => (
                       <option key={s.id} value={s.id}>
-                        {pick(s.label)}
+                        {pick(s.label)} · {serviceDuration(s)} {t.booking.minutesShort}
                       </option>
                     ))}
                   </select>
