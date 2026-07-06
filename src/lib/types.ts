@@ -124,6 +124,49 @@ export interface Appointment {
   remindedAt?: string;
 }
 
+// ---- Eye tests / prescriptions (מרשמים) -------------------------------------
+
+/** One eye's refraction values. Free-form strings, written the way the
+ * optometrist writes them ("+2.75", "-1.00", "83", "31"). */
+export interface RxEye {
+  sph?: string;
+  cyl?: string;
+  axis?: string;
+  add?: string;
+  pd?: string;
+  prism?: string;
+  base?: string;
+  h?: string;
+  va?: string;
+}
+
+/** A prescription table: right eye (OD) + left eye (OS). */
+export interface RxTable {
+  od: RxEye;
+  os: RxEye;
+}
+
+/** Columns of the prescription table, in display order. */
+export const RX_FIELDS = ["sph", "cyl", "axis", "add", "pd", "prism", "base", "h", "va"] as const;
+export type RxField = (typeof RX_FIELDS)[number];
+
+/** An in-store eye test / prescription record, managed in the admin. */
+export interface EyeTest {
+  id: string;
+  createdAt: string; // ISO timestamp (record creation)
+  date: string; // test date, "YYYY-MM-DD"
+  firstName: string;
+  lastName: string;
+  /** תעודת זהות — the national ID the doctor searches by. */
+  idNumber: string;
+  birthDate?: string; // "YYYY-MM-DD"
+  /** מרשם קודם — the previous prescription, if recorded. */
+  previous?: RxTable;
+  /** The prescription resulting from this test. */
+  current: RxTable;
+  notes?: string;
+}
+
 export interface Product {
   id: string;
   name: Localized;

@@ -132,7 +132,28 @@ export interface Dict {
     saving: string;
     refresh: string;
     actions: { approve: string; decline: string; add: string; edit: string; delete: string; cancel: string; search: string };
-    nav: { overview: string; appointments: string; schedule: string; queueTypes: string; products: string; content: string; sections: string; settings: string };
+    nav: { overview: string; appointments: string; schedule: string; tests: string; queueTypes: string; products: string; content: string; sections: string; settings: string };
+    tests: {
+      title: string;
+      subtitle: string;
+      newTest: string;
+      editTest: string;
+      date: string;
+      firstName: string;
+      lastName: string;
+      idNumber: string;
+      birthDate: string;
+      previousRx: string;
+      currentRx: string;
+      notes: string;
+      none: string;
+      saved: string;
+      print: string;
+      deleteWarn: string;
+      required: string;
+      back: string;
+      searchHint: string;
+    };
     schedule: {
       title: string;
       subtitle: string;
@@ -438,7 +459,28 @@ export const dictionaries: Record<Locale, Dict> = {
       saving: "שומר…",
       refresh: "רענון",
       actions: { approve: "אישור", decline: "דחייה", add: "הוספה", edit: "עריכה", delete: "מחיקה", cancel: "ביטול", search: "חיפוש" },
-      nav: { overview: "סקירה", appointments: "תורים", schedule: "יומן ושעות", queueTypes: "סוגי תורים", products: "מוצרים", content: "תוכן", sections: "מקטעים", settings: "הגדרות" },
+      nav: { overview: "סקירה", appointments: "תורים", schedule: "יומן ושעות", tests: "מרשמים", queueTypes: "סוגי תורים", products: "מוצרים", content: "תוכן", sections: "מקטעים", settings: "הגדרות" },
+      tests: {
+        title: "בדיקות עיניים ומרשמים",
+        subtitle: "תיעוד בדיקות, חיפוש לפי שם או תעודת זהות, והדפסת מרשם.",
+        newTest: "בדיקה חדשה",
+        editTest: "עריכת בדיקה",
+        date: "תאריך הבדיקה",
+        firstName: "שם פרטי",
+        lastName: "שם משפחה",
+        idNumber: "תעודת זהות",
+        birthDate: "תאריך לידה (לא חובה)",
+        previousRx: "מרשם קודם",
+        currentRx: "מרשם",
+        notes: "הערות",
+        none: "אין עדיין בדיקות. צרו בדיקה חדשה.",
+        saved: "הבדיקה נשמרה",
+        print: "הדפסה / PDF",
+        deleteWarn: "למחוק את הבדיקה הזו? הפעולה אינה הפיכה.",
+        required: "יש למלא תאריך, שם פרטי, שם משפחה ותעודת זהות.",
+        back: "חזרה לרשימה",
+        searchHint: "חיפוש לפי שם או תעודת זהות…",
+      },
       schedule: {
         title: "יומן ושעות פתיחה",
         subtitle: "הגדירו מתי אפשר לקבוע תורים — הלקוחות יראו רק שעות פנויות.",
@@ -728,7 +770,28 @@ export const dictionaries: Record<Locale, Dict> = {
       saving: "Saving…",
       refresh: "Refresh",
       actions: { approve: "Approve", decline: "Decline", add: "Add", edit: "Edit", delete: "Delete", cancel: "Cancel", search: "Search" },
-      nav: { overview: "Overview", appointments: "Appointments", schedule: "Schedule", queueTypes: "Queue Types", products: "Products", content: "Content", sections: "Sections", settings: "Settings" },
+      nav: { overview: "Overview", appointments: "Appointments", schedule: "Schedule", tests: "Prescriptions", queueTypes: "Queue Types", products: "Products", content: "Content", sections: "Sections", settings: "Settings" },
+      tests: {
+        title: "Eye tests & prescriptions",
+        subtitle: "Record tests, search by name or ID, and print prescriptions.",
+        newTest: "New test",
+        editTest: "Edit test",
+        date: "Test date",
+        firstName: "First name",
+        lastName: "Last name",
+        idNumber: "ID number",
+        birthDate: "Birth date (optional)",
+        previousRx: "Previous prescription",
+        currentRx: "Prescription",
+        notes: "Notes",
+        none: "No tests yet. Create a new one.",
+        saved: "Test saved",
+        print: "Print / PDF",
+        deleteWarn: "Delete this test? This cannot be undone.",
+        required: "Date, first name, last name and ID number are required.",
+        back: "Back to list",
+        searchHint: "Search by name or ID…",
+      },
       schedule: {
         title: "Schedule & opening hours",
         subtitle: "Define when appointments can be booked — customers only see free slots.",
@@ -1018,7 +1081,28 @@ export const dictionaries: Record<Locale, Dict> = {
       saving: "Сохранение…",
       refresh: "Обновить",
       actions: { approve: "Подтвердить", decline: "Отклонить", add: "Добавить", edit: "Изменить", delete: "Удалить", cancel: "Отмена", search: "Поиск" },
-      nav: { overview: "Обзор", appointments: "Записи", schedule: "Расписание", queueTypes: "Типы услуг", products: "Товары", content: "Контент", sections: "Разделы", settings: "Настройки" },
+      nav: { overview: "Обзор", appointments: "Записи", schedule: "Расписание", tests: "Рецепты", queueTypes: "Типы услуг", products: "Товары", content: "Контент", sections: "Разделы", settings: "Настройки" },
+      tests: {
+        title: "Проверки зрения и рецепты",
+        subtitle: "Записывайте проверки, ищите по имени или номеру ID и печатайте рецепты.",
+        newTest: "Новая проверка",
+        editTest: "Редактировать",
+        date: "Дата проверки",
+        firstName: "Имя",
+        lastName: "Фамилия",
+        idNumber: "Номер ID",
+        birthDate: "Дата рождения (необязательно)",
+        previousRx: "Предыдущий рецепт",
+        currentRx: "Рецепт",
+        notes: "Примечания",
+        none: "Пока нет проверок. Создайте новую.",
+        saved: "Проверка сохранена",
+        print: "Печать / PDF",
+        deleteWarn: "Удалить эту проверку? Действие необратимо.",
+        required: "Обязательны дата, имя, фамилия и номер ID.",
+        back: "К списку",
+        searchHint: "Поиск по имени или номеру ID…",
+      },
       schedule: {
         title: "Расписание и часы работы",
         subtitle: "Определите, когда можно записаться — клиенты видят только свободные слоты.",
