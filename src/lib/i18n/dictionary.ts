@@ -89,6 +89,9 @@ export interface Dict {
     bookAnother: string;
     cancel: string;
     cancelledTitle: string;
+    cancelQ: string;
+    cancelYes: string;
+    cancelBack: string;
     /* Built-in hour system (slot picker) */
     continueToTime: string;
     stepTime: string;
@@ -132,6 +135,7 @@ export interface Dict {
     saving: string;
     refresh: string;
     actions: { approve: string; decline: string; add: string; edit: string; delete: string; cancel: string; search: string };
+    bulk: { selected: string; deleteSelected: string; confirm: string; deleted: string };
     nav: { overview: string; appointments: string; schedule: string; tests: string; queueTypes: string; products: string; content: string; sections: string; settings: string };
     tests: {
       title: string;
@@ -425,6 +429,9 @@ export const dictionaries: Record<Locale, Dict> = {
       bookAnother: "קביעת תור נוסף",
       cancel: "ביטול התור",
       cancelledTitle: "התור בוטל",
+      cancelQ: "לבטל את התור הזה?",
+      cancelYes: "כן, ביטול התור",
+      cancelBack: "חזרה לאתר",
       continueToTime: "המשך לבחירת יום ושעה",
       stepTime: "בחירת יום ושעה",
       back: "חזרה לפרטים",
@@ -466,6 +473,7 @@ export const dictionaries: Record<Locale, Dict> = {
       saving: "שומר…",
       refresh: "רענון",
       actions: { approve: "אישור", decline: "דחייה", add: "הוספה", edit: "עריכה", delete: "מחיקה", cancel: "ביטול", search: "חיפוש" },
+      bulk: { selected: "נבחרו", deleteSelected: "מחיקת הנבחרים", confirm: "למחוק את הפריטים שנבחרו? הפעולה אינה הפיכה.", deleted: "פריטים נמחקו" },
       nav: { overview: "סקירה", appointments: "תורים", schedule: "יומן ושעות", tests: "מרשמים", queueTypes: "סוגי תורים", products: "מוצרים", content: "תוכן", sections: "מקטעים", settings: "הגדרות" },
       tests: {
         title: "בדיקות עיניים ומרשמים",
@@ -743,6 +751,9 @@ export const dictionaries: Record<Locale, Dict> = {
       bookAnother: "Book another",
       cancel: "Cancel appointment",
       cancelledTitle: "Appointment cancelled",
+      cancelQ: "Cancel this appointment?",
+      cancelYes: "Yes, cancel it",
+      cancelBack: "Back to the site",
       continueToTime: "Continue to pick a day & time",
       stepTime: "Pick a day & time",
       back: "Back to details",
@@ -784,6 +795,7 @@ export const dictionaries: Record<Locale, Dict> = {
       saving: "Saving…",
       refresh: "Refresh",
       actions: { approve: "Approve", decline: "Decline", add: "Add", edit: "Edit", delete: "Delete", cancel: "Cancel", search: "Search" },
+      bulk: { selected: "selected", deleteSelected: "Delete selected", confirm: "Delete the selected items? This cannot be undone.", deleted: "items deleted" },
       nav: { overview: "Overview", appointments: "Appointments", schedule: "Schedule", tests: "Prescriptions", queueTypes: "Queue Types", products: "Products", content: "Content", sections: "Sections", settings: "Settings" },
       tests: {
         title: "Eye tests & prescriptions",
@@ -1061,6 +1073,9 @@ export const dictionaries: Record<Locale, Dict> = {
       bookAnother: "Записаться ещё раз",
       cancel: "Отменить запись",
       cancelledTitle: "Запись отменена",
+      cancelQ: "Отменить эту запись?",
+      cancelYes: "Да, отменить",
+      cancelBack: "Вернуться на сайт",
       continueToTime: "Далее: выбрать день и время",
       stepTime: "Выбор дня и времени",
       back: "Назад к данным",
@@ -1102,6 +1117,7 @@ export const dictionaries: Record<Locale, Dict> = {
       saving: "Сохранение…",
       refresh: "Обновить",
       actions: { approve: "Подтвердить", decline: "Отклонить", add: "Добавить", edit: "Изменить", delete: "Удалить", cancel: "Отмена", search: "Поиск" },
+      bulk: { selected: "выбрано", deleteSelected: "Удалить выбранные", confirm: "Удалить выбранные элементы? Действие необратимо.", deleted: "элементов удалено" },
       nav: { overview: "Обзор", appointments: "Записи", schedule: "Расписание", tests: "Рецепты", queueTypes: "Типы услуг", products: "Товары", content: "Контент", sections: "Разделы", settings: "Настройки" },
       tests: {
         title: "Проверки зрения и рецепты",

@@ -241,6 +241,20 @@ async function parseXlsx(buffer: Buffer): Promise<string[][]> {
 
 type ColumnKey = "date" | "firstName" | "lastName" | "fullName" | "idNumber" | "notes" | `${"od" | "os"}.${RxField}` | `prev.${"od" | "os"}.${RxField}`;
 
+// Field spellings seen in the wild, including the Access DB's truncated ones
+// (PREVRSF, PREVRCY, PREVRAX, PREVRAD…).
+const FIELD_ALIASES: Record<string, RxField> = {
+  sph: "sph", sf: "sph", sp: "sph", sphere: "sph",
+  cyl: "cyl", cy: "cyl", cylinder: "cyl",
+  axis: "axis", ax: "axis",
+  add: "add", ad: "add",
+  pd: "pd", pl: "pd",
+  prism: "prism", pr: "prism", pris: "prism",
+  base: "base", ba: "base", bas: "base",
+  h: "h",
+  va: "va",
+};
+
 /** Map a header cell to a known column. Tolerant to Hebrew/English variants. */
 function headerKey(raw: string): ColumnKey | null {
   const h = raw.trim().toLowerCase().replace(/[_\-.]/g, " ").replace(/\s+/g, " ");
@@ -250,9 +264,18 @@ function headerKey(raw: string): ColumnKey | null {
   if (/last ?name|שם משפחה|family/.test(h)) return "lastName";
   if (/full ?name|patient|^name$|^שם$|שם מלא|שם הלקוח/.test(h)) return "fullName";
   if (/(^| )id( |$)|ת ?"?ז|תעודת זהות|teudat|מספר זהות/.test(h)) return "idNumber";
-  if (/notes?|הערות|comment/.test(h)) return "notes";
+  if (/notes?|הערות|הערה|comment/.test(h)) return "notes";
 
-  // Rx columns: an eye marker + a field, optionally marked "previous".
+  // Compact Access-style headers: [PREV] + R/L + field, e.g. RSPH, LCYL,
+  // RVA, LH, PREVRSF, PREVLAX…
+  const compact = h.replace(/\s/g, "");
+  const m = /^(prev)?(r|l)([a-z]{1,8})$/.exec(compact);
+  if (m && FIELD_ALIASES[m[3]]) {
+    const eye = m[2] === "r" ? "od" : "os";
+    return m[1] ? `prev.${eye}.${FIELD_ALIASES[m[3]]}` : `${eye}.${FIELD_ALIASES[m[3]]}`;
+  }
+
+  // Spaced style: an eye marker + a field, optionally marked "previous".
   const prev = /prev|old|קודם/.test(h);
   const eye = /\bod\b|right|ימין|r eye/.test(h) ? "od" : /\bos\b|left|שמאל|l eye/.test(h) ? "os" : null;
   if (!eye) return null;
@@ -296,6 +319,7 @@ function tableToTests(rows: string[][]): ImportResult {
     if (!tableEmpty(prev)) t.previous = prev;
     if (!t.firstName && !t.idNumber) continue; // blank / junk row
     if (!t.date) t.date = new Date().toISOString().slice(0, 10);
+    if (!t.firstName) t.firstName = "—";
     if (!t.lastName) t.lastName = "—";
     if (!t.idNumber) warnings.push(`Row ${i + 1}: missing ID number (${t.firstName} ${t.lastName}).`);
     tests.push(t);

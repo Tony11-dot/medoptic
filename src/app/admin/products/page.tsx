@@ -9,6 +9,8 @@ import { Modal } from "@/components/ui/Modal";
 import { ImageBlock } from "@/components/ui/ImageBlock";
 import { useToast } from "@/components/ui/Toast";
 import { useI18n } from "@/lib/i18n/LanguageProvider";
+import { BulkBar, BulkCheckbox, bulkDelete, useBulkSelect } from "@/components/admin/BulkSelect";
+import { cn } from "@/lib/cn";
 import type { Localized, Product } from "@/lib/types";
 
 const CATEGORIES = ["optical", "sun", "kids", "contact"];
@@ -74,6 +76,16 @@ export default function ProductsAdmin() {
     }
   }
 
+  const bulk = useBulkSelect(products);
+  async function bulkRemove() {
+    setSaving(true);
+    const ok = await bulkDelete("/api/products", [...bulk.selected]);
+    setSaving(false);
+    bulk.clear();
+    toast.success(`${ok} ${t.admin.bulk.deleted}`);
+    await load();
+  }
+
   async function remove(p: Product) {
     try {
       const res = await fetch(`/api/products/${p.id}`, { method: "DELETE" });
@@ -96,11 +108,16 @@ export default function ProductsAdmin() {
         <Button onClick={() => setDraft(blankDraft())}>+ {t.admin.actions.add}</Button>
       </div>
 
+      <BulkBar count={bulk.count} onDelete={bulkRemove} onClear={bulk.clear} busy={saving} />
+
       <div className="mt-6 overflow-hidden rounded-2xl border border-line bg-white shadow-sm">
         <div className="overflow-x-auto">
           <table className="w-full min-w-[640px] text-sm">
             <thead>
               <tr className="border-b border-line bg-surface text-left text-xs uppercase tracking-wide text-muted">
+                <th className="w-10 px-4 py-3">
+                  <BulkCheckbox checked={bulk.allSelected} onChange={bulk.toggleAll} label={t.admin.bulk.selected} />
+                </th>
                 <th className="px-4 py-3">{t.admin.prod.colImage}</th>
                 <th className="px-4 py-3">{t.admin.prod.colName}</th>
                 <th className="px-4 py-3">{t.admin.prod.colCategory}</th>
@@ -110,12 +127,15 @@ export default function ProductsAdmin() {
             </thead>
             <tbody className="divide-y divide-line">
               {loading ? (
-                <tr><td colSpan={5} className="px-4 py-10 text-center text-muted">{t.admin.loading}</td></tr>
+                <tr><td colSpan={6} className="px-4 py-10 text-center text-muted">{t.admin.loading}</td></tr>
               ) : products.length === 0 ? (
-                <tr><td colSpan={5} className="px-4 py-10 text-center text-muted">{t.admin.prod.none}</td></tr>
+                <tr><td colSpan={6} className="px-4 py-10 text-center text-muted">{t.admin.prod.none}</td></tr>
               ) : (
                 products.map((p) => (
-                  <tr key={p.id} className="transition hover:bg-surface/60">
+                  <tr key={p.id} className={cn("transition hover:bg-surface/60", bulk.isSelected(p.id) && "bg-brand-50/40")}>
+                    <td className="px-4 py-3">
+                      <BulkCheckbox checked={bulk.isSelected(p.id)} onChange={() => bulk.toggle(p.id)} label={p.name.en || p.name.he} />
+                    </td>
                     <td className="px-4 py-3">
                       <div className="size-12 overflow-hidden rounded-lg border border-line">
                         <ImageBlock src={p.image} alt={p.name.en || p.name.he} rounded="rounded-none" />

@@ -8,6 +8,7 @@ import { useToast } from "@/components/ui/Toast";
 import { useI18n } from "@/lib/i18n/LanguageProvider";
 import { RX_FIELDS, type EyeTest, type RxEye, type RxTable } from "@/lib/types";
 import { inputCls, inputClsFull } from "@/components/admin/adminUi";
+import { BulkBar, BulkCheckbox, bulkDelete, useBulkSelect } from "@/components/admin/BulkSelect";
 import { cn } from "@/lib/cn";
 
 const emptyEye = (): RxEye => ({});
@@ -174,6 +175,16 @@ export default function TestsPage() {
     setBusy(false);
     setPreview(null);
     toast.success(`${ok} ${t.admin.tests.importDone}`);
+    await load();
+  }
+
+  const bulk = useBulkSelect(filtered);
+  async function bulkRemove() {
+    setBusy(true);
+    const ok = await bulkDelete("/api/eye-tests", [...bulk.selected]);
+    setBusy(false);
+    bulk.clear();
+    toast.success(`${ok} ${t.admin.bulk.deleted}`);
     await load();
   }
 
@@ -364,11 +375,16 @@ export default function TestsPage() {
               className={cn(inputCls, "w-full max-w-md")}
             />
           </div>
+          <BulkBar count={bulk.count} onDelete={bulkRemove} onClear={bulk.clear} busy={busy} />
+
           <div className="mt-4 overflow-hidden rounded-2xl border border-line bg-white shadow-sm">
             <div className="overflow-x-auto">
               <table className="w-full min-w-140 text-sm">
                 <thead>
                   <tr className="border-b border-line bg-surface text-xs uppercase tracking-wide text-muted">
+                    <th className="w-10 px-4 py-3">
+                      <BulkCheckbox checked={bulk.allSelected} onChange={bulk.toggleAll} label={t.admin.bulk.selected} />
+                    </th>
                     <th className="px-4 py-3 text-start">{t.admin.tests.date}</th>
                     <th className="px-4 py-3 text-start">{t.admin.queue.name}</th>
                     <th className="px-4 py-3 text-start">{t.admin.tests.idNumber}</th>
@@ -378,12 +394,15 @@ export default function TestsPage() {
                 </thead>
                 <tbody className="divide-y divide-line">
                   {loading ? (
-                    <tr><td colSpan={5} className="px-4 py-10 text-center text-muted">{t.admin.loading}</td></tr>
+                    <tr><td colSpan={6} className="px-4 py-10 text-center text-muted">{t.admin.loading}</td></tr>
                   ) : filtered.length === 0 ? (
-                    <tr><td colSpan={5} className="px-4 py-10 text-center text-muted">{t.admin.tests.none}</td></tr>
+                    <tr><td colSpan={6} className="px-4 py-10 text-center text-muted">{t.admin.tests.none}</td></tr>
                   ) : (
                     filtered.map((x) => (
-                      <tr key={x.id} className="transition hover:bg-surface/60">
+                      <tr key={x.id} className={cn("transition hover:bg-surface/60", bulk.isSelected(x.id) && "bg-brand-50/40")}>
+                        <td className="px-4 py-3">
+                          <BulkCheckbox checked={bulk.isSelected(x.id)} onChange={() => bulk.toggle(x.id)} label={`${x.firstName} ${x.lastName}`} />
+                        </td>
                         <td className="whitespace-nowrap px-4 py-3 text-muted" dir="ltr">{fmtDate(x.date)}</td>
                         <td className="px-4 py-3 font-medium text-ink">{x.firstName} {x.lastName}</td>
                         <td className="whitespace-nowrap px-4 py-3" dir="ltr">{x.idNumber}</td>

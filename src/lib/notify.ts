@@ -40,6 +40,9 @@ function whenText(appt: Appointment): string | null {
   });
 }
 
+/** Public self-service link where the customer can cancel this booking. */
+const cancelUrl = (appt: Appointment) => `${SITE_URL}/cancel/${appt.id}`;
+
 function buildMessage(appt: Appointment): string {
   const name = `${appt.firstName} ${appt.lastName}`.trim();
   const signoff = `לשאלות חייגו ${BUSINESS.phone}.`;
@@ -49,7 +52,7 @@ function buildMessage(appt: Appointment): string {
     const slot = when
       ? `התור שלך נקבע ל-${when}.`
       : `נחזור אליך לתיאום מועד.`;
-    return `${BUSINESS.name}: שלום ${name}, התור שלך אושר. ${slot} ${signoff}`;
+    return `${BUSINESS.name}: שלום ${name}, התור שלך אושר. ${slot} ${signoff} לביטול התור: ${cancelUrl(appt)}`;
   }
   if (appt.status === "declined") {
     const reason = appt.decisionReason ? ` סיבה: ${appt.decisionReason}` : "";
@@ -62,7 +65,7 @@ function buildReminder(appt: Appointment): string {
   const name = `${appt.firstName} ${appt.lastName}`.trim();
   const when = whenText(appt);
   const slot = when ? ` מחר, ${when}` : " מחר";
-  return `${BUSINESS.name}: שלום ${name}, תזכורת לתור שלך${slot}. נתראה בקרוב! לשינוי חייגו ${BUSINESS.phone}.`;
+  return `${BUSINESS.name}: שלום ${name}, תזכורת לתור שלך${slot}. נתראה בקרוב! לשינוי חייגו ${BUSINESS.phone}. לביטול: ${cancelUrl(appt)}`;
 }
 
 // ---- Branded HTML email -----------------------------------------------------
@@ -112,16 +115,26 @@ function buttonHtml(href: string, label: string): string {
   return `<a href="${href}" style="display:inline-block;background:${BRAND};color:#ffffff;text-decoration:none;font-weight:bold;padding:14px 30px;border-radius:12px;font-size:16px;">${label}</a>`;
 }
 
+/** Understated cancel link shown under the main email content. */
+function cancelLinkHtml(appt: Appointment): string {
+  return `<p style="margin:18px 0 0;font-size:13px;color:#8a94a3;">
+    לא מסתדר לכם? <a href="${cancelUrl(appt)}" style="color:#c2410c;font-weight:bold;text-decoration:underline;">לחצו כאן לביטול התור</a>
+  </p>`;
+}
+
 function buildEmailHtml(appt: Appointment): string {
   const name = esc(`${appt.firstName} ${appt.lastName}`.trim());
   const when = whenText(appt);
   if (appt.status === "approved") {
     if (when) {
-      return emailShell(`שלום ${name}, התור שלך אושר 🎉`, `התור נקבע ל-<strong>${esc(when)}</strong>. נשמח לראותך!`);
+      return emailShell(
+        `שלום ${name}, התור שלך אושר 🎉`,
+        `התור נקבע ל-<strong>${esc(when)}</strong>. נשמח לראותך!${cancelLinkHtml(appt)}`,
+      );
     }
     return emailShell(
       `שלום ${name}, התור שלך אושר 🎉`,
-      `נחזור אליכם בהקדם לתיאום המועד שנוח לכם.`,
+      `נחזור אליכם בהקדם לתיאום המועד שנוח לכם.${cancelLinkHtml(appt)}`,
     );
   }
   if (appt.status === "declined") {
@@ -135,7 +148,7 @@ function buildReminderHtml(appt: Appointment): string {
   const name = esc(`${appt.firstName} ${appt.lastName}`.trim());
   const when = whenText(appt);
   const slot = when ? `<strong>מחר, ${esc(when)}</strong>` : "<strong>מחר</strong>";
-  return emailShell(`שלום ${name}, תזכורת ידידותית 👋`, `תזכורת לתור שלך ${slot}. נתראה בקרוב!`);
+  return emailShell(`שלום ${name}, תזכורת ידידותית 👋`, `תזכורת לתור שלך ${slot}. נתראה בקרוב!${cancelLinkHtml(appt)}`);
 }
 
 // Logs the message until a real provider is wired in at the marked spot.

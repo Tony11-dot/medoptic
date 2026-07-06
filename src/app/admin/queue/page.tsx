@@ -9,6 +9,7 @@ import { useI18n } from "@/lib/i18n/LanguageProvider";
 import { localizedOr, type Appointment, type Service } from "@/lib/types";
 import { BUSINESS_TZ, addDays, dateStrInTz, timeStrInTz, weekdayOf } from "@/lib/schedule";
 import { inputCls, inputClsFull } from "@/components/admin/adminUi";
+import { BulkBar, BulkCheckbox, bulkDelete, useBulkSelect } from "@/components/admin/BulkSelect";
 import { cn } from "@/lib/cn";
 
 // All appointment times are shown and edited in the shop's timezone, so the
@@ -141,6 +142,16 @@ export default function QueuePage() {
 
   const statusDot = (s: Appointment["status"]) =>
     s === "approved" ? "bg-emerald-500" : s === "declined" ? "bg-rose-500" : "bg-amber-500";
+
+  const bulk = useBulkSelect(filtered);
+  async function bulkRemove() {
+    setBusy(true);
+    const ok = await bulkDelete("/api/appointments", [...bulk.selected]);
+    setBusy(false);
+    bulk.clear();
+    toast.success(`${ok} ${t.admin.bulk.deleted}`);
+    await load();
+  }
 
   async function remove(a: Appointment) {
     setBusy(true);
@@ -311,12 +322,18 @@ export default function QueuePage() {
         </div>
       )}
 
+      {/* Bulk actions (list view) */}
+      {view === "list" && <BulkBar count={bulk.count} onDelete={bulkRemove} onClear={bulk.clear} busy={busy} />}
+
       {/* Table */}
       <div className={cn("mt-4 overflow-hidden rounded-2xl border border-line bg-white shadow-sm", view === "grid" && "hidden")}>
         <div className="overflow-x-auto">
           <table className="w-full min-w-170 text-sm">
             <thead>
               <tr className="border-b border-line bg-surface text-start text-xs uppercase tracking-wide text-muted">
+                <th className="w-10 px-4 py-3">
+                  <BulkCheckbox checked={bulk.allSelected} onChange={bulk.toggleAll} label={t.admin.bulk.selected} />
+                </th>
                 <th className="px-4 py-3 text-start">{t.admin.queue.booked}</th>
                 <th className="px-4 py-3 text-start">{t.admin.queue.customer}</th>
                 <th className="px-4 py-3 text-start">{t.admin.queue.phone}</th>
@@ -327,12 +344,15 @@ export default function QueuePage() {
             </thead>
             <tbody className="divide-y divide-line">
               {loading ? (
-                <tr><td colSpan={6} className="px-4 py-10 text-center text-muted">{t.admin.loading}</td></tr>
+                <tr><td colSpan={7} className="px-4 py-10 text-center text-muted">{t.admin.loading}</td></tr>
               ) : filtered.length === 0 ? (
-                <tr><td colSpan={6} className="px-4 py-10 text-center text-muted">{t.admin.queue.none}</td></tr>
+                <tr><td colSpan={7} className="px-4 py-10 text-center text-muted">{t.admin.queue.none}</td></tr>
               ) : (
                 filtered.map((a) => (
-                  <tr key={a.id} className="transition hover:bg-surface/60">
+                  <tr key={a.id} className={cn("transition hover:bg-surface/60", bulk.isSelected(a.id) && "bg-brand-50/40")}>
+                    <td className="px-4 py-3">
+                      <BulkCheckbox checked={bulk.isSelected(a.id)} onChange={() => bulk.toggle(a.id)} label={`${a.firstName} ${a.lastName}`} />
+                    </td>
                     <td className="whitespace-nowrap px-4 py-3 text-muted">{fmtDate(a.createdAt)}</td>
                     <td className="px-4 py-3 font-medium text-ink">{a.firstName} {a.lastName}</td>
                     <td className="whitespace-nowrap px-4 py-3" dir="ltr">{a.phone}</td>
