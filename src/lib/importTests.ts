@@ -239,7 +239,7 @@ async function parseXlsx(buffer: Buffer): Promise<string[][]> {
 
 // ---- Tabular data (CSV/XLSX) -> tests ----------------------------------------------
 
-type ColumnKey = "date" | "firstName" | "lastName" | "fullName" | "idNumber" | "notes" | `${"od" | "os"}.${RxField}` | `prev.${"od" | "os"}.${RxField}`;
+type ColumnKey = "date" | "birthDate" | "firstName" | "lastName" | "fullName" | "idNumber" | "notes" | `${"od" | "os"}.${RxField}` | `prev.${"od" | "os"}.${RxField}`;
 
 // Field spellings seen in the wild, including the Access DB's truncated ones
 // (PREVRSF, PREVRCY, PREVRAX, PREVRAD…).
@@ -259,6 +259,8 @@ const FIELD_ALIASES: Record<string, RxField> = {
 function headerKey(raw: string): ColumnKey | null {
   const h = raw.trim().toLowerCase().replace(/[_\-.]/g, " ").replace(/\s+/g, " ");
   if (!h) return null;
+  // Birth date first, so "תאריך לידה" isn't captured by the test-date pattern.
+  if (/לידה|birth|\bdob\b|date of birth/.test(h)) return "birthDate";
   if (/(^|\s)(date|תאריך)( |$)|תאריך הבדיקה|תאריך בדיקה/.test(h)) return "date";
   if (/first ?name|שם פרטי/.test(h)) return "firstName";
   if (/last ?name|שם משפחה|family/.test(h)) return "lastName";
@@ -303,6 +305,7 @@ function tableToTests(rows: string[][]): ImportResult {
       const value = (rows[i][c] ?? "").trim();
       if (!key || !value) continue;
       if (key === "date") t.date = normalizeDate(value) ?? t.date;
+      else if (key === "birthDate") t.birthDate = normalizeDate(value) ?? undefined;
       else if (key === "firstName") t.firstName = value;
       else if (key === "lastName") t.lastName = value;
       else if (key === "fullName") fullName = value;
@@ -382,9 +385,13 @@ function slideToTest(boxes: Box[], tables: string[][][], slideNo: number, warnin
   const idAny = boxes.map((b) => b.text.trim()).find(looksLikeId);
   t.idNumber = idNear ?? idAny ?? "";
 
-  // Date: labeled first, else any date-looking token.
-  const dateNear = /תאריך(?: הבדיקה)?\s*:?\s*([\d\/.\-]{6,10})/.exec(all)?.[1];
-  const dateAny = boxes.map((b) => b.text.trim()).map(normalizeDate).find(Boolean) ?? null;
+  // Birth date: only when explicitly labeled (תאריך לידה / לידה).
+  const birthNear = /(?:תאריך )?לידה\s*:?\s*([\d\/.\-]{6,10})/.exec(all)?.[1];
+  if (birthNear) t.birthDate = normalizeDate(birthNear) ?? undefined;
+
+  // Test date: labeled first, else any date-looking token that isn't the birth date.
+  const dateNear = /תאריך(?! לידה)(?: הבדיקה)?\s*:?\s*([\d\/.\-]{6,10})/.exec(all)?.[1];
+  const dateAny = boxes.map((b) => b.text.trim()).map(normalizeDate).find((d) => d && d !== t.birthDate) ?? null;
   t.date = (dateNear ? normalizeDate(dateNear) : null) ?? dateAny ?? new Date().toISOString().slice(0, 10);
 
   // Name: after a שם label ("שם: עליזה ביטון" possibly same box), else the first
@@ -396,8 +403,8 @@ function slideToTest(boxes: Box[], tables: string[][][], slideNo: number, warnin
   const fullName = nameNear || nameBox || "";
   if (fullName) Object.assign(t, splitName(fullName));
 
-  // Notes: text after הערות.
-  const notes = /הערות\s*:?\s*([^\n]{1,200})/.exec(all)?.[1]?.trim();
+  // Notes: text after הערה / הערות.
+  const notes = /(?:הערות|הערה)\s*:?\s*([^\n]{1,200})/.exec(all)?.[1]?.trim();
   if (notes) t.notes = notes;
 
   // Rx values — structured tables first, spatial text boxes as fallback.

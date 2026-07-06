@@ -20,7 +20,9 @@ export async function GET(
 
 // POST — customer self-service on their own appointment. No login: the UUID in
 // the URL is the capability (returned to them right after booking).
-//   { action: "cancel" } → cancel the booking (frees the slot on the hour grid)
+//   { action: "cancel" } → remove the booking entirely (frees the slot on the
+//     hour grid and clears it from the admin queue — a customer cancellation
+//     leaves no record to manage).
 export async function POST(
   request: Request,
   { params }: { params: Promise<{ id: string }> },
@@ -38,13 +40,11 @@ export async function POST(
 
   if (body.action === "cancel") {
     let found = false;
-    await updateAppointments((list) =>
-      list.map((a) => {
-        if (a.id !== id) return a;
-        found = true;
-        return { ...a, status: "declined", decisionAt: new Date().toISOString(), decisionReason: "בוטל ע״י הלקוח" };
-      }),
-    );
+    await updateAppointments((list) => {
+      const next = list.filter((a) => a.id !== id);
+      found = next.length !== list.length;
+      return next;
+    });
     if (!found) return Response.json({ error: "Not found" }, { status: 404 });
     return Response.json({ ok: true });
   }

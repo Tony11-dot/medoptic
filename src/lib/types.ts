@@ -155,6 +155,8 @@ export interface EyeTest {
   id: string;
   createdAt: string; // ISO timestamp (record creation)
   date: string; // test date, "YYYY-MM-DD"
+  /** תאריך לידה — the patient's date of birth, "YYYY-MM-DD" (optional). */
+  birthDate?: string;
   firstName: string;
   lastName: string;
   /** תעודת זהות — the national ID the doctor searches by. */

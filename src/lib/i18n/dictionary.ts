@@ -146,6 +146,7 @@ export interface Dict {
       firstName: string;
       lastName: string;
       idNumber: string;
+      birthDate: string;
       previousRx: string;
       currentRx: string;
       notes: string;
@@ -484,6 +485,7 @@ export const dictionaries: Record<Locale, Dict> = {
         firstName: "שם פרטי",
         lastName: "שם משפחה",
         idNumber: "תעודת זהות",
+        birthDate: "תאריך לידה",
         previousRx: "מרשם קודם",
         currentRx: "מרשם",
         notes: "הערות",
@@ -806,6 +808,7 @@ export const dictionaries: Record<Locale, Dict> = {
         firstName: "First name",
         lastName: "Last name",
         idNumber: "ID number",
+        birthDate: "Birth date",
         previousRx: "Previous prescription",
         currentRx: "Prescription",
         notes: "Notes",
@@ -1128,6 +1131,7 @@ export const dictionaries: Record<Locale, Dict> = {
         firstName: "Имя",
         lastName: "Фамилия",
         idNumber: "Номер ID",
+        birthDate: "Дата рождения",
         previousRx: "Предыдущий рецепт",
         currentRx: "Рецепт",
         notes: "Примечания",

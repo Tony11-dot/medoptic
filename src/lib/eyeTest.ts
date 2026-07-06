@@ -32,12 +32,14 @@ export function sanitizeEyeTestInput(
   const b = body as Record<string, unknown>;
 
   const date = clip(b.date, 10);
+  const birthDate = clip(b.birthDate, 10);
   const firstName = clip(b.firstName, 80);
   const lastName = clip(b.lastName, 80);
   const idNumber = clip(b.idNumber, 20);
   const notes = clip(b.notes, 2000);
 
   if (!DATE_RE.test(date)) return { ok: false, error: "valid date is required" };
+  if (birthDate && !DATE_RE.test(birthDate)) return { ok: false, error: "invalid birthDate" };
   if (!firstName) return { ok: false, error: "firstName is required" };
   if (!lastName) return { ok: false, error: "lastName is required" };
   if (!idNumber) return { ok: false, error: "idNumber is required" };
@@ -47,6 +49,7 @@ export function sanitizeEyeTestInput(
     ok: true,
     value: {
       date,
+      birthDate: birthDate || undefined,
       firstName,
       lastName,
       idNumber,

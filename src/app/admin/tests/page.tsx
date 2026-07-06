@@ -22,6 +22,7 @@ function blankDraft(): EyeTest {
     id: "",
     createdAt: "",
     date: `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`,
+    birthDate: "",
     firstName: "",
     lastName: "",
     idNumber: "",
@@ -109,6 +110,7 @@ export default function TestsPage() {
     try {
       const body = JSON.stringify({
         date: draft.date,
+        birthDate: draft.birthDate || undefined,
         firstName: draft.firstName,
         lastName: draft.lastName,
         idNumber: draft.idNumber,
@@ -295,10 +297,14 @@ export default function TestsPage() {
       {draft ? (
         /* ---- Editor ---- */
         <div className="mt-6 space-y-5 rounded-2xl border border-line bg-white p-6 shadow-sm">
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
             <label className="block">
               <span className="mb-1.5 block text-sm font-semibold text-ink">{t.admin.tests.date}</span>
               <input type="date" dir="ltr" value={draft.date} onChange={(e) => setField({ date: e.target.value })} className={inputClsFull} />
+            </label>
+            <label className="block">
+              <span className="mb-1.5 block text-sm font-semibold text-ink">{t.admin.tests.birthDate}</span>
+              <input type="date" dir="ltr" value={draft.birthDate ?? ""} onChange={(e) => setField({ birthDate: e.target.value })} className={inputClsFull} />
             </label>
             <label className="block">
               <span className="mb-1.5 block text-sm font-semibold text-ink">{t.admin.tests.firstName}</span>
