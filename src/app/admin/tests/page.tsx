@@ -48,7 +48,21 @@ export default function TestsPage() {
   // null → folder list; a folder (working copy) → folder view.
   const [folder, setFolder] = useState<Patient | null>(null);
   const [openExam, setOpenExam] = useState<string | null>(null); // expanded exam id
+  const [printSel, setPrintSel] = useState<Set<string>>(new Set()); // tests ticked for printing
   const [confirmDelete, setConfirmDelete] = useState<Patient | null>(null);
+
+  // Reset the print selection whenever a different folder is opened/closed.
+  const folderId = folder?.id ?? null;
+  useEffect(() => { setPrintSel(new Set()); }, [folderId]);
+  const togglePrint = (examId: string) =>
+    setPrintSel((prev) => {
+      const next = new Set(prev);
+      if (next.has(examId)) next.delete(examId);
+      else next.add(examId);
+      return next;
+    });
+  const printUrl = (ids?: string[]) =>
+    folder ? `/admin/tests/${folder.id}/print${ids && ids.length ? `?exams=${ids.join(",")}` : ""}` : "#";
 
   // File import: upload → parsed folders preview → confirm.
   const fileRef = useRef<HTMLInputElement>(null);
@@ -236,10 +250,40 @@ export default function TestsPage() {
         </div>
 
         {/* Tests */}
-        <div className="mt-6 flex items-center justify-between">
+        <div className="mt-6 flex flex-wrap items-center justify-between gap-2">
           <h2 className="text-lg font-bold text-ink">{t.admin.tests.examsTitle}</h2>
-          <Button size="sm" variant="subtle" onClick={addExam}>+ {t.admin.tests.addTest}</Button>
+          <div className="flex items-center gap-2">
+            {folder.id && folder.exams.length > 0 && (
+              <a
+                href={printUrl()}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex h-9 items-center gap-1.5 rounded-lg border border-line bg-white px-3 text-sm font-semibold text-brand-dark transition hover:border-brand"
+              >
+                🖨 {t.admin.tests.printAll}
+              </a>
+            )}
+            <Button size="sm" variant="subtle" onClick={addExam}>+ {t.admin.tests.addTest}</Button>
+          </div>
         </div>
+
+        {/* Print-selected bar */}
+        {printSel.size > 0 && folder.id && (
+          <div className="mt-3 flex flex-wrap items-center justify-between gap-3 rounded-2xl border-2 border-brand-200 bg-brand-50/60 px-4 py-2.5">
+            <p className="text-sm font-bold text-brand-dark">
+              <span className="me-1.5 rounded-lg bg-brand px-2 py-0.5 text-white">{printSel.size}</span>
+              {t.admin.bulk.selected}
+            </p>
+            <a
+              href={printUrl(folder.exams.filter((e) => printSel.has(e.id)).map((e) => e.id))}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex h-9 items-center gap-1.5 rounded-lg bg-brand px-4 text-sm font-bold text-white transition hover:bg-brand-dark"
+            >
+              🖨 {t.admin.tests.printSelected}
+            </a>
+          </div>
+        )}
 
         {folder.exams.length === 0 && (
           <p className="mt-3 rounded-xl border border-dashed border-line bg-surface/50 px-4 py-6 text-center text-sm text-muted">{t.admin.tests.noExams}</p>
@@ -251,6 +295,16 @@ export default function TestsPage() {
             return (
               <div key={exam.id} className="overflow-hidden rounded-2xl border border-line bg-white shadow-sm">
                 <div className="flex items-center gap-2 px-4 py-3">
+                  {folder.id && (
+                    <input
+                      type="checkbox"
+                      checked={printSel.has(exam.id)}
+                      onChange={() => togglePrint(exam.id)}
+                      aria-label={`${t.admin.tests.printSelected} — ${examName(exam, i)}`}
+                      title={t.admin.tests.printSelected}
+                      className="size-4 shrink-0 cursor-pointer accent-[#0066CC]"
+                    />
+                  )}
                   <button type="button" onClick={() => setOpenExam(open ? null : exam.id)} className="flex flex-1 items-center gap-3 text-start">
                     <span className="grid size-8 place-items-center rounded-lg bg-brand-50 text-sm font-bold text-brand-dark">{i + 1}</span>
                     <span>
@@ -260,7 +314,7 @@ export default function TestsPage() {
                   </button>
                   {folder.id && (
                     <a
-                      href={`/admin/tests/${folder.id}/print/${exam.id}`}
+                      href={printUrl([exam.id])}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="rounded-lg border border-line px-2.5 py-1.5 text-xs font-semibold text-ink/70 transition hover:border-brand hover:text-brand-dark"
@@ -319,7 +373,7 @@ export default function TestsPage() {
           })}
         </div>
         {!folder.id && folder.exams.length > 0 && (
-          <p className="mt-3 text-center text-xs text-muted">💡 {t.admin.tests.saveFolder} ← {t.admin.tests.print}</p>
+          <p className="mt-3 text-center text-xs text-muted">💡 {t.admin.tests.saveFirst}</p>
         )}
       </AdminShell>
     );

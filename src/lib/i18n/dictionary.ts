@@ -167,6 +167,9 @@ export interface Dict {
       noExams: string;
       saveFolder: string;
       deleteTestWarn: string;
+      printSelected: string;
+      printAll: string;
+      saveFirst: string;
       import: string;
       importHint: string;
       importing: string;
@@ -516,6 +519,9 @@ export const dictionaries: Record<Locale, Dict> = {
         noExams: "אין בדיקות בתיקייה. הוסיפו בדיקה.",
         saveFolder: "שמירת התיקייה",
         deleteTestWarn: "למחוק את הבדיקה הזו?",
+        printSelected: "הדפסת הנבחרות",
+        printAll: "הדפסת כל הבדיקות",
+        saveFirst: "שמרו את התיקייה כדי להדפיס.",
         import: "ייבוא מקובץ",
         importHint: "PowerPoint (pptx), Excel (xlsx), CSV או Access (accdb) — המערכת מזהה את הנתונים, מקבצת לפי תעודת זהות ומציגה לאישור.",
         importing: "קורא את הקובץ…",
@@ -849,6 +855,9 @@ export const dictionaries: Record<Locale, Dict> = {
         noExams: "No tests in this folder. Add one.",
         saveFolder: "Save folder",
         deleteTestWarn: "Delete this test?",
+        printSelected: "Print selected",
+        printAll: "Print all tests",
+        saveFirst: "Save the folder to print.",
         import: "Import from file",
         importHint: "PowerPoint (pptx), Excel (xlsx), CSV or Access (accdb) — the system detects the data, groups by ID number and shows it for approval.",
         importing: "Reading the file…",
@@ -1182,6 +1191,9 @@ export const dictionaries: Record<Locale, Dict> = {
         noExams: "В папке нет проверок. Добавьте.",
         saveFolder: "Сохранить папку",
         deleteTestWarn: "Удалить эту проверку?",
+        printSelected: "Печать выбранных",
+        printAll: "Печать всех проверок",
+        saveFirst: "Сохраните папку для печати.",
         import: "Импорт из файла",
         importHint: "PowerPoint (pptx), Excel (xlsx), CSV или Access (accdb) — система распознаёт данные, группирует по номеру ID и показывает для подтверждения.",
         importing: "Читаем файл…",
