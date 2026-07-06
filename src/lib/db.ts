@@ -4,7 +4,7 @@
 import "server-only";
 import { promises as fs } from "fs";
 import path from "path";
-import type { AdminSettings, Appointment, BookingSettings, EyeTest, Product, Service, SiteContent } from "./types";
+import type { AdminSettings, Appointment, BookingSettings, Patient, Product, Service, SiteContent } from "./types";
 import { seedAppointments, seedProducts, seedServices, seedContent, seedBookingSettings } from "./seed";
 
 const useRedis = !!process.env.KV_REST_API_URL && !!process.env.KV_REST_API_TOKEN;
@@ -138,12 +138,12 @@ export const getBookingSettings = () => read<BookingSettings>("bookingSettings",
 export const updateBookingSettings = (fn: (s: BookingSettings) => BookingSettings) =>
   mutate<BookingSettings>("bookingSettings", fn, seedBookingSettings);
 
-// ---- Eye tests / prescriptions ------------------------------------------------
+// ---- Patient folders / eye tests ----------------------------------------------
 
-export const getEyeTests = () => read<EyeTest[]>("eyeTests", []);
+export const getPatients = () => read<Patient[]>("patients", []);
 
-export const updateEyeTests = (fn: (list: EyeTest[]) => EyeTest[]) =>
-  mutate<EyeTest[]>("eyeTests", fn, []);
+export const updatePatients = (fn: (list: Patient[]) => Patient[]) =>
+  mutate<Patient[]>("patients", fn, []);
 
 // ---- Admin settings ---------------------------------------------------------
 

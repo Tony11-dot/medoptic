@@ -140,15 +140,13 @@ export interface Dict {
     tests: {
       title: string;
       subtitle: string;
-      newTest: string;
-      editTest: string;
+      newFolder: string;
+      folder: string;
       date: string;
       firstName: string;
       lastName: string;
       idNumber: string;
       birthDate: string;
-      previousRx: string;
-      currentRx: string;
       notes: string;
       none: string;
       saved: string;
@@ -157,6 +155,18 @@ export interface Dict {
       required: string;
       back: string;
       searchHint: string;
+      examsCol: string;
+      examsTitle: string;
+      addTest: string;
+      testWord: string;
+      testName: string;
+      testDate: string;
+      results: string;
+      addResult: string;
+      resultLabel: string;
+      noExams: string;
+      saveFolder: string;
+      deleteTestWarn: string;
       import: string;
       importHint: string;
       importing: string;
@@ -477,31 +487,41 @@ export const dictionaries: Record<Locale, Dict> = {
       bulk: { selected: "נבחרו", deleteSelected: "מחיקת הנבחרים", confirm: "למחוק את הפריטים שנבחרו? הפעולה אינה הפיכה.", deleted: "פריטים נמחקו" },
       nav: { overview: "סקירה", appointments: "תורים", schedule: "יומן ושעות", tests: "מרשמים", queueTypes: "סוגי תורים", products: "מוצרים", content: "תוכן", sections: "מקטעים", settings: "הגדרות" },
       tests: {
-        title: "בדיקות עיניים ומרשמים",
-        subtitle: "תיעוד בדיקות, חיפוש לפי שם או תעודת זהות, והדפסת מרשם.",
-        newTest: "בדיקה חדשה",
-        editTest: "עריכת בדיקה",
-        date: "תאריך הבדיקה",
+        title: "תיקיות מטופלים ומרשמים",
+        subtitle: "לכל מטופל תיקייה עם כל הבדיקות שלו. חיפוש לפי שם או תעודת זהות.",
+        newFolder: "תיקייה חדשה",
+        folder: "תיקייה",
+        date: "תאריך",
         firstName: "שם פרטי",
         lastName: "שם משפחה",
         idNumber: "תעודת זהות",
         birthDate: "תאריך לידה",
-        previousRx: "מרשם קודם",
-        currentRx: "מרשם",
         notes: "הערות",
-        none: "אין עדיין בדיקות. צרו בדיקה חדשה.",
-        saved: "הבדיקה נשמרה",
+        none: "אין עדיין תיקיות. צרו תיקייה חדשה או ייבאו מקובץ.",
+        saved: "נשמר",
         print: "הדפסה / PDF",
-        deleteWarn: "למחוק את הבדיקה הזו? הפעולה אינה הפיכה.",
-        required: "יש למלא תאריך, שם פרטי, שם משפחה ותעודת זהות.",
+        deleteWarn: "למחוק את התיקייה וכל הבדיקות שבה? הפעולה אינה הפיכה.",
+        required: "יש למלא שם פרטי, שם משפחה ותעודת זהות.",
         back: "חזרה לרשימה",
         searchHint: "חיפוש לפי שם או תעודת זהות…",
+        examsCol: "בדיקות",
+        examsTitle: "בדיקות",
+        addTest: "בדיקה חדשה",
+        testWord: "בדיקה",
+        testName: "שם הבדיקה (לא חובה)",
+        testDate: "תאריך הבדיקה",
+        results: "תוצאות",
+        addResult: "הוספת תוצאה",
+        resultLabel: "כותרת (לא חובה)",
+        noExams: "אין בדיקות בתיקייה. הוסיפו בדיקה.",
+        saveFolder: "שמירת התיקייה",
+        deleteTestWarn: "למחוק את הבדיקה הזו?",
         import: "ייבוא מקובץ",
-        importHint: "PowerPoint (pptx), Excel (xlsx), CSV או Access (accdb) — המערכת מזהה את הנתונים לבד ומציגה לאישור.",
+        importHint: "PowerPoint (pptx), Excel (xlsx), CSV או Access (accdb) — המערכת מזהה את הנתונים, מקבצת לפי תעודת זהות ומציגה לאישור.",
         importing: "קורא את הקובץ…",
-        importFound: "בדיקות זוהו בקובץ. בדקו את הרשימה, בטלו סימון של שורות לא נכונות, ואשרו:",
+        importFound: "תיקיות זוהו בקובץ. בדקו את הרשימה, בטלו סימון של תיקיות לא נכונות, ואשרו:",
         importAll: "ייבוא הנבחרות",
-        importDone: "בדיקות יובאו בהצלחה",
+        importDone: "תיקיות יובאו בהצלחה",
         importFail: "לא הצלחנו לקרוא את הקובץ. ודאו שזה pptx / xlsx / csv / accdb.",
         importNone: "לא זוהו נתוני בדיקות בקובץ.",
       },
@@ -800,31 +820,41 @@ export const dictionaries: Record<Locale, Dict> = {
       bulk: { selected: "selected", deleteSelected: "Delete selected", confirm: "Delete the selected items? This cannot be undone.", deleted: "items deleted" },
       nav: { overview: "Overview", appointments: "Appointments", schedule: "Schedule", tests: "Prescriptions", queueTypes: "Queue Types", products: "Products", content: "Content", sections: "Sections", settings: "Settings" },
       tests: {
-        title: "Eye tests & prescriptions",
-        subtitle: "Record tests, search by name or ID, and print prescriptions.",
-        newTest: "New test",
-        editTest: "Edit test",
-        date: "Test date",
+        title: "Patient folders & prescriptions",
+        subtitle: "Each patient has a folder with all their tests. Search by name or ID.",
+        newFolder: "New folder",
+        folder: "Folder",
+        date: "Date",
         firstName: "First name",
         lastName: "Last name",
         idNumber: "ID number",
         birthDate: "Birth date",
-        previousRx: "Previous prescription",
-        currentRx: "Prescription",
         notes: "Notes",
-        none: "No tests yet. Create a new one.",
-        saved: "Test saved",
+        none: "No folders yet. Create one or import from a file.",
+        saved: "Saved",
         print: "Print / PDF",
-        deleteWarn: "Delete this test? This cannot be undone.",
-        required: "Date, first name, last name and ID number are required.",
+        deleteWarn: "Delete this folder and all its tests? This cannot be undone.",
+        required: "First name, last name and ID number are required.",
         back: "Back to list",
         searchHint: "Search by name or ID…",
+        examsCol: "Tests",
+        examsTitle: "Tests",
+        addTest: "New test",
+        testWord: "Test",
+        testName: "Test name (optional)",
+        testDate: "Test date",
+        results: "Results",
+        addResult: "Add result",
+        resultLabel: "Label (optional)",
+        noExams: "No tests in this folder. Add one.",
+        saveFolder: "Save folder",
+        deleteTestWarn: "Delete this test?",
         import: "Import from file",
-        importHint: "PowerPoint (pptx), Excel (xlsx), CSV or Access (accdb) — the system detects the data and shows it for approval.",
+        importHint: "PowerPoint (pptx), Excel (xlsx), CSV or Access (accdb) — the system detects the data, groups by ID number and shows it for approval.",
         importing: "Reading the file…",
-        importFound: "tests detected in the file. Review the list, untick wrong rows, then confirm:",
+        importFound: "folders detected in the file. Review the list, untick wrong ones, then confirm:",
         importAll: "Import selected",
-        importDone: "tests imported successfully",
+        importDone: "folders imported successfully",
         importFail: "Couldn't read the file. Make sure it's pptx / xlsx / csv / accdb.",
         importNone: "No test data detected in the file.",
       },
@@ -1123,31 +1153,41 @@ export const dictionaries: Record<Locale, Dict> = {
       bulk: { selected: "выбрано", deleteSelected: "Удалить выбранные", confirm: "Удалить выбранные элементы? Действие необратимо.", deleted: "элементов удалено" },
       nav: { overview: "Обзор", appointments: "Записи", schedule: "Расписание", tests: "Рецепты", queueTypes: "Типы услуг", products: "Товары", content: "Контент", sections: "Разделы", settings: "Настройки" },
       tests: {
-        title: "Проверки зрения и рецепты",
-        subtitle: "Записывайте проверки, ищите по имени или номеру ID и печатайте рецепты.",
-        newTest: "Новая проверка",
-        editTest: "Редактировать",
-        date: "Дата проверки",
+        title: "Карточки пациентов и рецепты",
+        subtitle: "У каждого пациента папка со всеми проверками. Поиск по имени или ID.",
+        newFolder: "Новая папка",
+        folder: "Папка",
+        date: "Дата",
         firstName: "Имя",
         lastName: "Фамилия",
         idNumber: "Номер ID",
         birthDate: "Дата рождения",
-        previousRx: "Предыдущий рецепт",
-        currentRx: "Рецепт",
         notes: "Примечания",
-        none: "Пока нет проверок. Создайте новую.",
-        saved: "Проверка сохранена",
+        none: "Пока нет папок. Создайте или импортируйте из файла.",
+        saved: "Сохранено",
         print: "Печать / PDF",
-        deleteWarn: "Удалить эту проверку? Действие необратимо.",
-        required: "Обязательны дата, имя, фамилия и номер ID.",
+        deleteWarn: "Удалить папку и все её проверки? Действие необратимо.",
+        required: "Обязательны имя, фамилия и номер ID.",
         back: "К списку",
         searchHint: "Поиск по имени или номеру ID…",
+        examsCol: "Проверки",
+        examsTitle: "Проверки",
+        addTest: "Новая проверка",
+        testWord: "Проверка",
+        testName: "Название проверки (необязательно)",
+        testDate: "Дата проверки",
+        results: "Результаты",
+        addResult: "Добавить результат",
+        resultLabel: "Заголовок (необязательно)",
+        noExams: "В папке нет проверок. Добавьте.",
+        saveFolder: "Сохранить папку",
+        deleteTestWarn: "Удалить эту проверку?",
         import: "Импорт из файла",
-        importHint: "PowerPoint (pptx), Excel (xlsx), CSV или Access (accdb) — система распознаёт данные и показывает их для подтверждения.",
+        importHint: "PowerPoint (pptx), Excel (xlsx), CSV или Access (accdb) — система распознаёт данные, группирует по номеру ID и показывает для подтверждения.",
         importing: "Читаем файл…",
-        importFound: "проверок найдено в файле. Проверьте список, снимите неверные строки и подтвердите:",
+        importFound: "папок найдено в файле. Проверьте список, снимите неверные и подтвердите:",
         importAll: "Импортировать выбранные",
-        importDone: "проверок импортировано",
+        importDone: "папок импортировано",
         importFail: "Не удалось прочитать файл. Убедитесь, что это pptx / xlsx / csv / accdb.",
         importNone: "Данные проверок в файле не найдены.",
       },

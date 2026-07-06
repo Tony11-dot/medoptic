@@ -150,22 +150,40 @@ export interface RxTable {
 export const RX_FIELDS = ["sph", "cyl", "axis", "add", "pd", "prism", "base", "h", "va"] as const;
 export type RxField = (typeof RX_FIELDS)[number];
 
-/** An in-store eye test / prescription record, managed in the admin. */
-export interface EyeTest {
+/** One result within a test — a single OD/OS prescription table. A test can
+ * hold several (e.g. distance + reading, or a revised measurement). */
+export interface RxResult {
   id: string;
-  createdAt: string; // ISO timestamp (record creation)
+  /** Optional free label shown above the table (e.g. "מרשם קודם"). */
+  label?: string;
+  table: RxTable;
+}
+
+/** One eye test inside a patient folder. Auto-named "בדיקה N" by position
+ * unless an explicit name is set. */
+export interface EyeExam {
+  id: string;
+  /** Optional custom name; when empty the UI shows "בדיקה {position}". */
+  name?: string;
   date: string; // test date, "YYYY-MM-DD"
-  /** תאריך לידה — the patient's date of birth, "YYYY-MM-DD" (optional). */
-  birthDate?: string;
+  createdAt: string; // ISO timestamp (record creation)
+  /** One or more prescription results for this test. */
+  results: RxResult[];
+  notes?: string;
+}
+
+/** A patient folder: identity + all of that person's eye tests. Grouped by
+ * {@link Patient.idNumber} (same ID → same folder). */
+export interface Patient {
+  id: string;
+  createdAt: string; // ISO timestamp
   firstName: string;
   lastName: string;
-  /** תעודת זהות — the national ID the doctor searches by. */
+  /** תעודת זהות — the national ID the doctor searches by; folder key on import. */
   idNumber: string;
-  /** מרשם קודם — the previous prescription, if recorded. */
-  previous?: RxTable;
-  /** The prescription resulting from this test. */
-  current: RxTable;
-  notes?: string;
+  /** תאריך לידה — the patient's date of birth, "YYYY-MM-DD" (optional). */
+  birthDate?: string;
+  exams: EyeExam[];
 }
 
 export interface Product {

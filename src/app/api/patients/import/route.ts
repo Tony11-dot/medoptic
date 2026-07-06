@@ -1,13 +1,13 @@
 import { isAuthed } from "@/lib/auth";
-import { importTestsFile } from "@/lib/importTests";
+import { importPatientsFile } from "@/lib/importTests";
 
-// Files can carry hundreds of records; cap the upload itself. Access
-// databases have a large fixed overhead, so the cap is generous.
+// Access databases have a large fixed overhead, so the cap is generous.
 const MAX_FILE_BYTES = 40 * 1024 * 1024;
 
-// POST — parse an uploaded .pptx / .xlsx / .csv into candidate test records.
-// Nothing is stored here: the client shows a preview and saves each confirmed
-// record through the regular validated create endpoint.
+// POST — parse an uploaded .pptx / .xlsx / .csv / .accdb into candidate patient
+// folders (rows grouped by ID). Nothing is stored: the client previews the
+// folders and saves the chosen ones through POST /api/patients (which merges
+// by ID).
 export async function POST(request: Request) {
   if (!(await isAuthed())) {
     return Response.json({ error: "Unauthorized" }, { status: 401 });
@@ -28,7 +28,7 @@ export async function POST(request: Request) {
 
   try {
     const buffer = Buffer.from(await file.arrayBuffer());
-    const result = await importTestsFile(file.name, buffer);
+    const result = await importPatientsFile(file.name, buffer);
     return Response.json(result);
   } catch {
     return Response.json({ error: "could not parse file" }, { status: 422 });

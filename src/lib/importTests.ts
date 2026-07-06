@@ -1,20 +1,39 @@
-// File import for eye-test records: PowerPoint (.pptx), Excel (.xlsx) and CSV.
-// The doctor kept prescriptions as one PowerPoint form per patient (labels like
-// שם / תעודת זהות / תאריך and OD/OS tables with SPH…VA columns) — this module
-// turns those files into candidate EyeTest records. Extraction is heuristic by
-// nature, so the admin always confirms a preview before anything is saved.
+// File import for eye tests: PowerPoint (.pptx), Excel (.xlsx), CSV and Access
+// (.accdb/.mdb). The doctor kept prescriptions per patient (labels like שם /
+// תעודת זהות / תאריך and OD/OS tables with SPH…VA columns) — this module turns
+// those files into candidate patient folders, grouping records by ID so the
+// same person's tests land in one folder. Extraction is heuristic, so the admin
+// always confirms a preview before anything is saved.
 import "server-only";
+import { randomUUID } from "crypto";
 import JSZip from "jszip";
 import { XMLParser } from "fast-xml-parser";
-import { RX_FIELDS, type RxEye, type RxField, type RxTable } from "./types";
-import type { EyeTestInput } from "./eyeTest";
+import { RX_FIELDS, type EyeExam, type RxEye, type RxField, type RxResult, type RxTable } from "./types";
+import type { PatientInput } from "./patient";
 
-export interface ImportResult {
-  tests: EyeTestInput[];
+/** Flat, one-row/one-slide record before grouping into folders. */
+interface FlatRecord {
+  firstName: string;
+  lastName: string;
+  idNumber: string;
+  birthDate?: string;
+  date: string;
+  notes?: string;
+  current: RxTable;
+  previous?: RxTable;
+}
+
+interface RawResult {
+  records: FlatRecord[];
   warnings: string[];
 }
 
-const MAX_RECORDS = 500;
+export interface ImportResult {
+  patients: PatientInput[];
+  warnings: string[];
+}
+
+const MAX_RECORDS = 2000;
 
 // ---- Small shared helpers -----------------------------------------------------
 
@@ -54,7 +73,7 @@ const emptyEye = (): RxEye => ({});
 const eyeEmpty = (e: RxEye) => RX_FIELDS.every((f) => !e[f]);
 const tableEmpty = (t: RxTable) => eyeEmpty(t.od) && eyeEmpty(t.os);
 
-function blankTest(): EyeTestInput {
+function blankTest(): FlatRecord {
   return {
     date: "",
     firstName: "",
@@ -64,30 +83,70 @@ function blankTest(): EyeTestInput {
   };
 }
 
+// ---- Grouping: flat records -> patient folders -----------------------------------
+
+/** One flat record -> one test (exam) with its result(s). */
+function toExam(r: FlatRecord): EyeExam {
+  const results: RxResult[] = [{ id: randomUUID(), table: r.current }];
+  if (r.previous && !tableEmpty(r.previous)) {
+    results.push({ id: randomUUID(), label: "מרשם קודם", table: r.previous });
+  }
+  return {
+    id: randomUUID(),
+    date: r.date || new Date().toISOString().slice(0, 10),
+    createdAt: new Date().toISOString(),
+    results,
+    notes: r.notes,
+  };
+}
+
+/** Group flat records into folders by ID number (same person -> same folder). */
+function groupIntoPatients(records: FlatRecord[]): PatientInput[] {
+  const folders = new Map<string, PatientInput>();
+  const order: string[] = [];
+  let anon = 0;
+  for (const r of records) {
+    const key = r.idNumber.replace(/\D/g, "") || `__anon_${anon++}`;
+    let folder = folders.get(key);
+    if (!folder) {
+      folder = { firstName: r.firstName, lastName: r.lastName, idNumber: r.idNumber, birthDate: r.birthDate, exams: [] };
+      folders.set(key, folder);
+      order.push(key);
+    } else {
+      if (!folder.birthDate && r.birthDate) folder.birthDate = r.birthDate;
+      if ((folder.firstName === "—" || !folder.firstName) && r.firstName && r.firstName !== "—") folder.firstName = r.firstName;
+      if ((folder.lastName === "—" || !folder.lastName) && r.lastName && r.lastName !== "—") folder.lastName = r.lastName;
+    }
+    folder.exams.push(toExam(r));
+  }
+  for (const f of folders.values()) f.exams.sort((a, b) => a.date.localeCompare(b.date));
+  return order.map((k) => folders.get(k)!);
+}
+
 // ---- Entry point ----------------------------------------------------------------
 
-export async function importTestsFile(filename: string, buffer: Buffer): Promise<ImportResult> {
+export async function importPatientsFile(filename: string, buffer: Buffer): Promise<ImportResult> {
   const ext = filename.toLowerCase().split(".").pop() ?? "";
+  let raw: RawResult;
   if (ext === "csv" || ext === "txt") {
-    return tableToTests(parseCsv(buffer.toString("utf8")));
+    raw = tableToRecords(parseCsv(buffer.toString("utf8")));
+  } else if (ext === "xlsx" || ext === "xlsm") {
+    raw = tableToRecords(await parseXlsx(buffer));
+  } else if (ext === "pptx") {
+    raw = await parsePptx(buffer);
+  } else if (ext === "accdb" || ext === "mdb") {
+    raw = await parseAccess(buffer);
+  } else {
+    return { patients: [], warnings: [`Unsupported file type: .${ext} (use .pptx, .xlsx, .csv or .accdb)`] };
   }
-  if (ext === "xlsx" || ext === "xlsm") {
-    return tableToTests(await parseXlsx(buffer));
-  }
-  if (ext === "pptx") {
-    return parsePptx(buffer);
-  }
-  if (ext === "accdb" || ext === "mdb") {
-    return parseAccess(buffer);
-  }
-  return { tests: [], warnings: [`Unsupported file type: .${ext} (use .pptx, .xlsx, .csv or .accdb)`] };
+  return { patients: groupIntoPatients(raw.records), warnings: raw.warnings };
 }
 
 // ---- Microsoft Access (.accdb / .mdb) ---------------------------------------------
 
 /** Read every user table and run it through the same header mapping as
  * Excel/CSV — whichever tables hold test-like columns contribute records. */
-async function parseAccess(buffer: Buffer): Promise<ImportResult> {
+async function parseAccess(buffer: Buffer): Promise<RawResult> {
   const { default: MDBReader } = await import("mdb-reader");
   const reader = new MDBReader(buffer);
 
@@ -97,31 +156,31 @@ async function parseAccess(buffer: Buffer): Promise<ImportResult> {
     return String(v);
   };
 
-  const tests: EyeTestInput[] = [];
+  const records: FlatRecord[] = [];
   const warnings: string[] = [];
   const tableNames = reader.getTableNames(); // user tables only (no MSys*)
-  if (tableNames.length === 0) return { tests, warnings: ["No tables found in the database."] };
+  if (tableNames.length === 0) return { records, warnings: ["No tables found in the database."] };
 
   for (const name of tableNames) {
-    if (tests.length >= MAX_RECORDS) break;
+    if (records.length >= MAX_RECORDS) break;
     try {
       const table = reader.getTable(name);
       const columns = table.getColumnNames();
       const rows = table.getData().map((row) => columns.map((c) => toCell((row as Record<string, unknown>)[c])));
       if (rows.length === 0) continue;
-      const result = tableToTests([columns, ...rows]);
-      if (result.tests.length > 0) {
-        tests.push(...result.tests.slice(0, MAX_RECORDS - tests.length));
+      const result = tableToRecords([columns, ...rows]);
+      if (result.records.length > 0) {
+        records.push(...result.records.slice(0, MAX_RECORDS - records.length));
         warnings.push(...result.warnings.map((w) => `${name}: ${w}`));
       }
     } catch {
       warnings.push(`Table "${name}" could not be read — skipped.`);
     }
   }
-  if (tests.length === 0) {
+  if (records.length === 0) {
     warnings.push(`No test-like columns recognized in any table (tables: ${tableNames.join(", ")}).`);
   }
-  return { tests, warnings };
+  return { records, warnings };
 }
 
 // ---- CSV -------------------------------------------------------------------------
@@ -286,16 +345,16 @@ function headerKey(raw: string): ColumnKey | null {
   return prev ? `prev.${eye}.${field}` : `${eye}.${field}`;
 }
 
-function tableToTests(rows: string[][]): ImportResult {
+function tableToRecords(rows: string[][]): RawResult {
   const warnings: string[] = [];
-  if (rows.length < 2) return { tests: [], warnings: ["No data rows found in the file."] };
+  if (rows.length < 2) return { records: [], warnings: ["No data rows found in the file."] };
 
   const headers = rows[0].map(headerKey);
   if (!headers.some(Boolean)) {
-    return { tests: [], warnings: ["Could not recognize any column headers (expected e.g. name / id / date / OD SPH …)."] };
+    return { records: [], warnings: ["Could not recognize any column headers (expected e.g. name / id / date / OD SPH …)."] };
   }
 
-  const tests: EyeTestInput[] = [];
+  const tests: FlatRecord[] = [];
   for (let i = 1; i < rows.length && tests.length < MAX_RECORDS; i++) {
     const t = blankTest();
     const prev: RxTable = { od: emptyEye(), os: emptyEye() };
@@ -328,7 +387,7 @@ function tableToTests(rows: string[][]): ImportResult {
     tests.push(t);
   }
   if (rows.length - 1 > MAX_RECORDS) warnings.push(`File has more than ${MAX_RECORDS} rows — only the first ${MAX_RECORDS} were read.`);
-  return { tests, warnings };
+  return { records: tests, warnings };
 }
 
 // ---- PPTX ---------------------------------------------------------------------------
@@ -376,7 +435,7 @@ function slideBoxes(slideDoc: unknown): { boxes: Box[]; tables: string[][][] } {
 const LABEL_RE = /^(שם|שם מלא|תעודת זהות|ת"ז|תאריך|תאריך לידה|הערות|מרשם.*|od|os|sph|cyl|axis|add|pd|prism|base|h|va)\s*:?\s*$/i;
 
 /** Reconstruct one test record from a slide's text boxes / tables. */
-function slideToTest(boxes: Box[], tables: string[][][], slideNo: number, warnings: string[]): EyeTestInput | null {
+function slideToTest(boxes: Box[], tables: string[][][], slideNo: number, warnings: string[]): FlatRecord | null {
   const t = blankTest();
   const all = boxes.map((b) => b.text).join("\n");
 
@@ -507,24 +566,24 @@ function spatialRx(boxes: Box[]): RxTable[] {
   return tables.filter((t) => !tableEmpty(t));
 }
 
-async function parsePptx(buffer: Buffer): Promise<ImportResult> {
+async function parsePptx(buffer: Buffer): Promise<RawResult> {
   const warnings: string[] = [];
   const zip = await JSZip.loadAsync(buffer);
   const slideNames = Object.keys(zip.files)
     .filter((n) => /^ppt\/slides\/slide\d+\.xml$/.test(n))
     .sort((a, b) => Number(/\d+/.exec(a)![0]) - Number(/\d+/.exec(b)![0]));
-  if (slideNames.length === 0) return { tests: [], warnings: ["No slides found in the presentation."] };
+  if (slideNames.length === 0) return { records: [], warnings: ["No slides found in the presentation."] };
 
-  const tests: EyeTestInput[] = [];
-  for (let i = 0; i < slideNames.length && tests.length < MAX_RECORDS; i++) {
+  const records: FlatRecord[] = [];
+  for (let i = 0; i < slideNames.length && records.length < MAX_RECORDS; i++) {
     try {
       const doc = xml.parse(await zip.file(slideNames[i])!.async("string"));
       const { boxes, tables } = slideBoxes(doc);
-      const test = slideToTest(boxes, tables, i + 1, warnings);
-      if (test) tests.push(test);
+      const rec = slideToTest(boxes, tables, i + 1, warnings);
+      if (rec) records.push(rec);
     } catch {
       warnings.push(`Slide ${i + 1}: could not be read — skipped.`);
     }
   }
-  return { tests, warnings };
+  return { records, warnings };
 }
