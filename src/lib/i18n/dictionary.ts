@@ -127,6 +127,16 @@ export interface Dict {
   /** Localized weekday names, Sunday first (index 0 = Sunday). */
   weekdaysShort: string[];
   weekdaysLong: string[];
+  /** Labels for the custom date/time pickers. */
+  datePicker: {
+    pickDate: string;
+    pickTime: string;
+    pickDateTime: string;
+    today: string;
+    clear: string;
+    done: string;
+    time: string;
+  };
   admin: {
     loading: string;
     viewSite: string;
@@ -479,6 +489,15 @@ export const dictionaries: Record<Locale, Dict> = {
     },
     weekdaysShort: ["א׳", "ב׳", "ג׳", "ד׳", "ה׳", "ו׳", "ש׳"],
     weekdaysLong: ["ראשון", "שני", "שלישי", "רביעי", "חמישי", "שישי", "שבת"],
+    datePicker: {
+      pickDate: "בחירת תאריך",
+      pickTime: "בחירת שעה",
+      pickDateTime: "בחירת תאריך ושעה",
+      today: "היום",
+      clear: "ניקוי",
+      done: "אישור",
+      time: "שעה",
+    },
     admin: {
       loading: "טוען…",
       viewSite: "צפייה באתר",
@@ -815,6 +834,15 @@ export const dictionaries: Record<Locale, Dict> = {
     },
     weekdaysShort: ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"],
     weekdaysLong: ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"],
+    datePicker: {
+      pickDate: "Pick a date",
+      pickTime: "Pick a time",
+      pickDateTime: "Pick date & time",
+      today: "Today",
+      clear: "Clear",
+      done: "Done",
+      time: "Time",
+    },
     admin: {
       loading: "Loading…",
       viewSite: "View site",
@@ -1151,6 +1179,15 @@ export const dictionaries: Record<Locale, Dict> = {
     },
     weekdaysShort: ["Вс", "Пн", "Вт", "Ср", "Чт", "Пт", "Сб"],
     weekdaysLong: ["Воскресенье", "Понедельник", "Вторник", "Среда", "Четверг", "Пятница", "Суббота"],
+    datePicker: {
+      pickDate: "Выбрать дату",
+      pickTime: "Выбрать время",
+      pickDateTime: "Дата и время",
+      today: "Сегодня",
+      clear: "Очистить",
+      done: "Готово",
+      time: "Время",
+    },
     admin: {
       loading: "Загрузка…",
       viewSite: "Открыть сайт",

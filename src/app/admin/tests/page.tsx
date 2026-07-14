@@ -8,6 +8,7 @@ import { useToast } from "@/components/ui/Toast";
 import { useI18n } from "@/lib/i18n/LanguageProvider";
 import { RX_FIELDS, type EyeExam, type Patient, type RxResult, type RxTable } from "@/lib/types";
 import { inputCls, inputClsFull } from "@/components/admin/adminUi";
+import { DateField } from "@/components/ui/DatePicker";
 import { BulkBar, BulkCheckbox, bulkDelete, useBulkSelect } from "@/components/admin/BulkSelect";
 import { cn } from "@/lib/cn";
 
@@ -132,10 +133,22 @@ export default function TestsPage() {
         birthDate: folder.birthDate || undefined,
         exams: folder.exams,
       });
-      const res = folder.id
-        ? await fetch(`/api/patients/${folder.id}`, { method: "PUT", headers: { "Content-Type": "application/json" }, body })
-        : await fetch("/api/patients", { method: "POST", headers: { "Content-Type": "application/json" }, body });
-      if (!res.ok) throw new Error();
+      const url = folder.id ? `/api/patients/${folder.id}` : "/api/patients";
+      const method = folder.id ? "PUT" : "POST";
+      // Retry through transient hiccups (network blip, brief 5xx) so a save
+      // that used to fail intermittently now goes through. A 4xx (validation /
+      // auth) is a real rejection — don't retry those.
+      let res: Response | null = null;
+      for (let attempt = 0; attempt < 4; attempt++) {
+        try {
+          res = await fetch(url, { method, headers: { "Content-Type": "application/json" }, body });
+          if (res.ok || (res.status >= 400 && res.status < 500)) break;
+        } catch {
+          res = null; // network error — fall through to backoff + retry
+        }
+        if (attempt < 3) await new Promise((r) => setTimeout(r, 250 * (attempt + 1)));
+      }
+      if (!res || !res.ok) throw new Error();
       const saved: Patient = (await res.json()).patient;
       setFolder(saved);
       toast.success(t.admin.tests.saved);
@@ -245,7 +258,7 @@ export default function TestsPage() {
           </label>
           <label className="block">
             <span className="mb-1.5 block text-sm font-semibold text-ink">{t.admin.tests.birthDate}</span>
-            <input type="date" dir="ltr" value={folder.birthDate ?? ""} onChange={(e) => setF({ birthDate: e.target.value })} className={inputClsFull} />
+            <DateField value={folder.birthDate ?? ""} onChange={(v) => setF({ birthDate: v })} ariaLabel={t.admin.tests.birthDate} />
           </label>
         </div>
 
@@ -331,7 +344,7 @@ export default function TestsPage() {
                     <div className="grid gap-4 sm:grid-cols-2">
                       <label className="block">
                         <span className="mb-1.5 block text-sm font-semibold text-ink">{t.admin.tests.testDate}</span>
-                        <input type="date" dir="ltr" value={exam.date} onChange={(e) => updateExam(exam.id, { date: e.target.value })} className={inputClsFull} />
+                        <DateField value={exam.date} onChange={(v) => updateExam(exam.id, { date: v })} ariaLabel={t.admin.tests.testDate} />
                       </label>
                       <label className="block">
                         <span className="mb-1.5 block text-sm font-semibold text-ink">{t.admin.tests.testName}</span>

@@ -27,12 +27,30 @@ const DATA_DIR = process.env.VERCEL ? "/tmp/medoptic-data" : path.join(process.c
 // Serialise writes per-key to avoid lost updates within a single instance.
 const locks = new Map<string, Promise<unknown>>();
 
+// Upstash talks over HTTPS, so any call can hit a transient network blip
+// (dropped connection, cold edge, brief 5xx). Those are exactly the failures
+// that made saves "sometimes work, sometimes not" — so retry them with a short
+// backoff before giving up. Deterministic operations only (GET/SET/EVAL-CAS),
+// all of which are safe to repeat.
+async function withRetry<T>(op: () => Promise<T>, tries = 4): Promise<T> {
+  let lastErr: unknown;
+  for (let i = 0; i < tries; i++) {
+    try {
+      return await op();
+    } catch (err) {
+      lastErr = err;
+      if (i < tries - 1) await new Promise((r) => setTimeout(r, 80 * (i + 1) + Math.random() * 60));
+    }
+  }
+  throw lastErr;
+}
+
 async function read<T>(key: string, fallback: T): Promise<T> {
   if (useRedis) {
     const r = await redis();
-    const val = await r.get<T>(key);
+    const val = await withRetry(() => r.get<T>(key));
     if (val == null) {
-      await r.set(key, fallback);
+      await withRetry(() => r.set(key, fallback));
       return fallback;
     }
     return val;
@@ -50,7 +68,7 @@ async function read<T>(key: string, fallback: T): Promise<T> {
 async function write<T>(key: string, value: T): Promise<void> {
   if (useRedis) {
     const r = await redis();
-    await r.set(key, value);
+    await withRetry(() => r.set(key, value));
     return;
   }
   await fs.mkdir(DATA_DIR, { recursive: true });
@@ -73,10 +91,15 @@ return 0`;
 async function mutateRedis<T>(key: string, fn: (current: T) => T | Promise<T>, fallback: T): Promise<T> {
   const r = await redis();
   const verKey = `${key}:ver`;
-  for (let attempt = 0; attempt < 6; attempt++) {
-    const [current, ver] = await Promise.all([r.get<T>(key), r.get<number>(verKey)]);
+  for (let attempt = 0; attempt < 12; attempt++) {
+    // Each read/eval is retried on transient network errors so a single blip
+    // doesn't fail the whole save (this is what made saves flaky before).
+    const [current, ver] = await Promise.all([
+      withRetry(() => r.get<T>(key)),
+      withRetry(() => r.get<number>(verKey)),
+    ]);
     const updated = await fn(current ?? fallback);
-    const ok = await r.eval(CAS_SCRIPT, [key, verKey], [JSON.stringify(updated), String(ver ?? 0)]);
+    const ok = await withRetry(() => r.eval(CAS_SCRIPT, [key, verKey], [JSON.stringify(updated), String(ver ?? 0)]));
     if (ok === 1) return updated;
     // Lost the race — back off briefly, then re-read and re-apply fn against
     // the fresh state (jitter de-synchronizes competing writers).

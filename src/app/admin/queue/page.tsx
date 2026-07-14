@@ -8,7 +8,8 @@ import { useToast } from "@/components/ui/Toast";
 import { useI18n } from "@/lib/i18n/LanguageProvider";
 import { localizedOr, type Appointment, type Service } from "@/lib/types";
 import { BUSINESS_TZ, addDays, dateStrInTz, timeStrInTz, weekdayOf } from "@/lib/schedule";
-import { inputCls, inputClsFull } from "@/components/admin/adminUi";
+import { inputCls } from "@/components/admin/adminUi";
+import { DateTimeField } from "@/components/ui/DatePicker";
 import { BulkBar, BulkCheckbox, bulkDelete, useBulkSelect } from "@/components/admin/BulkSelect";
 import { cn } from "@/lib/cn";
 
@@ -465,11 +466,10 @@ export default function QueuePage() {
             </p>
             <label className="mt-4 block">
               <span className="mb-1.5 block text-sm font-semibold text-ink">{t.admin.queue.dateTime}</span>
-              <input
-                type="datetime-local"
+              <DateTimeField
                 value={timeValue}
-                onChange={(e) => setTimeValue(e.target.value)}
-                className={inputClsFull}
+                onChange={setTimeValue}
+                ariaLabel={t.admin.queue.dateTime}
               />
               <span className="mt-1 block text-xs text-muted">{t.admin.queue.dateTimeHint}</span>
             </label>

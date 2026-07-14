@@ -15,6 +15,7 @@ import {
 } from "@/lib/schedule";
 import { localizedOr, type BookingSettings, type OpeningRule, type Service } from "@/lib/types";
 import { inputCls } from "@/components/admin/adminUi";
+import { TimeField } from "@/components/ui/DatePicker";
 import { cn } from "@/lib/cn";
 
 // Israel week: Sunday first.
@@ -188,22 +189,20 @@ export default function SchedulePage() {
                   <div className="mt-3 flex flex-wrap items-end gap-3">
                     <label className="block">
                       <span className="mb-1.5 block text-sm font-semibold text-ink">{t.admin.schedule.start}</span>
-                      <input
-                        type="time"
-                        dir="ltr"
+                      <TimeField
                         value={rule.start}
-                        onChange={(e) => updateRule(rule.id, { start: e.target.value })}
-                        className={inputCls}
+                        onChange={(v) => updateRule(rule.id, { start: v })}
+                        ariaLabel={t.admin.schedule.start}
+                        className="w-32"
                       />
                     </label>
                     <label className="block">
                       <span className="mb-1.5 block text-sm font-semibold text-ink">{t.admin.schedule.end}</span>
-                      <input
-                        type="time"
-                        dir="ltr"
+                      <TimeField
                         value={rule.end}
-                        onChange={(e) => updateRule(rule.id, { end: e.target.value })}
-                        className={inputCls}
+                        onChange={(v) => updateRule(rule.id, { end: v })}
+                        ariaLabel={t.admin.schedule.end}
+                        className="w-32"
                       />
                     </label>
                   </div>
