@@ -146,7 +146,7 @@ export interface Dict {
     refresh: string;
     actions: { approve: string; decline: string; add: string; edit: string; delete: string; cancel: string; search: string };
     bulk: { selected: string; deleteSelected: string; confirm: string; deleted: string };
-    nav: { overview: string; appointments: string; schedule: string; tests: string; queueTypes: string; products: string; content: string; sections: string; settings: string };
+    nav: { overview: string; appointments: string; schedule: string; vacation: string; tests: string; queueTypes: string; products: string; content: string; sections: string; settings: string };
     tests: {
       title: string;
       subtitle: string;
@@ -206,6 +206,18 @@ export interface Dict {
       footerNote: string;
       noRules: string;
       invalidRule: string;
+      saved: string;
+    };
+    vacation: {
+      title: string;
+      subtitle: string;
+      addRange: string;
+      start: string;
+      end: string;
+      note: string;
+      notePlaceholder: string;
+      noRanges: string;
+      invalidRange: string;
       saved: string;
     };
     settings: {
@@ -507,7 +519,7 @@ export const dictionaries: Record<Locale, Dict> = {
       refresh: "רענון",
       actions: { approve: "אישור", decline: "דחייה", add: "הוספה", edit: "עריכה", delete: "מחיקה", cancel: "ביטול", search: "חיפוש" },
       bulk: { selected: "נבחרו", deleteSelected: "מחיקת הנבחרים", confirm: "למחוק את הפריטים שנבחרו? הפעולה אינה הפיכה.", deleted: "פריטים נמחקו" },
-      nav: { overview: "סקירה", appointments: "תורים", schedule: "יומן ושעות", tests: "מרשמים", queueTypes: "סוגי תורים", products: "מוצרים", content: "תוכן", sections: "מקטעים", settings: "הגדרות" },
+      nav: { overview: "סקירה", appointments: "תורים", schedule: "יומן ושעות", vacation: "חופשה", tests: "מרשמים", queueTypes: "סוגי תורים", products: "מוצרים", content: "תוכן", sections: "מקטעים", settings: "הגדרות" },
       tests: {
         title: "תיקיות מטופלים ומרשמים",
         subtitle: "לכל מטופל תיקייה עם כל הבדיקות שלו. חיפוש לפי שם או תעודת זהות.",
@@ -568,6 +580,18 @@ export const dictionaries: Record<Locale, Dict> = {
         noRules: "אין שעות פתיחה מוגדרות — הוסיפו שורה כדי שלקוחות יוכלו לקבוע תור.",
         invalidRule: "בכל שורה יש לבחור לפחות יום אחד ושעת התחלה מוקדמת משעת הסיום.",
         saved: "היומן נשמר",
+      },
+      vacation: {
+        title: "חופשה וסגירות",
+        subtitle: "בחרו טווחי תאריכים שבהם לא ניתן לקבוע תור — הימים האלה ייסגרו אוטומטית ללקוחות.",
+        addRange: "הוספת טווח",
+        start: "מתאריך",
+        end: "עד תאריך",
+        note: "הערה (לשימוש פנימי)",
+        notePlaceholder: "לדוגמה: חופשת קיץ",
+        noRanges: "אין ימי חופשה מוגדרים.",
+        invalidRange: "בכל טווח יש לבחור תאריך התחלה ותאריך סיום, כשההתחלה לא מאוחרת מהסיום.",
+        saved: "החופשה נשמרה",
       },
       settings: {
         title: "הגדרות",
@@ -852,7 +876,7 @@ export const dictionaries: Record<Locale, Dict> = {
       refresh: "Refresh",
       actions: { approve: "Approve", decline: "Decline", add: "Add", edit: "Edit", delete: "Delete", cancel: "Cancel", search: "Search" },
       bulk: { selected: "selected", deleteSelected: "Delete selected", confirm: "Delete the selected items? This cannot be undone.", deleted: "items deleted" },
-      nav: { overview: "Overview", appointments: "Appointments", schedule: "Schedule", tests: "Prescriptions", queueTypes: "Queue Types", products: "Products", content: "Content", sections: "Sections", settings: "Settings" },
+      nav: { overview: "Overview", appointments: "Appointments", schedule: "Schedule", vacation: "Vacation", tests: "Prescriptions", queueTypes: "Queue Types", products: "Products", content: "Content", sections: "Sections", settings: "Settings" },
       tests: {
         title: "Patient folders & prescriptions",
         subtitle: "Each patient has a folder with all their tests. Search by name or ID.",
@@ -913,6 +937,18 @@ export const dictionaries: Record<Locale, Dict> = {
         noRules: "No opening hours defined — add a row so customers can book.",
         invalidRule: "Each row needs at least one day and a start time before the end time.",
         saved: "Schedule saved",
+      },
+      vacation: {
+        title: "Vacation & closures",
+        subtitle: "Pick date ranges when bookings are closed — those days turn off automatically for customers.",
+        addRange: "Add range",
+        start: "From",
+        end: "Until",
+        note: "Note (internal only)",
+        notePlaceholder: "e.g. Summer closure",
+        noRanges: "No closure ranges set.",
+        invalidRange: "Each range needs a start and end date, with start no later than end.",
+        saved: "Vacation saved",
       },
       settings: {
         title: "Settings",
@@ -1197,7 +1233,7 @@ export const dictionaries: Record<Locale, Dict> = {
       refresh: "Обновить",
       actions: { approve: "Подтвердить", decline: "Отклонить", add: "Добавить", edit: "Изменить", delete: "Удалить", cancel: "Отмена", search: "Поиск" },
       bulk: { selected: "выбрано", deleteSelected: "Удалить выбранные", confirm: "Удалить выбранные элементы? Действие необратимо.", deleted: "элементов удалено" },
-      nav: { overview: "Обзор", appointments: "Записи", schedule: "Расписание", tests: "Рецепты", queueTypes: "Типы услуг", products: "Товары", content: "Контент", sections: "Разделы", settings: "Настройки" },
+      nav: { overview: "Обзор", appointments: "Записи", schedule: "Расписание", vacation: "Отпуск", tests: "Рецепты", queueTypes: "Типы услуг", products: "Товары", content: "Контент", sections: "Разделы", settings: "Настройки" },
       tests: {
         title: "Карточки пациентов и рецепты",
         subtitle: "У каждого пациента папка со всеми проверками. Поиск по имени или ID.",
@@ -1258,6 +1294,18 @@ export const dictionaries: Record<Locale, Dict> = {
         noRules: "Часы работы не заданы — добавьте строку, чтобы клиенты могли записаться.",
         invalidRule: "В каждой строке выберите хотя бы один день; время начала должно быть раньше конца.",
         saved: "Расписание сохранено",
+      },
+      vacation: {
+        title: "Отпуск и закрытия",
+        subtitle: "Выберите диапазоны дат, когда запись закрыта — эти дни автоматически станут недоступны для клиентов.",
+        addRange: "Добавить диапазон",
+        start: "С",
+        end: "По",
+        note: "Заметка (только для внутреннего использования)",
+        notePlaceholder: "например: летний отпуск",
+        noRanges: "Диапазоны закрытия не заданы.",
+        invalidRange: "В каждом диапазоне укажите дату начала и окончания; начало не позже окончания.",
+        saved: "Отпуск сохранён",
       },
       settings: {
         title: "Настройки",

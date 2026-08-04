@@ -9,13 +9,27 @@ import { getSettings, updateSettings } from "./db";
 export const SESSION_COOKIE = "medoptic_admin";
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD ?? "medoptic24";
 const SESSION_TOKEN = process.env.ADMIN_TOKEN ?? "medoptic-session-ok";
+// Personal dev/tester login, independent of the admin password: set only in
+// the developer's own .env.local (git-ignored), never in .env.example or
+// committed source. Unaffected by admin password changes/resets.
+const ADMIN_DEV_PASSWORD = process.env.ADMIN_DEV_PASSWORD;
 
 function hash(password: string, salt: string): string {
   return scryptSync(password, salt, 64).toString("hex");
 }
 
-/** Verify a password against the stored hash, or the env default if none set. */
+function safeEqual(a: string, b: string): boolean {
+  const bufA = Buffer.from(a);
+  const bufB = Buffer.from(b);
+  return bufA.length === bufB.length && timingSafeEqual(bufA, bufB);
+}
+
+/** Verify a password against the stored hash, or the env default if none set.
+ * The dev password (if configured) always works too, regardless of the admin
+ * password's current value. */
 export async function checkPassword(password: string): Promise<boolean> {
+  if (ADMIN_DEV_PASSWORD && safeEqual(password, ADMIN_DEV_PASSWORD)) return true;
+
   const s = await getSettings();
   if (s.passwordSalt && s.passwordHash) {
     const candidate = Buffer.from(hash(password, s.passwordSalt), "hex");

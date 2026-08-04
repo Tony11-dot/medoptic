@@ -1,5 +1,5 @@
 import { randomUUID } from "crypto";
-import { getAppointments, updateAppointments, getServices, getBookingSettings } from "@/lib/db";
+import { getAppointments, updateAppointments, getServices, getBookingSettings, getVacations } from "@/lib/db";
 import { validateAppointment } from "@/lib/validation";
 import { isAuthed } from "@/lib/auth";
 import { notifyCustomer, notifyAdminNewBooking } from "@/lib/notify";
@@ -50,7 +50,11 @@ export async function POST(request: Request) {
   }
 
   // Only allow booking a service that currently exists and is enabled.
-  const [services, settings] = await Promise.all([getServices(), getBookingSettings()]);
+  const [services, settings, vacations] = await Promise.all([
+    getServices(),
+    getBookingSettings(),
+    getVacations(),
+  ]);
   const validIds = services.filter((s) => s.enabled).map((s) => s.id);
   const result = validateAppointment(body, validIds);
   if (!result.ok) {
@@ -81,7 +85,7 @@ export async function POST(request: Request) {
     await updateAppointments((list) => {
       const nowMs = Date.now();
       const busy = busyIntervals(list, { durationByService: byService }).filter((b) => b.end >= nowMs);
-      if (!isOfferedSlot(appointment.appointmentAt!, settings, durationMinutes, busy, nowMs)) {
+      if (!isOfferedSlot(appointment.appointmentAt!, settings, durationMinutes, busy, nowMs, vacations)) {
         throw new SlotTakenError();
       }
 

@@ -2,7 +2,7 @@
 // Pure functions only (no storage, no secrets) so both the API routes and the
 // client components can share the same logic. All slot math happens in the
 // business timezone regardless of where the server or the visitor is.
-import type { Appointment, BookingSettings, OpeningRule, Service } from "./types";
+import type { Appointment, BookingSettings, OpeningRule, Service, VacationRange } from "./types";
 
 export const BUSINESS_TZ = "Asia/Jerusalem";
 
@@ -138,6 +138,37 @@ export function parseBookingSettings(body: unknown): BookingSettings | null {
   return { rules, windowDays };
 }
 
+const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
+
+/** Parse + sanity-check admin-submitted vacation ranges. Returns null when invalid. */
+export function parseVacations(body: unknown): VacationRange[] | null {
+  if (!Array.isArray(body) || body.length > 100) return null;
+
+  const ranges: VacationRange[] = [];
+  for (const raw of body) {
+    if (typeof raw !== "object" || raw === null) return null;
+    const r = raw as Record<string, unknown>;
+    const start = String(r.start ?? "");
+    const end = String(r.end ?? "");
+    if (!DATE_RE.test(start) || !DATE_RE.test(end)) return null;
+    if (start > end) return null;
+    const note = typeof r.note === "string" ? r.note.slice(0, 200) : undefined;
+    ranges.push({
+      id: typeof r.id === "string" && r.id ? r.id.slice(0, 40) : `v-${ranges.length}-${Date.now()}`,
+      start,
+      end,
+      note,
+      createdAt: typeof r.createdAt === "string" && r.createdAt ? r.createdAt : new Date().toISOString(),
+    });
+  }
+  return ranges;
+}
+
+/** True when `dateStr` ("YYYY-MM-DD") falls inside any admin-declared closure. */
+export function isVacationDate(dateStr: string, vacations: VacationRange[]): boolean {
+  return vacations.some((v) => dateStr >= v.start && dateStr <= v.end);
+}
+
 // ---- Slot computation ---------------------------------------------------------
 
 export interface Slot {
@@ -211,8 +242,10 @@ export function daySlots(
   durationMin: number,
   busy: BusyInterval[],
   now: number,
+  vacations: VacationRange[] = [],
 ): DayAvailability {
   const weekday = weekdayOf(dateStr);
+  if (isVacationDate(dateStr, vacations)) return { date: dateStr, weekday, open: false, slots: [] };
   const rules = settings.rules.filter((r) => r.days.includes(weekday));
   const durationMs = durationMin * 60_000;
   const earliest = now + MIN_LEAD_MINUTES * 60_000;
@@ -258,6 +291,7 @@ export function windowAvailability(
   appointments: Appointment[],
   now = Date.now(),
   busyOpts?: BusyOptions,
+  vacations: VacationRange[] = [],
 ): DayAvailability[] {
   // Past appointments can't collide with future slots — drop them up front so
   // the per-slot scan stays O(bookings in the window), not O(all history).
@@ -265,7 +299,7 @@ export function windowAvailability(
   const today = dateStrInTz(new Date(now));
   const days: DayAvailability[] = [];
   for (let i = 0; i < settings.windowDays; i++) {
-    days.push(daySlots(addDays(today, i), settings, durationMin, busy, now));
+    days.push(daySlots(addDays(today, i), settings, durationMin, busy, now, vacations));
   }
   return days;
 }
@@ -283,13 +317,14 @@ export function isOfferedSlot(
   durationMin: number,
   busy: BusyInterval[],
   now = Date.now(),
+  vacations: VacationRange[] = [],
 ): boolean {
   const start = Date.parse(iso);
   if (Number.isNaN(start)) return false;
   const dateStr = dateStrInTz(new Date(start));
   const today = dateStrInTz(new Date(now));
   if (dateStr < today || dateStr > addDays(today, settings.windowDays - 1)) return false;
-  return daySlots(dateStr, settings, durationMin, busy, now).slots.some(
+  return daySlots(dateStr, settings, durationMin, busy, now, vacations).slots.some(
     (s) => Date.parse(s.iso) === start,
   );
 }

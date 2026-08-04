@@ -1,7 +1,9 @@
 // Default seed data used to initialise the JSON "database" on first run.
-import type { Appointment, BookingSettings, Product, Service, SiteContent } from "./types";
+import type { Appointment, BookingSettings, Product, Service, SiteContent, VacationRange } from "./types";
 
 export const seedAppointments: Appointment[] = [];
+
+export const seedVacations: VacationRange[] = [];
 
 // Default opening hours (admin-editable in Admin → Schedule): Sun–Thu 09:00–19:00,
 // Fri 09:00–13:00 — these drive the customer slot picker and the footer.

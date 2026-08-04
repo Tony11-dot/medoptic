@@ -46,6 +46,20 @@ export interface BookingSettings {
 }
 
 /**
+ * An admin-declared closure: every calendar day from `start` to `end`
+ * (inclusive, "YYYY-MM-DD", business tz) is unbookable — the customer picker
+ * shows it closed and the server refuses slots inside it. `note` is for the
+ * admin's own reference only (e.g. "Summer closure"); never shown to customers.
+ */
+export interface VacationRange {
+  id: string;
+  start: string; // "YYYY-MM-DD"
+  end: string; // "YYYY-MM-DD", >= start
+  note?: string;
+  createdAt: string;
+}
+
+/**
  * A bookable service / queue type, fully managed by admins. `id` is what an
  * appointment references in {@link Appointment.service}; the set is not fixed in
  * code, so new types can be added or removed from the admin panel.

@@ -4,8 +4,8 @@
 import "server-only";
 import { promises as fs } from "fs";
 import path from "path";
-import type { AdminSettings, Appointment, BookingSettings, Patient, Product, Service, SiteContent } from "./types";
-import { seedAppointments, seedProducts, seedServices, seedContent, seedBookingSettings } from "./seed";
+import type { AdminSettings, Appointment, BookingSettings, Patient, Product, Service, SiteContent, VacationRange } from "./types";
+import { seedAppointments, seedProducts, seedServices, seedContent, seedBookingSettings, seedVacations } from "./seed";
 
 const useRedis = !!process.env.KV_REST_API_URL && !!process.env.KV_REST_API_TOKEN;
 
@@ -160,6 +160,13 @@ export const getBookingSettings = () => read<BookingSettings>("bookingSettings",
 
 export const updateBookingSettings = (fn: (s: BookingSettings) => BookingSettings) =>
   mutate<BookingSettings>("bookingSettings", fn, seedBookingSettings);
+
+// ---- Vacation / closure ranges ------------------------------------------------
+
+export const getVacations = () => read<VacationRange[]>("vacations", seedVacations);
+
+export const updateVacations = (fn: (list: VacationRange[]) => VacationRange[]) =>
+  mutate<VacationRange[]>("vacations", fn, seedVacations);
 
 // ---- Patient folders / eye tests ----------------------------------------------
 
