@@ -1,5 +1,7 @@
-import { getAppointments, updateAppointments } from "@/lib/db";
+import { getAppointments, getServices, updateAppointments } from "@/lib/db";
 import { clientIp, rateLimit } from "@/lib/rateLimit";
+import { notifyAdminCancelled, resolveServiceLabel } from "@/lib/notify";
+import type { Appointment } from "@/lib/types";
 
 // GET — minimal appointment state for the public cancel page. The UUID is the
 // capability; only the slot time and status are exposed, no personal details.
@@ -39,13 +41,19 @@ export async function POST(
   }
 
   if (body.action === "cancel") {
-    let found = false;
+    let removed: Appointment | undefined;
     await updateAppointments((list) => {
-      const next = list.filter((a) => a.id !== id);
-      found = next.length !== list.length;
-      return next;
+      removed = list.find((a) => a.id === id);
+      return list.filter((a) => a.id !== id);
     });
-    if (!found) return Response.json({ error: "Not found" }, { status: 404 });
+    if (!removed) return Response.json({ error: "Not found" }, { status: 404 });
+
+    // Office alert for a customer self-cancel — fire-and-forget, must never
+    // block the response.
+    void getServices().then((services) =>
+      notifyAdminCancelled(removed!, resolveServiceLabel(services, removed!.service), "customer"),
+    );
+
     return Response.json({ ok: true });
   }
 

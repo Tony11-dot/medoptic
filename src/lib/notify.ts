@@ -323,3 +323,107 @@ export async function notifyAdminNewBooking(appt: Appointment, serviceLabel: str
     buildAdminEmailHtml(appt, serviceLabel),
   );
 }
+
+// ---- Admin "cancelled" / "rescheduled" alerts -------------------------------
+
+/** Who initiated the change — shown in the alert so the office knows whether to
+ * expect the customer to re-book, or whether they made the change themselves. */
+export type ChangedBy = "customer" | "admin";
+
+function changedByLabel(by: ChangedBy): string {
+  return by === "customer" ? "הלקוח/ה (ביטול עצמי באתר)" : "הצוות (מהניהול)";
+}
+
+/** Branded Hebrew HTML alerting the office that a booking was cancelled. */
+function buildAdminCancelHtml(appt: Appointment, serviceLabel: string, cancelledBy: ChangedBy): string {
+  const name = `${appt.firstName} ${appt.lastName}`.trim();
+  const when = whenText(appt);
+  const rows = [
+    detailRow("מועד שבוטל", when ?? ""),
+    detailRow("שירות", serviceLabel),
+    detailRow("שם", name),
+    detailRow("טלפון", appt.phone),
+    detailRow("אימייל", appt.email ?? ""),
+    detailRow("בוטל על ידי", changedByLabel(cancelledBy)),
+  ].join("");
+  const body = `תור בוטל במערכת התורים. הפרטים:
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-top:14px;border-top:1px solid #e6eaef;">
+      ${rows}
+    </table>`;
+  return emailShell("❌ תור בוטל", body);
+}
+
+/** Notify the office that a booking was cancelled — by the customer (self-service
+ * cancel link) or by the admin (delete from the queue). Email only. */
+export async function notifyAdminCancelled(
+  appt: Appointment,
+  serviceLabel: string,
+  cancelledBy: ChangedBy,
+): Promise<void> {
+  const name = `${appt.firstName} ${appt.lastName}`.trim();
+  const when = whenText(appt);
+  const text = `תור בוטל: ${name}, טלפון ${appt.phone}, שירות: ${serviceLabel}${when ? `, מועד שבוטל: ${when}` : ""}. בוטל על ידי: ${changedByLabel(cancelledBy)}.`;
+  await sendEmail(
+    ADMIN_EMAIL,
+    `${BUSINESS.name} — תור בוטל${when ? ` (${when})` : ""} · ${name}`,
+    text,
+    buildAdminCancelHtml(appt, serviceLabel, cancelledBy),
+  );
+}
+
+/** Branded Hebrew HTML alerting the office that a booking was moved to a new time. */
+function buildAdminRescheduleHtml(
+  appt: Appointment,
+  serviceLabel: string,
+  previousAppointmentAt: string | undefined,
+): string {
+  const name = `${appt.firstName} ${appt.lastName}`.trim();
+  const prevWhen = previousAppointmentAt ? whenText({ ...appt, appointmentAt: previousAppointmentAt }) : null;
+  const when = whenText(appt);
+  const rows = [
+    detailRow("מועד קודם", prevWhen ?? ""),
+    detailRow("מועד חדש", when ?? ""),
+    detailRow("שירות", serviceLabel),
+    detailRow("שם", name),
+    detailRow("טלפון", appt.phone),
+    detailRow("אימייל", appt.email ?? ""),
+  ].join("");
+  const body = `תור שונה במערכת התורים. הפרטים:
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-top:14px;border-top:1px solid #e6eaef;">
+      ${rows}
+    </table>`;
+  return emailShell(
+    "🔁 תור שונה",
+    body,
+    buttonHtml(`${SITE_URL}/admin/queue?appt=${encodeURIComponent(appt.id)}`, "פתיחת התור בניהול"),
+  );
+}
+
+/** Notify the office that a booking's time was changed (admin reschedule from the
+ * queue). Email only. */
+export async function notifyAdminRescheduled(
+  appt: Appointment,
+  serviceLabel: string,
+  previousAppointmentAt: string | undefined,
+): Promise<void> {
+  const name = `${appt.firstName} ${appt.lastName}`.trim();
+  const prevWhen = previousAppointmentAt ? whenText({ ...appt, appointmentAt: previousAppointmentAt }) : null;
+  const when = whenText(appt);
+  const text = `תור שונה: ${name}, טלפון ${appt.phone}, שירות: ${serviceLabel}${prevWhen ? `, ממועד: ${prevWhen}` : ""}${when ? `, למועד: ${when}` : ""}.`;
+  await sendEmail(
+    ADMIN_EMAIL,
+    `${BUSINESS.name} — תור שונה${when ? ` ל${when}` : ""} · ${name}`,
+    text,
+    buildAdminRescheduleHtml(appt, serviceLabel, previousAppointmentAt),
+  );
+}
+
+/** Resolve a service id to its human-readable (Hebrew, falling back to English)
+ * label, matching the resolution used at booking time. */
+export function resolveServiceLabel(
+  services: { id: string; label: { he?: string; en?: string } }[],
+  serviceId: string,
+): string {
+  const service = services.find((s) => s.id === serviceId);
+  return service?.label.he || service?.label.en || serviceId;
+}

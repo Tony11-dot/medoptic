@@ -1,6 +1,6 @@
 import { getServices, updateAppointments } from "@/lib/db";
 import { isAuthed } from "@/lib/auth";
-import { notifyCustomer } from "@/lib/notify";
+import { notifyCustomer, notifyAdminCancelled, notifyAdminRescheduled, resolveServiceLabel } from "@/lib/notify";
 import { busyIntervals, durationResolver, overlapsBusy, zonedToUtc, DEFAULT_DURATION_MINUTES } from "@/lib/schedule";
 import type { Appointment, AppointmentStatus } from "@/lib/types";
 
@@ -52,12 +52,15 @@ export async function PATCH(
   // public picker — check overlaps atomically, ignoring the appointment being
   // moved. (Admins may place a time outside opening hours on purpose, so only
   // conflicts are enforced here, not the grid.)
-  const byService = durationResolver(await getServices());
+  const services = await getServices();
+  const byService = durationResolver(services);
   let updated: Appointment | undefined;
+  let previousAppointmentAt: string | undefined;
   try {
     await updateAppointments((list) =>
       list.map((a) => {
         if (a.id !== id) return a;
+        previousAppointmentAt = a.appointmentAt;
         const durationMinutes =
           a.durationMinutes ?? byService(a.service) ?? DEFAULT_DURATION_MINUTES;
         if (appointmentAt && status !== "declined") {
@@ -98,6 +101,22 @@ export async function PATCH(
     notification = result;
   }
 
+  // A reschedule (the confirmed slot moved) gets its own office alert, distinct
+  // from the approve/decline one above — fire-and-forget, must never block the
+  // response to the admin.
+  if (
+    status === "approved" &&
+    updated.appointmentAt &&
+    previousAppointmentAt &&
+    previousAppointmentAt !== updated.appointmentAt
+  ) {
+    void notifyAdminRescheduled(
+      updated,
+      resolveServiceLabel(services, updated.service),
+      previousAppointmentAt,
+    );
+  }
+
   return Response.json({ appointment: updated, notification });
 }
 
@@ -110,12 +129,18 @@ export async function DELETE(
     return Response.json({ error: "Unauthorized" }, { status: 401 });
   }
   const { id } = await params;
-  let found = false;
+  let removed: Appointment | undefined;
   await updateAppointments((list) => {
-    const next = list.filter((a) => a.id !== id);
-    found = next.length !== list.length;
-    return next;
+    removed = list.find((a) => a.id === id);
+    return list.filter((a) => a.id !== id);
   });
-  if (!found) return Response.json({ error: "Not found" }, { status: 404 });
+  if (!removed) return Response.json({ error: "Not found" }, { status: 404 });
+
+  // Office alert for an admin-initiated cancel — fire-and-forget, must never
+  // block the response.
+  void getServices().then((services) =>
+    notifyAdminCancelled(removed!, resolveServiceLabel(services, removed!.service), "admin"),
+  );
+
   return Response.json({ ok: true });
 }
