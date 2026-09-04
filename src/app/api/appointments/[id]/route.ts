@@ -1,6 +1,7 @@
-import { getServices, updateAppointments } from "@/lib/db";
+import { randomUUID } from "crypto";
+import { getServices, updateAppointments, logActivity } from "@/lib/db";
 import { isAuthed } from "@/lib/auth";
-import { notifyCustomer, notifyAdminCancelled, notifyAdminRescheduled, resolveServiceLabel } from "@/lib/notify";
+import { notifyCustomer, notifyAdminCancelled, notifyAdminRescheduled, notifyAdminDeclined, resolveServiceLabel } from "@/lib/notify";
 import { busyIntervals, durationResolver, overlapsBusy, zonedToUtc, DEFAULT_DURATION_MINUTES } from "@/lib/schedule";
 import type { Appointment, AppointmentStatus } from "@/lib/types";
 
@@ -105,18 +106,36 @@ export async function PATCH(
   // from the approve/decline one above. Must be awaited — on a serverless
   // invocation the runtime can freeze/kill the function right after the
   // response is sent, so an un-awaited send here would silently never go out.
-  if (
+  const serviceLabel = resolveServiceLabel(services, updated.service);
+  const isReschedule =
     status === "approved" &&
-    updated.appointmentAt &&
-    previousAppointmentAt &&
-    previousAppointmentAt !== updated.appointmentAt
-  ) {
-    await notifyAdminRescheduled(
-      updated,
-      resolveServiceLabel(services, updated.service),
-      previousAppointmentAt,
-    );
+    !!updated.appointmentAt &&
+    !!previousAppointmentAt &&
+    previousAppointmentAt !== updated.appointmentAt;
+  if (isReschedule) {
+    await notifyAdminRescheduled(updated, serviceLabel, previousAppointmentAt);
+  } else if (status === "declined") {
+    await notifyAdminDeclined(updated, serviceLabel);
   }
+
+  // Record the event in the admin activity log — awaited for the same reason
+  // as the notifications above.
+  await logActivity({
+    id: randomUUID(),
+    at: new Date().toISOString(),
+    type: isReschedule ? "rescheduled" : status === "declined" ? "declined" : "approved",
+    appointmentId: updated.id,
+    firstName: updated.firstName,
+    lastName: updated.lastName,
+    phone: updated.phone,
+    email: updated.email,
+    service: updated.service,
+    serviceLabel,
+    appointmentAt: updated.appointmentAt,
+    previousAppointmentAt: isReschedule ? previousAppointmentAt : undefined,
+    by: "admin",
+    reason: updated.decisionReason,
+  });
 
   return Response.json({ appointment: updated, notification });
 }
@@ -142,7 +161,23 @@ export async function DELETE(
   // after the response is sent, so an un-awaited send here would silently
   // never go out.
   const services = await getServices();
-  await notifyAdminCancelled(removed, resolveServiceLabel(services, removed.service), "admin");
+  const serviceLabel = resolveServiceLabel(services, removed.service);
+  await notifyAdminCancelled(removed, serviceLabel, "admin");
+
+  await logActivity({
+    id: randomUUID(),
+    at: new Date().toISOString(),
+    type: "cancelled",
+    appointmentId: removed.id,
+    firstName: removed.firstName,
+    lastName: removed.lastName,
+    phone: removed.phone,
+    email: removed.email,
+    service: removed.service,
+    serviceLabel,
+    appointmentAt: removed.appointmentAt,
+    by: "admin",
+  });
 
   return Response.json({ ok: true });
 }

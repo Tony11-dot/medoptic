@@ -13,6 +13,7 @@ const NAV = [
   { href: "/admin/queue", key: "appointments", icon: "🗓" },
   { href: "/admin/schedule", key: "schedule", icon: "🕑" },
   { href: "/admin/vacation", key: "vacation", icon: "🏖" },
+  { href: "/admin/activity", key: "activity", icon: "📜" },
   { href: "/admin/tests", key: "tests", icon: "👁" },
   { href: "/admin/content", key: "content", icon: "✎" },
   { href: "/admin/sections", key: "sections", icon: "≣" },

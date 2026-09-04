@@ -4,7 +4,7 @@
 import "server-only";
 import { promises as fs } from "fs";
 import path from "path";
-import type { AdminSettings, Appointment, BookingSettings, Patient, Product, Service, SiteContent, VacationRange } from "./types";
+import type { ActivityLogEntry, AdminSettings, Appointment, BookingSettings, Patient, Product, Service, SiteContent, VacationRange } from "./types";
 import { seedAppointments, seedProducts, seedServices, seedContent, seedBookingSettings, seedVacations } from "./seed";
 
 const useRedis = !!process.env.KV_REST_API_URL && !!process.env.KV_REST_API_TOKEN;
@@ -167,6 +167,18 @@ export const getVacations = () => read<VacationRange[]>("vacations", seedVacatio
 
 export const updateVacations = (fn: (list: VacationRange[]) => VacationRange[]) =>
   mutate<VacationRange[]>("vacations", fn, seedVacations);
+
+// ---- Activity log -------------------------------------------------------------
+
+// Keep the log bounded so storage and per-request reads stay cheap — the
+// admin only ever needs recent history, not an unbounded audit trail.
+const MAX_ACTIVITY_LOG = 1000;
+
+export const getActivityLog = () => read<ActivityLogEntry[]>("activityLog", []);
+
+/** Append one event to the log (newest first), trimming to the retention cap. */
+export const logActivity = (entry: ActivityLogEntry) =>
+  mutate<ActivityLogEntry[]>("activityLog", (list) => [entry, ...list].slice(0, MAX_ACTIVITY_LOG), []);
 
 // ---- Patient folders / eye tests ----------------------------------------------
 

@@ -1,4 +1,5 @@
-import { getAppointments, getServices, updateAppointments } from "@/lib/db";
+import { randomUUID } from "crypto";
+import { getAppointments, getServices, updateAppointments, logActivity } from "@/lib/db";
 import { clientIp, rateLimit } from "@/lib/rateLimit";
 import { notifyAdminCancelled, notifyCustomerCancelled, resolveServiceLabel } from "@/lib/notify";
 import type { Appointment } from "@/lib/types";
@@ -53,10 +54,26 @@ export async function POST(
     // instant the response is sent, so an un-awaited send here would silently
     // never go out (the cause of the "no email on cancel" report).
     const services = await getServices();
+    const serviceLabel = resolveServiceLabel(services, removed.service);
     await Promise.allSettled([
-      notifyAdminCancelled(removed, resolveServiceLabel(services, removed.service), "customer"),
+      notifyAdminCancelled(removed, serviceLabel, "customer"),
       notifyCustomerCancelled(removed),
     ]);
+
+    await logActivity({
+      id: randomUUID(),
+      at: new Date().toISOString(),
+      type: "cancelled",
+      appointmentId: removed.id,
+      firstName: removed.firstName,
+      lastName: removed.lastName,
+      phone: removed.phone,
+      email: removed.email,
+      service: removed.service,
+      serviceLabel,
+      appointmentAt: removed.appointmentAt,
+      by: "customer",
+    });
 
     return Response.json({ ok: true });
   }

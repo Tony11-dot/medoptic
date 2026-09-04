@@ -1,5 +1,5 @@
 import { randomUUID } from "crypto";
-import { getAppointments, updateAppointments, getServices, getBookingSettings, getVacations } from "@/lib/db";
+import { getAppointments, updateAppointments, getServices, getBookingSettings, getVacations, logActivity } from "@/lib/db";
 import { validateAppointment } from "@/lib/validation";
 import { isAuthed } from "@/lib/auth";
 import { notifyCustomer, notifyAdminNewBooking } from "@/lib/notify";
@@ -126,6 +126,24 @@ export async function POST(request: Request) {
     notifyAdminNewBooking(appointment, serviceLabel),
     notifyCustomer(appointment),
   ]);
+
+  // Must be awaited: on a serverless invocation the runtime can freeze/kill
+  // the function right after the response is sent, so an un-awaited write
+  // here could silently never land.
+  await logActivity({
+    id: randomUUID(),
+    at: now,
+    type: "booked",
+    appointmentId: appointment.id,
+    firstName: appointment.firstName,
+    lastName: appointment.lastName,
+    phone: appointment.phone,
+    email: appointment.email,
+    service: appointment.service,
+    serviceLabel,
+    appointmentAt: appointment.appointmentAt,
+    by: "customer",
+  });
   let notifiedAt: string | undefined;
   if (customerSend.status === "fulfilled") {
     notifiedAt = new Date().toISOString();

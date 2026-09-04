@@ -59,6 +59,37 @@ export interface VacationRange {
   createdAt: string;
 }
 
+/** What happened to an appointment, for the admin activity log. */
+export type ActivityType = "booked" | "cancelled" | "rescheduled" | "approved" | "declined";
+
+/**
+ * One row in the admin activity log — a permanent record of every booking,
+ * cancellation, reschedule and decision, independent of the appointment
+ * itself (which may since have been deleted, e.g. on cancel). Fields are a
+ * snapshot at the time of the event, not a live reference.
+ */
+export interface ActivityLogEntry {
+  id: string;
+  at: string; // ISO timestamp of the event
+  type: ActivityType;
+  appointmentId: string;
+  firstName: string;
+  lastName: string;
+  phone: string;
+  email?: string;
+  service: string; // Service id at the time of the event
+  serviceLabel: string; // resolved human-readable label, snapshotted
+  /** The relevant confirmed slot after this event (new time for a booking or
+   * reschedule; the slot that was cancelled for a cancellation). */
+  appointmentAt?: string;
+  /** Only set for "rescheduled" — the slot before the change. */
+  previousAppointmentAt?: string;
+  /** Who triggered the event — the customer themselves or an admin/staff action. */
+  by: "customer" | "admin";
+  /** Decline reason, when type is "declined". */
+  reason?: string;
+}
+
 /**
  * A bookable service / queue type, fully managed by admins. `id` is what an
  * appointment references in {@link Appointment.service}; the set is not fixed in

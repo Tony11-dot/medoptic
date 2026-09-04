@@ -13,9 +13,27 @@ export const BUSINESS = {
   email: process.env.MEDOPTIC_EMAIL ?? "Medoptic24@gmail.com",
 };
 
-// Inbox that gets a heads-up whenever a new booking comes in. Follows the
-// business inbox unless a dedicated alerts address is configured.
-const ADMIN_EMAIL = process.env.MEDOPTIC_ADMIN_EMAIL ?? BUSINESS.email;
+// Inboxes that get a heads-up on every appointment event (new booking, cancel,
+// reschedule, decline). Follows the business inbox unless a dedicated alerts
+// address is configured via MEDOPTIC_ADMIN_EMAIL (comma-separated for more
+// than one) — and always includes Samer's inbox regardless of that config, so
+// removing/changing the env var can never silently drop him from the loop.
+const SAMER_EMAIL = "samernasser24@gmail.com";
+function dedupeEmails(emails: string[]): string[] {
+  const seen = new Set<string>();
+  const out: string[] = [];
+  for (const raw of emails) {
+    const e = raw.trim();
+    if (!e || seen.has(e.toLowerCase())) continue;
+    seen.add(e.toLowerCase());
+    out.push(e);
+  }
+  return out;
+}
+const ADMIN_EMAIL = dedupeEmails([
+  ...(process.env.MEDOPTIC_ADMIN_EMAIL ?? BUSINESS.email).split(","),
+  SAMER_EMAIL,
+]).join(", ");
 
 interface NotifyResult {
   ok: boolean;
@@ -442,6 +460,42 @@ export async function notifyAdminRescheduled(
     `${BUSINESS.name} — תור שונה${when ? ` ל${when}` : ""} · ${name}`,
     text,
     buildAdminRescheduleHtml(appt, serviceLabel, previousAppointmentAt),
+  );
+}
+
+// ---- Admin "declined" alert --------------------------------------------------
+
+/** Branded Hebrew HTML alerting the office that a booking was declined. */
+function buildAdminDeclineHtml(appt: Appointment, serviceLabel: string): string {
+  const name = `${appt.firstName} ${appt.lastName}`.trim();
+  const when = whenText(appt);
+  const rows = [
+    detailRow("מועד שבוקש", when ?? ""),
+    detailRow("שירות", serviceLabel),
+    detailRow("שם", name),
+    detailRow("טלפון", appt.phone),
+    detailRow("אימייל", appt.email ?? ""),
+    detailRow("סיבת דחייה", appt.decisionReason ?? ""),
+  ].join("");
+  const body = `תור נדחה במערכת התורים. הפרטים:
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-top:14px;border-top:1px solid #e6eaef;">
+      ${rows}
+    </table>`;
+  return emailShell("🚫 תור נדחה", body);
+}
+
+/** Notify the office that a pending appointment was declined from the admin
+ * queue. Email only. */
+export async function notifyAdminDeclined(appt: Appointment, serviceLabel: string): Promise<void> {
+  const name = `${appt.firstName} ${appt.lastName}`.trim();
+  const when = whenText(appt);
+  const reason = appt.decisionReason ? ` סיבה: ${appt.decisionReason}.` : "";
+  const text = `תור נדחה: ${name}, טלפון ${appt.phone}, שירות: ${serviceLabel}${when ? `, מועד שבוקש: ${when}` : ""}.${reason}`;
+  await sendEmail(
+    ADMIN_EMAIL,
+    `${BUSINESS.name} — תור נדחה · ${name}`,
+    text,
+    buildAdminDeclineHtml(appt, serviceLabel),
   );
 }
 

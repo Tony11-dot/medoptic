@@ -146,7 +146,7 @@ export interface Dict {
     refresh: string;
     actions: { approve: string; decline: string; add: string; edit: string; delete: string; cancel: string; search: string };
     bulk: { selected: string; deleteSelected: string; confirm: string; deleted: string };
-    nav: { overview: string; appointments: string; schedule: string; vacation: string; tests: string; queueTypes: string; products: string; content: string; sections: string; settings: string };
+    nav: { overview: string; appointments: string; schedule: string; vacation: string; activity: string; tests: string; queueTypes: string; products: string; content: string; sections: string; settings: string };
     tests: {
       title: string;
       subtitle: string;
@@ -219,6 +219,21 @@ export interface Dict {
       noRanges: string;
       invalidRange: string;
       saved: string;
+    };
+    activity: {
+      title: string;
+      subtitle: string;
+      empty: string;
+      loadError: string;
+      refresh: string;
+      type: { booked: string; cancelled: string; rescheduled: string; approved: string; declined: string };
+      by: { customer: string; admin: string };
+      service: string;
+      phone: string;
+      email: string;
+      time: string;
+      previousTime: string;
+      reason: string;
     };
     settings: {
       title: string;
@@ -521,7 +536,7 @@ export const dictionaries: Record<Locale, Dict> = {
       refresh: "רענון",
       actions: { approve: "אישור", decline: "דחייה", add: "הוספה", edit: "עריכה", delete: "מחיקה", cancel: "ביטול", search: "חיפוש" },
       bulk: { selected: "נבחרו", deleteSelected: "מחיקת הנבחרים", confirm: "למחוק את הפריטים שנבחרו? הפעולה אינה הפיכה.", deleted: "פריטים נמחקו" },
-      nav: { overview: "סקירה", appointments: "תורים", schedule: "יומן ושעות", vacation: "חופשה", tests: "מרשמים", queueTypes: "סוגי תורים", products: "מוצרים", content: "תוכן", sections: "מקטעים", settings: "הגדרות" },
+      nav: { overview: "סקירה", appointments: "תורים", schedule: "יומן ושעות", vacation: "חופשה", activity: "יומן פעילות", tests: "מרשמים", queueTypes: "סוגי תורים", products: "מוצרים", content: "תוכן", sections: "מקטעים", settings: "הגדרות" },
       tests: {
         title: "תיקיות מטופלים ומרשמים",
         subtitle: "לכל מטופל תיקייה עם כל הבדיקות שלו. חיפוש לפי שם או תעודת זהות.",
@@ -594,6 +609,21 @@ export const dictionaries: Record<Locale, Dict> = {
         noRanges: "אין ימי חופשה מוגדרים.",
         invalidRange: "בכל טווח יש לבחור תאריך התחלה ותאריך סיום, כשההתחלה לא מאוחרת מהסיום.",
         saved: "החופשה נשמרה",
+      },
+      activity: {
+        title: "יומן פעילות",
+        subtitle: "כל פעולה שקרתה בתורים — מי הזמין, מי ביטל, מתי ומה בדיוק קרה.",
+        empty: "אין עדיין פעילות רשומה.",
+        loadError: "טעינת היומן נכשלה.",
+        refresh: "רענון",
+        type: { booked: "תור נקבע", cancelled: "תור בוטל", rescheduled: "תור שונה", approved: "תור אושר", declined: "תור נדחה" },
+        by: { customer: "הלקוח/ה", admin: "הצוות" },
+        service: "שירות",
+        phone: "טלפון",
+        email: "אימייל",
+        time: "מועד",
+        previousTime: "מועד קודם",
+        reason: "סיבה",
       },
       settings: {
         title: "הגדרות",
@@ -880,7 +910,7 @@ export const dictionaries: Record<Locale, Dict> = {
       refresh: "Refresh",
       actions: { approve: "Approve", decline: "Decline", add: "Add", edit: "Edit", delete: "Delete", cancel: "Cancel", search: "Search" },
       bulk: { selected: "selected", deleteSelected: "Delete selected", confirm: "Delete the selected items? This cannot be undone.", deleted: "items deleted" },
-      nav: { overview: "Overview", appointments: "Appointments", schedule: "Schedule", vacation: "Vacation", tests: "Prescriptions", queueTypes: "Queue Types", products: "Products", content: "Content", sections: "Sections", settings: "Settings" },
+      nav: { overview: "Overview", appointments: "Appointments", schedule: "Schedule", vacation: "Vacation", activity: "Activity log", tests: "Prescriptions", queueTypes: "Queue Types", products: "Products", content: "Content", sections: "Sections", settings: "Settings" },
       tests: {
         title: "Patient folders & prescriptions",
         subtitle: "Each patient has a folder with all their tests. Search by name or ID.",
@@ -953,6 +983,21 @@ export const dictionaries: Record<Locale, Dict> = {
         noRanges: "No closure ranges set.",
         invalidRange: "Each range needs a start and end date, with start no later than end.",
         saved: "Vacation saved",
+      },
+      activity: {
+        title: "Activity log",
+        subtitle: "Everything that happened to appointments — who booked, who cancelled, when, and every detail.",
+        empty: "No activity recorded yet.",
+        loadError: "Failed to load the log.",
+        refresh: "Refresh",
+        type: { booked: "Booked", cancelled: "Cancelled", rescheduled: "Rescheduled", approved: "Approved", declined: "Declined" },
+        by: { customer: "Customer", admin: "Staff" },
+        service: "Service",
+        phone: "Phone",
+        email: "Email",
+        time: "Time",
+        previousTime: "Previous time",
+        reason: "Reason",
       },
       settings: {
         title: "Settings",
@@ -1239,7 +1284,7 @@ export const dictionaries: Record<Locale, Dict> = {
       refresh: "Обновить",
       actions: { approve: "Подтвердить", decline: "Отклонить", add: "Добавить", edit: "Изменить", delete: "Удалить", cancel: "Отмена", search: "Поиск" },
       bulk: { selected: "выбрано", deleteSelected: "Удалить выбранные", confirm: "Удалить выбранные элементы? Действие необратимо.", deleted: "элементов удалено" },
-      nav: { overview: "Обзор", appointments: "Записи", schedule: "Расписание", vacation: "Отпуск", tests: "Рецепты", queueTypes: "Типы услуг", products: "Товары", content: "Контент", sections: "Разделы", settings: "Настройки" },
+      nav: { overview: "Обзор", appointments: "Записи", schedule: "Расписание", vacation: "Отпуск", activity: "Журнал активности", tests: "Рецепты", queueTypes: "Типы услуг", products: "Товары", content: "Контент", sections: "Разделы", settings: "Настройки" },
       tests: {
         title: "Карточки пациентов и рецепты",
         subtitle: "У каждого пациента папка со всеми проверками. Поиск по имени или ID.",
@@ -1312,6 +1357,21 @@ export const dictionaries: Record<Locale, Dict> = {
         noRanges: "Диапазоны закрытия не заданы.",
         invalidRange: "В каждом диапазоне укажите дату начала и окончания; начало не позже окончания.",
         saved: "Отпуск сохранён",
+      },
+      activity: {
+        title: "Журнал активности",
+        subtitle: "Всё, что происходило с записями — кто записался, кто отменил, когда и все детали.",
+        empty: "Активность пока не зафиксирована.",
+        loadError: "Не удалось загрузить журнал.",
+        refresh: "Обновить",
+        type: { booked: "Запись создана", cancelled: "Запись отменена", rescheduled: "Запись перенесена", approved: "Запись подтверждена", declined: "Запись отклонена" },
+        by: { customer: "Клиент", admin: "Сотрудник" },
+        service: "Услуга",
+        phone: "Телефон",
+        email: "Эл. почта",
+        time: "Время",
+        previousTime: "Предыдущее время",
+        reason: "Причина",
       },
       settings: {
         title: "Настройки",
