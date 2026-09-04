@@ -102,15 +102,16 @@ export async function PATCH(
   }
 
   // A reschedule (the confirmed slot moved) gets its own office alert, distinct
-  // from the approve/decline one above — fire-and-forget, must never block the
-  // response to the admin.
+  // from the approve/decline one above. Must be awaited — on a serverless
+  // invocation the runtime can freeze/kill the function right after the
+  // response is sent, so an un-awaited send here would silently never go out.
   if (
     status === "approved" &&
     updated.appointmentAt &&
     previousAppointmentAt &&
     previousAppointmentAt !== updated.appointmentAt
   ) {
-    void notifyAdminRescheduled(
+    await notifyAdminRescheduled(
       updated,
       resolveServiceLabel(services, updated.service),
       previousAppointmentAt,
@@ -136,11 +137,12 @@ export async function DELETE(
   });
   if (!removed) return Response.json({ error: "Not found" }, { status: 404 });
 
-  // Office alert for an admin-initiated cancel — fire-and-forget, must never
-  // block the response.
-  void getServices().then((services) =>
-    notifyAdminCancelled(removed!, resolveServiceLabel(services, removed!.service), "admin"),
-  );
+  // Office alert for an admin-initiated cancel. Must be awaited — on a
+  // serverless invocation the runtime can freeze/kill the function right
+  // after the response is sent, so an un-awaited send here would silently
+  // never go out.
+  const services = await getServices();
+  await notifyAdminCancelled(removed, resolveServiceLabel(services, removed.service), "admin");
 
   return Response.json({ ok: true });
 }

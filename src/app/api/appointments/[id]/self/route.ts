@@ -1,6 +1,6 @@
 import { getAppointments, getServices, updateAppointments } from "@/lib/db";
 import { clientIp, rateLimit } from "@/lib/rateLimit";
-import { notifyAdminCancelled, resolveServiceLabel } from "@/lib/notify";
+import { notifyAdminCancelled, notifyCustomerCancelled, resolveServiceLabel } from "@/lib/notify";
 import type { Appointment } from "@/lib/types";
 
 // GET — minimal appointment state for the public cancel page. The UUID is the
@@ -48,11 +48,15 @@ export async function POST(
     });
     if (!removed) return Response.json({ error: "Not found" }, { status: 404 });
 
-    // Office alert for a customer self-cancel — fire-and-forget, must never
-    // block the response.
-    void getServices().then((services) =>
-      notifyAdminCancelled(removed!, resolveServiceLabel(services, removed!.service), "customer"),
-    );
+    // Notify the office and the customer concurrently. This must be awaited —
+    // on a serverless invocation the runtime can freeze/kill the function the
+    // instant the response is sent, so an un-awaited send here would silently
+    // never go out (the cause of the "no email on cancel" report).
+    const services = await getServices();
+    await Promise.allSettled([
+      notifyAdminCancelled(removed, resolveServiceLabel(services, removed.service), "customer"),
+      notifyCustomerCancelled(removed),
+    ]);
 
     return Response.json({ ok: true });
   }

@@ -61,6 +61,14 @@ function buildMessage(appt: Appointment): string {
   return `${BUSINESS.name}: שלום ${name}, קיבלנו את בקשתך. ${signoff}`;
 }
 
+function buildCancelMessage(appt: Appointment): string {
+  const name = `${appt.firstName} ${appt.lastName}`.trim();
+  const when = whenText(appt);
+  const signoff = `לשאלות חייגו ${BUSINESS.phone}.`;
+  const slot = when ? ` ל-${when}` : "";
+  return `${BUSINESS.name}: שלום ${name}, התור שלך${slot} בוטל כמבוקש. נשמח לראותך בפעם הבאה! ${signoff}`;
+}
+
 function buildReminder(appt: Appointment): string {
   const name = `${appt.firstName} ${appt.lastName}`.trim();
   const when = whenText(appt);
@@ -142,6 +150,15 @@ function buildEmailHtml(appt: Appointment): string {
     return emailShell(`שלום ${name},`, `לצערנו לא הצלחנו לאשר את התור.${reason}<br/><br/>אנא צרו קשר ונשמח לתאם מועד חדש.`);
   }
   return emailShell(`שלום ${name},`, `קיבלנו את בקשתכם ונחזור אליכם בהקדם.`);
+}
+
+function buildCancelEmailHtml(appt: Appointment): string {
+  const name = esc(`${appt.firstName} ${appt.lastName}`.trim());
+  const when = whenText(appt);
+  const slot = when
+    ? `התור שנקבע ל-<strong>${esc(when)}</strong> בוטל בהצלחה, כפי שביקשת.`
+    : `התור בוטל בהצלחה, כפי שביקשת.`;
+  return emailShell(`שלום ${name}, התור בוטל`, `${slot}<br/><br/>מתחשק לקבוע תור חדש? נשמח לראות אותך שוב.`);
 }
 
 function buildReminderHtml(appt: Appointment): string {
@@ -259,6 +276,16 @@ export function notifyCustomer(appt: Appointment): Promise<NotifyResult> {
   return dispatch({ ...appt, reminderChannels: channels }, buildMessage(appt), {
     subject: emailSubject(appt),
     html: buildEmailHtml(appt),
+  });
+}
+
+/** Notify a customer that their own cancellation went through. Same delivery
+ * rule as a decision: always SMS, plus email whenever one was given. */
+export function notifyCustomerCancelled(appt: Appointment): Promise<NotifyResult> {
+  const channels: ReminderChannel[] = ["sms", ...(appt.email ? (["email"] as const) : [])];
+  return dispatch({ ...appt, reminderChannels: channels }, buildCancelMessage(appt), {
+    subject: `${BUSINESS.name} — התור בוטל`,
+    html: buildCancelEmailHtml(appt),
   });
 }
 
