@@ -13,6 +13,7 @@ import { Essays } from "@/components/site/Essays";
 import { Booking } from "@/components/site/Booking";
 import { Footer } from "@/components/site/Footer";
 import { BlocksLive } from "@/components/site/Blocks";
+import { getGoogleRating } from "@/lib/reviews";
 import type { BlocksPosition, Review } from "@/lib/types";
 
 // Always render fresh so admin edits to content show immediately.
@@ -31,6 +32,11 @@ async function fileBg(name: string): Promise<string | undefined> {
 
 export default async function HomePage() {
   const [content, services, bookingSettings] = await Promise.all([getContent(), getServices(), getBookingSettings()]);
+  // Live Google rating when a Place ID + API key are configured, else the
+  // admin-entered figures.
+  const rating =
+    (await getGoogleRating(content.googlePlaceId)) ??
+    (content.googleRating ? { rating: content.googleRating, count: content.googleReviewCount ?? 0 } : null);
   const enabledServices = services.filter((s) => s.enabled).sort((a, b) => a.order - b.order);
 
   const position: BlocksPosition = content.blocksPosition ?? "afterProducts";
@@ -49,7 +55,16 @@ export default async function HomePage() {
     gallery: <Gallery key="gallery" gallery={content.gallery ?? []} bg={bg("gallery")} styles={content.styles} />,
     team: <Optometrists key="team" team={content.team} styles={content.styles} bg={bg("team")} />,
     services: <Services key="services" services={enabledServices} bg={bg("services")} />,
-    reviews: <Reviews key="reviews" reviews={reviews} placeId={content.googlePlaceId} bg={bg("reviews")} />,
+    reviews: (
+      <Reviews
+        key="reviews"
+        reviews={reviews}
+        bg={bg("reviews")}
+        rating={rating}
+        footer={content.footer}
+        openingRules={bookingSettings.rules}
+      />
+    ),
     essays: <Essays key="essays" essays={content.essays ?? []} />,
     book: <Booking key="book" bg={bg("book")} />,
     contact: <Footer key="contact" footer={content.footer} styles={content.styles} openingRules={bookingSettings.rules} />,

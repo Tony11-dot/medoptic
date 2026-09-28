@@ -54,16 +54,6 @@ export interface Dict {
     heading: string;
     subheading: string;
     empty: string;
-    leaveReview: string;
-    writeReview: string;
-    formTitle: string;
-    formName: string;
-    formRating: string;
-    formText: string;
-    formSubmit: string;
-    formSubmitting: string;
-    formSuccess: string;
-    formError: string;
   };
   booking: {
     eyebrow: string;
@@ -123,6 +113,29 @@ export interface Dict {
     follow: string;
     rights: string;
     adminLink: string;
+    directions: string;
+    privacy: string;
+    cookies: string;
+    terms: string;
+    credit: string;
+  };
+  /** "Find us" card under the reviews: Google rating + embedded map. */
+  location: {
+    reviewsCount: (n: number) => string;
+    seeOnGoogle: string;
+    writeOnGoogle: string;
+    address: string;
+    hours: string;
+    phone: string;
+    waze: string;
+    maps: string;
+    book: string;
+    mapTitle: string;
+  };
+  a11y: {
+    open: string; title: string; close: string;
+    fontSize: string; decrease: string; increase: string;
+    contrast: string; grayscale: string; underline: string; reduceMotion: string; reset: string;
   };
   /** Localized weekday names, Sunday first (index 0 = Sunday). */
   weekdaysShort: string[];
@@ -324,6 +337,10 @@ export interface Dict {
       googlePhotoHint: string;
       visible: string;
       pending: string;
+      ratingTitle: string;
+      ratingHint: string;
+      ratingValue: string;
+      ratingCount: string;
     };
     status: { pending: string; approved: string; declined: string; allStatuses: string; allServices: string };
     gallery: { add: string; empty: string; caption: string };
@@ -447,16 +464,6 @@ export const dictionaries: Record<Locale, Dict> = {
       heading: "ביקורות",
       subheading: "לקוחות מספרים על החוויה שלהם ב-MEDOPTIC.",
       empty: "עדיין אין ביקורות. נשמח אם תשתפו את החוויה שלכם!",
-      leaveReview: "כתבו ביקורת בגוגל",
-      writeReview: "כתיבת ביקורת",
-      formTitle: "שתפו את החוויה שלכם",
-      formName: "השם שלכם",
-      formRating: "דירוג",
-      formText: "הביקורת שלכם",
-      formSubmit: "שליחה",
-      formSubmitting: "שולח…",
-      formSuccess: "תודה! הביקורת תופיע לאחר אישור.",
-      formError: "השליחה נכשלה. נסו שוב.",
     },
     booking: {
       eyebrow: "נשמח לראות אתכם",
@@ -515,6 +522,28 @@ export const dictionaries: Record<Locale, Dict> = {
       follow: "עקבו אחרינו",
       rights: "כל הזכויות שמורות.",
       adminLink: "ניהול",
+      directions: "ניווט עם Waze",
+      privacy: "מדיניות פרטיות",
+      cookies: "מדיניות עוגיות",
+      terms: "תנאי שימוש",
+      credit: "פותח על ידי",
+    },
+    location: {
+      reviewsCount: (n) => `${n.toLocaleString("he-IL")} ביקורות`,
+      seeOnGoogle: "לכל הביקורות בגוגל",
+      writeOnGoogle: "כתבו ביקורת",
+      address: "כתובת",
+      hours: "שעות פעילות",
+      phone: "טלפון",
+      waze: "Waze",
+      maps: "Google Maps",
+      book: "קביעת תור",
+      mapTitle: "מפת הגעה ל-MEDOPTIC",
+    },
+    a11y: {
+      open: "פתיחת תפריט נגישות", title: "נגישות", close: "סגירה",
+      fontSize: "גודל טקסט", decrease: "הקטנת טקסט", increase: "הגדלת טקסט",
+      contrast: "ניגודיות גבוהה", grayscale: "גווני אפור", underline: "הדגשת קישורים", reduceMotion: "עצירת אנימציות", reset: "איפוס הגדרות",
     },
     weekdaysShort: ["א׳", "ב׳", "ג׳", "ד׳", "ה׳", "ו׳", "ש׳"],
     weekdaysLong: ["ראשון", "שני", "שלישי", "רביעי", "חמישי", "שישי", "שבת"],
@@ -723,6 +752,10 @@ export const dictionaries: Record<Locale, Dict> = {
         googlePhotoHint: "העלו צילום מסך של ביקורת מגוגל. הוא יוצג כפי שהוא, בלי טקסט.",
         visible: "מוצג באתר",
         pending: "ממתין לאישור",
+        ratingTitle: "דירוג גוגל (כרטיס המפה)",
+        ratingHint: "הדירוג ומספר הביקורות שמוצגים ליד המפה. השאירו 0 כדי להסתיר.",
+        ratingValue: "דירוג ממוצע (למשל 4.9)",
+        ratingCount: "מספר ביקורות",
       },
       status: { pending: "ממתין", approved: "אושר", declined: "נדחה", allStatuses: "כל הסטטוסים", allServices: "כל השירותים" },
       gallery: { add: "הוספת תמונה", empty: "אין תמונות עדיין. הוסיפו תמונות לקרוסלה.", caption: "כיתוב (לא חובה)" },
@@ -821,16 +854,6 @@ export const dictionaries: Record<Locale, Dict> = {
       heading: "Reviews",
       subheading: "Real experiences from people who visited MEDOPTIC.",
       empty: "No reviews yet. We'd love to hear about your visit!",
-      leaveReview: "Write a review on Google",
-      writeReview: "Write a review",
-      formTitle: "Share your experience",
-      formName: "Your name",
-      formRating: "Rating",
-      formText: "Your review",
-      formSubmit: "Send",
-      formSubmitting: "Sending…",
-      formSuccess: "Thank you! Your review will appear after approval.",
-      formError: "Couldn't send. Please try again.",
     },
     booking: {
       eyebrow: "We'd love to see you",
@@ -889,6 +912,28 @@ export const dictionaries: Record<Locale, Dict> = {
       follow: "Follow us",
       rights: "All rights reserved.",
       adminLink: "Admin",
+      directions: "Navigate with Waze",
+      privacy: "Privacy Policy",
+      cookies: "Cookie Policy",
+      terms: "Terms of Use",
+      credit: "Developed by",
+    },
+    location: {
+      reviewsCount: (n) => `${n.toLocaleString("en-US")} reviews`,
+      seeOnGoogle: "See all reviews on Google",
+      writeOnGoogle: "Write a review",
+      address: "Address",
+      hours: "Opening hours",
+      phone: "Phone",
+      waze: "Waze",
+      maps: "Google Maps",
+      book: "Book appointment",
+      mapTitle: "Map to MEDOPTIC",
+    },
+    a11y: {
+      open: "Open accessibility menu", title: "Accessibility", close: "Close",
+      fontSize: "Text size", decrease: "Decrease text size", increase: "Increase text size",
+      contrast: "High contrast", grayscale: "Grayscale", underline: "Underline links", reduceMotion: "Stop animations", reset: "Reset settings",
     },
     weekdaysShort: ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"],
     weekdaysLong: ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"],
@@ -1097,6 +1142,10 @@ export const dictionaries: Record<Locale, Dict> = {
         googlePhotoHint: "Upload a screenshot of a Google review. It's shown as-is, with no text.",
         visible: "Shown on site",
         pending: "Pending approval",
+        ratingTitle: "Google rating (map card)",
+        ratingHint: "The rating and review count shown next to the map. Leave 0 to hide it.",
+        ratingValue: "Average rating (e.g. 4.9)",
+        ratingCount: "Number of reviews",
       },
       status: { pending: "Pending", approved: "Approved", declined: "Declined", allStatuses: "All statuses", allServices: "All services" },
       gallery: { add: "Add image", empty: "No images yet. Add images to the carousel.", caption: "Caption (optional)" },
@@ -1195,16 +1244,6 @@ export const dictionaries: Record<Locale, Dict> = {
       heading: "Отзывы",
       subheading: "Реальные впечатления тех, кто побывал в MEDOPTIC.",
       empty: "Пока нет отзывов. Будем рады услышать о вашем визите!",
-      leaveReview: "Оставить отзыв в Google",
-      writeReview: "Написать отзыв",
-      formTitle: "Поделитесь впечатлениями",
-      formName: "Ваше имя",
-      formRating: "Оценка",
-      formText: "Ваш отзыв",
-      formSubmit: "Отправить",
-      formSubmitting: "Отправка…",
-      formSuccess: "Спасибо! Отзыв появится после проверки.",
-      formError: "Не удалось отправить. Попробуйте снова.",
     },
     booking: {
       eyebrow: "Будем рады вас видеть",
@@ -1263,6 +1302,28 @@ export const dictionaries: Record<Locale, Dict> = {
       follow: "Мы в соцсетях",
       rights: "Все права защищены.",
       adminLink: "Админ",
+      directions: "Проложить маршрут в Waze",
+      privacy: "Политика конфиденциальности",
+      cookies: "Политика cookie",
+      terms: "Условия использования",
+      credit: "Разработчик —",
+    },
+    location: {
+      reviewsCount: (n) => `Отзывов: ${n.toLocaleString("ru-RU")}`,
+      seeOnGoogle: "Все отзывы в Google",
+      writeOnGoogle: "Оставить отзыв",
+      address: "Адрес",
+      hours: "Часы работы",
+      phone: "Телефон",
+      waze: "Waze",
+      maps: "Google Maps",
+      book: "Записаться",
+      mapTitle: "Карта проезда в MEDOPTIC",
+    },
+    a11y: {
+      open: "Открыть меню доступности", title: "Доступность", close: "Закрыть",
+      fontSize: "Размер текста", decrease: "Уменьшить текст", increase: "Увеличить текст",
+      contrast: "Высокий контраст", grayscale: "Оттенки серого", underline: "Подчеркнуть ссылки", reduceMotion: "Остановить анимацию", reset: "Сбросить настройки",
     },
     weekdaysShort: ["Вс", "Пн", "Вт", "Ср", "Чт", "Пт", "Сб"],
     weekdaysLong: ["Воскресенье", "Понедельник", "Вторник", "Среда", "Четверг", "Пятница", "Суббота"],
@@ -1471,6 +1532,10 @@ export const dictionaries: Record<Locale, Dict> = {
         googlePhotoHint: "Загрузите скриншот отзыва из Google. Он показывается как есть, без текста.",
         visible: "Показывать на сайте",
         pending: "Ожидает одобрения",
+        ratingTitle: "Рейтинг Google (карточка с картой)",
+        ratingHint: "Рейтинг и число отзывов рядом с картой. Оставьте 0, чтобы скрыть.",
+        ratingValue: "Средняя оценка (напр. 4.9)",
+        ratingCount: "Количество отзывов",
       },
       status: { pending: "Ожидает", approved: "Подтверждено", declined: "Отклонено", allStatuses: "Все статусы", allServices: "Все услуги" },
       gallery: { add: "Добавить фото", empty: "Пока нет изображений. Добавьте фото в карусель.", caption: "Подпись (необязательно)" },
