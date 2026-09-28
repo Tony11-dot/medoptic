@@ -123,7 +123,6 @@ export interface Dict {
   location: {
     reviewsCount: (n: number) => string;
     seeOnGoogle: string;
-    writeOnGoogle: string;
     address: string;
     hours: string;
     phone: string;
@@ -531,7 +530,6 @@ export const dictionaries: Record<Locale, Dict> = {
     location: {
       reviewsCount: (n) => `${n.toLocaleString("he-IL")} ביקורות`,
       seeOnGoogle: "לכל הביקורות בגוגל",
-      writeOnGoogle: "כתבו ביקורת",
       address: "כתובת",
       hours: "שעות פעילות",
       phone: "טלפון",
@@ -921,7 +919,6 @@ export const dictionaries: Record<Locale, Dict> = {
     location: {
       reviewsCount: (n) => `${n.toLocaleString("en-US")} reviews`,
       seeOnGoogle: "See all reviews on Google",
-      writeOnGoogle: "Write a review",
       address: "Address",
       hours: "Opening hours",
       phone: "Phone",
@@ -1311,7 +1308,6 @@ export const dictionaries: Record<Locale, Dict> = {
     location: {
       reviewsCount: (n) => `Отзывов: ${n.toLocaleString("ru-RU")}`,
       seeOnGoogle: "Все отзывы в Google",
-      writeOnGoogle: "Оставить отзыв",
       address: "Адрес",
       hours: "Часы работы",
       phone: "Телефон",
