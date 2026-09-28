@@ -193,3 +193,26 @@ export const getSettings = () => read<AdminSettings>("settings", {});
 
 export const updateSettings = (fn: (s: AdminSettings) => AdminSettings) =>
   mutate<AdminSettings>("settings", fn, {});
+
+// ---- Small key/value helpers (per-day counters, last-known-good caches) ----
+
+const memCounters = new Map<string, number>();
+
+/** Count one use of `name` for today (UTC) and return today's total. Atomic in
+ * Redis (INCR), so it holds across serverless instances; keys expire after 2
+ * days. Falls back to an in-process counter in local dev. */
+export async function bumpDailyCounter(name: string): Promise<number> {
+  const key = `counter:${name}:${new Date().toISOString().slice(0, 10)}`;
+  if (useRedis) {
+    const r = await redis();
+    const n = await r.incr(key);
+    if (n === 1) await withRetry(() => r.expire(key, 60 * 60 * 48));
+    return n;
+  }
+  const n = (memCounters.get(key) ?? 0) + 1;
+  memCounters.set(key, n);
+  return n;
+}
+
+export const getKv = <T>(key: string, fallback: T) => read<T>(key, fallback);
+export const setKv = <T>(key: string, value: T) => write<T>(key, value);

@@ -7,7 +7,6 @@ import type { OpeningRule, Review, SiteContent } from "@/lib/types";
 import { formatOpeningLines } from "@/lib/schedule";
 import {
   GOOGLE_PROFILE_URL,
-  GOOGLE_WRITE_REVIEW_URL,
   googleMapsDirectionsUrl,
   googleMapsEmbedUrl,
   wazeUrl,
@@ -242,14 +241,6 @@ function FindUs({
                 <span className="text-sm text-muted underline-offset-2 hover:underline">{t.location.reviewsCount(rating.count)}</span>
               )}
               <span className="sr-only">{`${rating.rating.toFixed(1)} / 5`}</span>
-            </a>
-            <a
-              href={GOOGLE_WRITE_REVIEW_URL}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-sm font-semibold text-brand-dark transition hover:text-brand hover:underline"
-            >
-              ✍ {t.location.writeOnGoogle}
             </a>
           </div>
         )}
