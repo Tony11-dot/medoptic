@@ -123,3 +123,46 @@ body {
     animation: none;
   }
 }
+
+/* ---- Accessibility widget modes (toggled on <html> by AccessibilityWidget) ----
+   Overriding the theme's custom properties on html.a11y-contrast retints every
+   text-ink/bg-surface/border-line utility in one place, since Tailwind's
+   utilities read those vars at paint time. */
+html.a11y-contrast {
+  --color-ink: #000000;
+  --color-muted: #202020;
+  --color-line: #000000;
+  --color-surface: #ffffff;
+  --color-brand: #002a6b;
+  --color-brand-dark: #001638;
+  --color-brand-darker: #000c20;
+  --color-brand-light: #0f4ea3;
+  --color-brand-50: #ffffff;
+  --color-brand-100: #d9e8ff;
+  --color-brand-200: #b3d1ff;
+  --background: #ffffff;
+  --foreground: #000000;
+}
+
+html.a11y-contrast :focus-visible {
+  outline: 3px solid #ffb700;
+  outline-offset: 2px;
+}
+
+html.a11y-grayscale {
+  filter: grayscale(1);
+}
+
+html.a11y-underline a {
+  text-decoration: underline !important;
+  text-underline-offset: 2px;
+}
+
+html.a11y-reduce-motion *,
+html.a11y-reduce-motion *::before,
+html.a11y-reduce-motion *::after {
+  animation-duration: 0.001ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.001ms !important;
+  scroll-behavior: auto !important;
+}

@@ -46,8 +46,37 @@ export async function getGoogleReviews(
         text: r.text!.trim(),
         date: r.relative_time_description,
         source: "google" as const,
+        live: true,
       }));
   } catch {
     return [];
+  }
+}
+
+export interface GoogleRating {
+  rating: number;
+  count: number;
+}
+
+/** Overall Google rating + total review count for the place. Same requirements
+ *  as {@link getGoogleReviews}; returns null when not configured or on failure. */
+export async function getGoogleRating(placeId: string | undefined): Promise<GoogleRating | null> {
+  const key = process.env.GOOGLE_PLACES_API_KEY;
+  if (!key || !placeId) return null;
+
+  const url = new URL("https://maps.googleapis.com/maps/api/place/details/json");
+  url.searchParams.set("place_id", placeId);
+  url.searchParams.set("fields", "rating,user_ratings_total");
+  url.searchParams.set("key", key);
+
+  try {
+    const res = await fetch(url, { next: { revalidate: 3600 } });
+    if (!res.ok) return null;
+    const data = (await res.json()) as { result?: { rating?: number; user_ratings_total?: number } };
+    const rating = data.result?.rating;
+    if (typeof rating !== "number") return null;
+    return { rating, count: data.result?.user_ratings_total ?? 0 };
+  } catch {
+    return null;
   }
 }

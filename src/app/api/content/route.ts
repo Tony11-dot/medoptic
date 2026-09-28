@@ -34,6 +34,8 @@ export async function PATCH(request: Request) {
     reviews: body.reviews ?? c.reviews,
     googlePlaceId: body.googlePlaceId ?? c.googlePlaceId,
     showGoogleReviews: body.showGoogleReviews ?? c.showGoogleReviews,
+    googleRating: body.googleRating ?? c.googleRating,
+    googleReviewCount: body.googleReviewCount ?? c.googleReviewCount,
     sectionOrder: body.sectionOrder ?? c.sectionOrder,
     hiddenSections: body.hiddenSections ?? c.hiddenSections,
   }));

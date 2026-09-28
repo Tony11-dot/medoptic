@@ -7,6 +7,10 @@ const nextConfig: NextConfig = {
   turbopack: {
     root: path.resolve(__dirname),
   },
+  // The accessibility button owns the bottom-left corner.
+  devIndicators: {
+    position: "bottom-right",
+  },
 };
 
 export default nextConfig;

@@ -474,6 +474,65 @@ export default function ContentAdmin() {
             <div className="space-y-5">
               <p className="text-sm text-muted">{t.admin.reviews.subtitle}</p>
 
+              {/* Live Google connection (Place ID) */}
+              <div className="rounded-2xl border border-line p-4">
+                <h3 className="text-sm font-bold text-ink">{t.admin.reviews.googleTitle}</h3>
+                <p className="mt-1 text-xs text-muted">{t.admin.reviews.googleHelp}</p>
+                <label className="mt-3 block">
+                  <span className="mb-1.5 block text-sm font-semibold text-ink">{t.admin.reviews.placeId}</span>
+                  <input
+                    value={content.googlePlaceId ?? ""}
+                    onChange={(e) => setContent((c) => (c ? { ...c, googlePlaceId: e.target.value.trim() } : c))}
+                    placeholder="ChIJ…"
+                    className={plainInput}
+                    dir="ltr"
+                  />
+                  <span className="mt-1 block text-xs text-muted">{t.admin.reviews.placeIdHint}</span>
+                </label>
+                <label className="mt-3 flex items-center gap-2 text-sm font-semibold text-ink">
+                  <input
+                    type="checkbox"
+                    checked={!!content.showGoogleReviews}
+                    onChange={(e) => setContent((c) => (c ? { ...c, showGoogleReviews: e.target.checked } : c))}
+                    className="size-4 accent-brand"
+                  />
+                  {t.admin.reviews.showGoogle}
+                </label>
+              </div>
+
+              {/* Google rating summary shown on the map card */}
+              <div className="rounded-2xl border border-line p-4">
+                <h3 className="text-sm font-bold text-ink">{t.admin.reviews.ratingTitle}</h3>
+                <p className="mt-1 text-xs text-muted">{t.admin.reviews.ratingHint}</p>
+                <div className="mt-3 grid gap-3 sm:grid-cols-2">
+                  <label className="block">
+                    <span className="mb-1.5 block text-sm font-semibold text-ink">{t.admin.reviews.ratingValue}</span>
+                    <input
+                      type="number"
+                      min={0}
+                      max={5}
+                      step={0.1}
+                      value={content.googleRating ?? 0}
+                      onChange={(e) => setContent((c) => (c ? { ...c, googleRating: Math.min(5, Math.max(0, Number(e.target.value) || 0)) } : c))}
+                      className={plainInput}
+                      dir="ltr"
+                    />
+                  </label>
+                  <label className="block">
+                    <span className="mb-1.5 block text-sm font-semibold text-ink">{t.admin.reviews.ratingCount}</span>
+                    <input
+                      type="number"
+                      min={0}
+                      step={1}
+                      value={content.googleReviewCount ?? 0}
+                      onChange={(e) => setContent((c) => (c ? { ...c, googleReviewCount: Math.max(0, Math.round(Number(e.target.value) || 0)) } : c))}
+                      className={plainInput}
+                      dir="ltr"
+                    />
+                  </label>
+                </div>
+              </div>
+
               {/* Manual reviews */}
               <div className="space-y-4">
                 {reviews.length === 0 && <p className="text-sm text-muted">{t.admin.reviews.none}</p>}

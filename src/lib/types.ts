@@ -138,6 +138,8 @@ export interface Review {
   aspectRatio?: string;
   imagePosition?: string;
   source?: "manual" | "google";
+  /** Pulled live from the Google Places API (not stored; rendered as text). */
+  live?: boolean;
   /** Visitor-submitted reviews start unapproved (hidden) until an admin approves.
    * Admin-created reviews leave this undefined (treated as approved). */
   approved?: boolean;
@@ -356,6 +358,11 @@ export interface SiteContent {
   /** When true (and a Place ID + API key are configured) live Google reviews
    * are merged in alongside the admin-entered ones. */
   showGoogleReviews?: boolean;
+  /** Google rating summary shown on the "find us" card (e.g. 4.9 from 120
+   * reviews). Admin-entered; replaced by the live figures when a Place ID and
+   * GOOGLE_PLACES_API_KEY are configured. */
+  googleRating?: number;
+  googleReviewCount?: number;
   /** Admin-chosen order of the reorderable middle sections on the home page.
    * Subset/permutation of ["gallery","team","services","reviews"]. */
   sectionOrder?: string[];

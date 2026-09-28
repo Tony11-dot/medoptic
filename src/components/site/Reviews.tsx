@@ -1,10 +1,17 @@
 "use client";
 
-import { AnimatePresence, motion } from "framer-motion";
-import { useEffect, useRef, useState } from "react";
+import { motion } from "framer-motion";
+import { useEffect, useRef } from "react";
 import { useI18n } from "@/lib/i18n/LanguageProvider";
-import type { Review } from "@/lib/types";
-import { cn } from "@/lib/cn";
+import type { OpeningRule, Review, SiteContent } from "@/lib/types";
+import { formatOpeningLines } from "@/lib/schedule";
+import {
+  GOOGLE_PROFILE_URL,
+  GOOGLE_WRITE_REVIEW_URL,
+  googleMapsDirectionsUrl,
+  googleMapsEmbedUrl,
+  wazeUrl,
+} from "@/lib/location";
 import { SectionHeading } from "./SectionHeading";
 import { SectionBg } from "./SectionBg";
 
@@ -22,19 +29,23 @@ function Stars({ rating }: { rating: number }) {
   );
 }
 
-// Public "Reviews" section. Shows admin-entered and/or live Google reviews. When
-// there are none it invites visitors to leave one on Google instead of looking
-// broken. `placeId` (when set) builds a direct "write a review" link.
+// Public "Reviews" section: the review cards, then a "find us" card with the
+// Google rating summary, an embedded Google map and quick navigation buttons.
 export function Reviews({
   reviews,
   bg,
+  rating,
+  footer,
+  openingRules,
 }: {
   reviews: Review[];
-  placeId?: string;
   bg?: string;
+  /** Google rating summary; hidden when absent or 0. */
+  rating?: { rating: number; count: number } | null;
+  footer: SiteContent["footer"];
+  openingRules?: OpeningRule[];
 }) {
   const { t } = useI18n();
-  const writeUrl = "https://g.page/r/CS0DCpLShLONEBM/review";
 
   // Auto-cycle the review cards like a train (every 7s).
   const trackRef = useRef<HTMLDivElement>(null);
@@ -53,53 +64,6 @@ export function Reviews({
     return () => clearInterval(id);
   }, [reviews.length]);
 
-  const [open, setOpen] = useState(false);
-  const [name, setName] = useState("");
-  const [rating, setRating] = useState(5);
-  const [text, setText] = useState("");
-  const [status, setStatus] = useState<"idle" | "sending" | "done" | "error">("idle");
-
-  async function submit(e: React.FormEvent) {
-    e.preventDefault();
-    if (!name.trim() || text.trim().length < 2) return;
-    setStatus("sending");
-    try {
-      const res = await fetch("/api/reviews", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ author: name, rating, text }),
-      });
-      if (!res.ok) throw new Error();
-      setName("");
-      setText("");
-      setRating(5);
-      setStatus("done");
-    } catch {
-      setStatus("error");
-    }
-  }
-
-  // The two CTAs (write on the site / on Google) shown under the reviews.
-  const ctas = (
-    <div className="flex flex-wrap items-center justify-center gap-3">
-      <button
-        type="button"
-        onClick={() => { setStatus("idle"); setOpen(true); }}
-        className="inline-flex h-12 items-center justify-center rounded-xl bg-brand px-6 text-base font-semibold text-white transition hover:bg-brand-dark"
-      >
-        ✍ {t.reviews.writeReview}
-      </button>
-      <a
-        href={writeUrl}
-        target="_blank"
-        rel="noopener noreferrer"
-        className="inline-flex h-12 items-center justify-center rounded-xl border-2 border-brand px-6 text-base font-semibold text-brand-dark transition hover:bg-brand-50"
-      >
-        ★ {t.reviews.leaveReview}
-      </a>
-    </div>
-  );
-
   return (
     <section id="reviews" className={`relative scroll-mt-20 overflow-hidden py-20 md:py-28 ${bg ? "flex min-h-screen flex-col justify-center" : ""}`}>
       <SectionBg url={bg} />
@@ -107,19 +71,17 @@ export function Reviews({
         <SectionHeading eyebrow={t.reviews.eyebrow} title={t.reviews.heading} subtitle={t.reviews.subheading} />
 
         {reviews.length === 0 ? (
-          <div className="mx-auto mt-12 max-w-xl text-center">
-            <p className="mb-6 text-lg text-muted">{t.reviews.empty}</p>
-            {ctas}
-          </div>
+          !(rating && rating.rating > 0) && (
+            <p className="mx-auto mt-12 max-w-xl text-center text-lg text-muted">{t.reviews.empty}</p>
+          )
         ) : (
-          <>
             <div
               ref={trackRef}
               dir="ltr"
               className="mx-auto mt-12 flex max-w-5xl snap-x snap-mandatory gap-6 overflow-x-auto scroll-smooth pb-2 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
             >
               {reviews.map((rev, i) => {
-                const isPhoto = (rev.source ?? (rev.image ? "google" : "manual")) === "google";
+                const isPhoto = !rev.live && (rev.source ?? (rev.image ? "google" : "manual")) === "google";
                 if (isPhoto && !rev.image) return null;
                 return (
                 <motion.figure
@@ -144,7 +106,10 @@ export function Reviews({
                     </div>
                   ) : (
                     <>
-                      <Stars rating={rev.rating} />
+                      <div className="flex items-center justify-between gap-2">
+                        <Stars rating={rev.rating} />
+                        {rev.live && <GoogleG className="size-5 shrink-0" />}
+                      </div>
                       <blockquote className="mt-4 flex-1 whitespace-pre-line text-base leading-relaxed text-ink">
                         “{rev.text}”
                       </blockquote>
@@ -158,93 +123,146 @@ export function Reviews({
                 );
               })}
             </div>
-            <div className="mt-10">{ctas}</div>
-          </>
         )}
+
+        <FindUs rating={rating} footer={footer} openingRules={openingRules} />
+      </div>
+    </section>
+  );
+}
+
+// Google "G" mark (brand colours).
+function GoogleG({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 48 48" className={className} aria-hidden>
+      <path fill="#FFC107" d="M43.6 20.1H42V20H24v8h11.3C33.7 32.7 29.2 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.8 1.2 7.9 3.1l5.7-5.7C34 6.1 29.3 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.3-.1-2.6-.4-3.9z" />
+      <path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.7 15.1 19 12 24 12c3.1 0 5.8 1.2 7.9 3.1l5.7-5.7C34 6.1 29.3 4 24 4 16.3 4 9.7 8.3 6.3 14.7z" />
+      <path fill="#4CAF50" d="M24 44c5.2 0 9.9-2 13.4-5.2l-6.2-5.2C29.2 35.1 26.7 36 24 36c-5.2 0-9.6-3.3-11.3-8l-6.5 5C9.5 39.6 16.2 44 24 44z" />
+      <path fill="#1976D2" d="M43.6 20.1H42V20H24v8h11.3c-.8 2.2-2.2 4.2-4.1 5.6l6.2 5.2C37 39.2 44 34 44 24c0-1.3-.1-2.6-.4-3.9z" />
+    </svg>
+  );
+}
+
+// Stars with fractional fill (4.6 → four full + 60% of the fifth).
+function PartialStars({ rating }: { rating: number }) {
+  return (
+    <span className="flex text-lg leading-none" dir="ltr" aria-hidden>
+      {[0, 1, 2, 3, 4].map((i) => {
+        const fill = Math.max(0, Math.min(1, rating - i)) * 100;
+        return (
+          <span key={i} className="relative text-line">
+            ★
+            <span className="absolute inset-0 overflow-hidden text-amber-400" style={{ width: `${fill}%` }}>★</span>
+          </span>
+        );
+      })}
+    </span>
+  );
+}
+
+function FindUs({
+  rating,
+  footer,
+  openingRules,
+}: {
+  rating?: { rating: number; count: number } | null;
+  footer: SiteContent["footer"];
+  openingRules?: OpeningRule[];
+}) {
+  const { t, pick, locale } = useI18n();
+  const hourLines = formatOpeningLines(openingRules ?? [], t.weekdaysShort);
+  const showRating = !!rating && rating.rating > 0;
+
+  const btn =
+    "flex h-16 flex-col items-center justify-center gap-1 rounded-xl border-2 text-sm font-semibold transition hover:-translate-y-0.5";
+
+  return (
+    <div className="mx-auto mt-14 grid max-w-5xl overflow-hidden rounded-3xl border border-line bg-white shadow-card md:grid-cols-2">
+      {/* Details + quick actions */}
+      <div className="flex flex-col gap-5 p-6 md:p-8">
+        <h3 className="text-2xl font-extrabold text-ink">MEDOPTIC</h3>
+        <dl className="space-y-4 text-base text-ink">
+          {pick(footer.address) && (
+            <div>
+              <dt className="text-sm font-bold text-muted">{t.location.address}</dt>
+              <dd className="mt-0.5 whitespace-pre-line">{pick(footer.address)}</dd>
+            </div>
+          )}
+          <div>
+            <dt className="text-sm font-bold text-muted">{t.location.hours}</dt>
+            <dd className="mt-0.5 space-y-0.5">
+              {hourLines.length > 0
+                ? hourLines.map((line, i) => <p key={i}>{line}</p>)
+                : <p className="whitespace-pre-line">{pick(footer.hours)}</p>}
+            </dd>
+          </div>
+          {footer.phone && (
+            <div>
+              <dt className="text-sm font-bold text-muted">{t.location.phone}</dt>
+              <dd className="mt-0.5">
+                <a href={`tel:${footer.phone.replace(/\s/g, "")}`} dir="ltr" className="font-semibold text-brand-dark underline underline-offset-2 hover:text-brand">
+                  📞 {footer.phone}
+                </a>
+              </dd>
+            </div>
+          )}
+        </dl>
+
+        <div className="mt-auto grid grid-cols-3 gap-3 pt-2">
+          <a href={wazeUrl(footer.address)} target="_blank" rel="noopener noreferrer" className={`${btn} border-line text-ink hover:border-brand`}>
+            <span aria-hidden className="text-xl leading-none">🚗</span>
+            {t.location.waze}
+          </a>
+          <a href={googleMapsDirectionsUrl(footer.address)} target="_blank" rel="noopener noreferrer" className={`${btn} border-line text-ink hover:border-brand`}>
+            <span aria-hidden className="text-xl leading-none">🗺️</span>
+            {t.location.maps}
+          </a>
+          <a href="#book" className={`${btn} border-brand bg-brand text-white hover:bg-brand-dark`}>
+            <span aria-hidden className="text-xl leading-none">📅</span>
+            {t.location.book}
+          </a>
+        </div>
       </div>
 
-      {/* Write-a-review form */}
-      <AnimatePresence>
-        {open && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            onClick={() => setOpen(false)}
-            className="fixed inset-0 z-[70] flex items-center justify-center bg-black/50 p-4"
-          >
-            <motion.div
-              initial={{ scale: 0.96, y: 16 }}
-              animate={{ scale: 1, y: 0 }}
-              exit={{ scale: 0.96, opacity: 0 }}
-              onClick={(e) => e.stopPropagation()}
-              className="w-full max-w-md rounded-3xl bg-white p-7 shadow-2xl"
+      {/* Google rating + map */}
+      <div className="flex flex-col border-t border-line md:border-s md:border-t-0">
+        {showRating && (
+          <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2 border-b border-line px-5 py-3">
+            <a
+              href={GOOGLE_PROFILE_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              title={t.location.seeOnGoogle}
+              className="flex items-center gap-2.5 transition hover:opacity-80"
             >
-              {status === "done" ? (
-                <div className="text-center">
-                  <p className="text-4xl">🙏</p>
-                  <p className="mt-3 text-lg font-semibold text-ink">{t.reviews.formSuccess}</p>
-                  <button
-                    type="button"
-                    onClick={() => { setOpen(false); setStatus("idle"); }}
-                    className="mt-6 inline-flex h-12 items-center justify-center rounded-xl bg-brand px-8 text-base font-semibold text-white"
-                  >
-                    OK
-                  </button>
-                </div>
-              ) : (
-                <form onSubmit={submit} className="space-y-4">
-                  <h3 className="text-2xl font-extrabold text-ink">{t.reviews.formTitle}</h3>
-                  <label className="block">
-                    <span className="mb-1.5 block text-sm font-semibold text-ink">{t.reviews.formName}</span>
-                    <input
-                      value={name}
-                      onChange={(e) => setName(e.target.value)}
-                      required
-                      className="h-12 w-full rounded-xl border border-line px-4 text-base outline-none transition focus:border-brand focus:ring-4 focus:ring-brand/10"
-                    />
-                  </label>
-                  <div>
-                    <span className="mb-1.5 block text-sm font-semibold text-ink">{t.reviews.formRating}</span>
-                    <div className="flex gap-1 text-4xl leading-none">
-                      {[1, 2, 3, 4, 5].map((n) => (
-                        <button
-                          key={n}
-                          type="button"
-                          onClick={() => setRating(n)}
-                          aria-label={`${n} / 5`}
-                          className={n <= rating ? "text-amber-400" : "text-line"}
-                        >
-                          ★
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                  <label className="block">
-                    <span className="mb-1.5 block text-sm font-semibold text-ink">{t.reviews.formText}</span>
-                    <textarea
-                      value={text}
-                      onChange={(e) => setText(e.target.value)}
-                      rows={4}
-                      required
-                      className="w-full resize-none rounded-xl border border-line p-4 text-base outline-none transition focus:border-brand focus:ring-4 focus:ring-brand/10"
-                    />
-                  </label>
-                  {status === "error" && <p className="text-sm font-semibold text-rose-600">{t.reviews.formError}</p>}
-                  <div className="flex justify-end gap-2 pt-1">
-                    <button type="button" onClick={() => setOpen(false)} className="inline-flex h-12 items-center justify-center rounded-xl px-5 text-base font-semibold text-muted transition hover:bg-surface">
-                      ✕
-                    </button>
-                    <button type="submit" disabled={status === "sending"} className="inline-flex h-12 items-center justify-center rounded-xl bg-brand px-7 text-base font-semibold text-white transition hover:bg-brand-dark disabled:opacity-60">
-                      {status === "sending" ? t.reviews.formSubmitting : t.reviews.formSubmit}
-                    </button>
-                  </div>
-                </form>
+              <GoogleG className="size-6 shrink-0" />
+              <span className="text-xl font-bold text-ink" dir="ltr">{rating.rating.toFixed(1)}</span>
+              <PartialStars rating={rating.rating} />
+              {rating.count > 0 && (
+                <span className="text-sm text-muted underline-offset-2 hover:underline">{t.location.reviewsCount(rating.count)}</span>
               )}
-            </motion.div>
-          </motion.div>
+              <span className="sr-only">{`${rating.rating.toFixed(1)} / 5`}</span>
+            </a>
+            <a
+              href={GOOGLE_WRITE_REVIEW_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-sm font-semibold text-brand-dark transition hover:text-brand hover:underline"
+            >
+              ✍ {t.location.writeOnGoogle}
+            </a>
+          </div>
         )}
-      </AnimatePresence>
-    </section>
+        <iframe
+          key={`${locale}|${pick(footer.address)}`}
+          title={t.location.mapTitle}
+          src={googleMapsEmbedUrl(footer.address, locale)}
+          className="min-h-80 w-full flex-1 border-0"
+          loading="lazy"
+          referrerPolicy="no-referrer-when-downgrade"
+          allowFullScreen
+        />
+      </div>
+    </div>
   );
 }
