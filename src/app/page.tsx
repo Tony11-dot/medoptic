@@ -44,7 +44,7 @@ export default async function HomePage() {
 
   // Reviews: admin-entered + approved visitor submissions (pending ones hidden).
   // Plus the latest live Google reviews when the admin turned that on.
-  const liveGoogle = content.showGoogleReviews ? await getGoogleReviews(content.googlePlaceId, "iw") : [];
+  const liveGoogle = content.showGoogleReviews ? await getGoogleReviews(content.googlePlaceId, "he") : [];
   const reviews: Review[] = [
     ...liveGoogle,
     ...(content.reviews ?? []).filter((r) => r.approved !== false),

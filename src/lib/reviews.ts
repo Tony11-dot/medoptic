@@ -1,56 +1,74 @@
-// Live Google reviews. Uses the Google Places "Place Details" API, which returns
-// up to 5 reviews for a place. Needs two things to work:
-//   • GOOGLE_PLACES_API_KEY  — a billing-enabled key (kept secret, server-only)
-//   • a Google Place ID      — set in the admin (Reviews tab)
-// Without either, or on any error, this returns [] so the section just falls
-// back to the admin-entered reviews. Never throws to the page.
+// Live Google rating + reviews via Google "Places API (New)" Place Details,
+// which returns the overall rating, the total review count and up to 5
+// reviews. Needs two things to work:
+//   • GOOGLE_PLACES_API_KEY  — a key with "Places API (New)" enabled (kept
+//                              secret, server-only; set in Vercel env vars)
+//   • a Google Place ID      — set in the admin (Content → Reviews)
+// Without either, or on any error, the helpers return empty so the section
+// falls back to the admin-entered rating/reviews. Never throws to the page.
 import "server-only";
 import type { Review } from "./types";
 
-interface GooglePlaceReview {
-  author_name?: string;
+interface NewPlaceReview {
+  name?: string;
   rating?: number;
-  text?: string;
-  relative_time_description?: string;
-  time?: number;
+  text?: { text?: string };
+  originalText?: { text?: string };
+  relativePublishTimeDescription?: string;
+  authorAttribution?: { displayName?: string };
 }
 
-/** Fetch up to 5 Google reviews for the given Place ID. Returns [] if not
- *  configured or on failure. `language` biases the returned review language. */
-export async function getGoogleReviews(
-  placeId: string | undefined,
-  language = "en",
-): Promise<Review[]> {
-  const key = process.env.GOOGLE_PLACES_API_KEY;
-  if (!key || !placeId) return [];
+interface NewPlaceDetails {
+  rating?: number;
+  userRatingCount?: number;
+  reviews?: NewPlaceReview[];
+}
 
-  const url = new URL("https://maps.googleapis.com/maps/api/place/details/json");
-  url.searchParams.set("place_id", placeId);
-  url.searchParams.set("fields", "reviews");
-  url.searchParams.set("reviews_sort", "newest");
-  url.searchParams.set("language", language);
-  url.searchParams.set("key", key);
+// One request serves both the rating and the reviews. Next caches it for an
+// hour (keyed on URL + headers), so the page makes at most ~1 call per hour
+// per language instead of one per visit.
+async function fetchPlace(placeId: string | undefined, language: string): Promise<NewPlaceDetails | null> {
+  const key = process.env.GOOGLE_PLACES_API_KEY;
+  if (!key || !placeId) return null;
+
+  const url = new URL(`https://places.googleapis.com/v1/places/${encodeURIComponent(placeId)}`);
+  url.searchParams.set("languageCode", language);
 
   try {
-    // Cache for an hour so we don't hit the API (and bill) on every page view.
-    const res = await fetch(url, { next: { revalidate: 3600 } });
-    if (!res.ok) return [];
-    const data = (await res.json()) as { result?: { reviews?: GooglePlaceReview[] } };
-    const reviews = data.result?.reviews ?? [];
-    return reviews
-      .filter((r) => (r.text ?? "").trim().length > 0)
-      .map((r, i) => ({
-        id: `google-${r.time ?? i}`,
-        author: r.author_name?.trim() || "Google user",
-        rating: Math.round(r.rating ?? 5),
-        text: r.text!.trim(),
-        date: r.relative_time_description,
-        source: "google" as const,
-        live: true,
-      }));
-  } catch {
-    return [];
+    const res = await fetch(url, {
+      headers: {
+        "X-Goog-Api-Key": key,
+        "X-Goog-FieldMask": "rating,userRatingCount,reviews",
+      },
+      next: { revalidate: 3600 },
+    });
+    if (!res.ok) {
+      console.error("Google Places request failed", res.status, await res.text().catch(() => ""));
+      return null;
+    }
+    return (await res.json()) as NewPlaceDetails;
+  } catch (err) {
+    console.error("Google Places request failed", err);
+    return null;
   }
+}
+
+/** Up to 5 recent Google reviews for the given Place ID. Returns [] if not
+ *  configured or on failure. `language` (e.g. "he") sets the text language. */
+export async function getGoogleReviews(placeId: string | undefined, language = "he"): Promise<Review[]> {
+  const place = await fetchPlace(placeId, language);
+  return (place?.reviews ?? [])
+    .map((r, i) => ({ r, i, text: (r.text?.text ?? r.originalText?.text ?? "").trim() }))
+    .filter(({ text }) => text.length > 0)
+    .map(({ r, i, text }) => ({
+      id: `google-${r.name ?? i}`,
+      author: r.authorAttribution?.displayName?.trim() || "Google user",
+      rating: Math.round(r.rating ?? 5),
+      text,
+      date: r.relativePublishTimeDescription,
+      source: "google" as const,
+      live: true,
+    }));
 }
 
 export interface GoogleRating {
@@ -60,23 +78,8 @@ export interface GoogleRating {
 
 /** Overall Google rating + total review count for the place. Same requirements
  *  as {@link getGoogleReviews}; returns null when not configured or on failure. */
-export async function getGoogleRating(placeId: string | undefined): Promise<GoogleRating | null> {
-  const key = process.env.GOOGLE_PLACES_API_KEY;
-  if (!key || !placeId) return null;
-
-  const url = new URL("https://maps.googleapis.com/maps/api/place/details/json");
-  url.searchParams.set("place_id", placeId);
-  url.searchParams.set("fields", "rating,user_ratings_total");
-  url.searchParams.set("key", key);
-
-  try {
-    const res = await fetch(url, { next: { revalidate: 3600 } });
-    if (!res.ok) return null;
-    const data = (await res.json()) as { result?: { rating?: number; user_ratings_total?: number } };
-    const rating = data.result?.rating;
-    if (typeof rating !== "number") return null;
-    return { rating, count: data.result?.user_ratings_total ?? 0 };
-  } catch {
-    return null;
-  }
+export async function getGoogleRating(placeId: string | undefined, language = "he"): Promise<GoogleRating | null> {
+  const place = await fetchPlace(placeId, language);
+  if (typeof place?.rating !== "number") return null;
+  return { rating: place.rating, count: place.userRatingCount ?? 0 };
 }
