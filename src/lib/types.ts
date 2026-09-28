@@ -138,6 +138,8 @@ export interface Review {
   aspectRatio?: string;
   imagePosition?: string;
   source?: "manual" | "google";
+  /** Pulled live from the Google Places API (not stored; rendered as text). */
+  live?: boolean;
   /** Visitor-submitted reviews start unapproved (hidden) until an admin approves.
    * Admin-created reviews leave this undefined (treated as approved). */
   approved?: boolean;

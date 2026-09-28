@@ -13,7 +13,7 @@ import { Essays } from "@/components/site/Essays";
 import { Booking } from "@/components/site/Booking";
 import { Footer } from "@/components/site/Footer";
 import { BlocksLive } from "@/components/site/Blocks";
-import { getGoogleRating } from "@/lib/reviews";
+import { getGoogleRating, getGoogleReviews } from "@/lib/reviews";
 import type { BlocksPosition, Review } from "@/lib/types";
 
 // Always render fresh so admin edits to content show immediately.
@@ -43,7 +43,12 @@ export default async function HomePage() {
   const bg = (id: string) => content.backgrounds?.[id];
 
   // Reviews: admin-entered + approved visitor submissions (pending ones hidden).
-  const reviews: Review[] = (content.reviews ?? []).filter((r) => r.approved !== false);
+  // Plus the latest live Google reviews when the admin turned that on.
+  const liveGoogle = content.showGoogleReviews ? await getGoogleReviews(content.googlePlaceId, "iw") : [];
+  const reviews: Review[] = [
+    ...liveGoogle,
+    ...(content.reviews ?? []).filter((r) => r.approved !== false),
+  ];
 
   // "Who We Are" is the home/Hero section. Use the admin-uploaded background if
   // set, otherwise fall back to public/who-we-are.jpg if you've dropped one in.

@@ -46,6 +46,7 @@ export async function getGoogleReviews(
         text: r.text!.trim(),
         date: r.relative_time_description,
         source: "google" as const,
+        live: true,
       }));
   } catch {
     return [];

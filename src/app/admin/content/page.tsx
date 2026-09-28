@@ -474,6 +474,32 @@ export default function ContentAdmin() {
             <div className="space-y-5">
               <p className="text-sm text-muted">{t.admin.reviews.subtitle}</p>
 
+              {/* Live Google connection (Place ID) */}
+              <div className="rounded-2xl border border-line p-4">
+                <h3 className="text-sm font-bold text-ink">{t.admin.reviews.googleTitle}</h3>
+                <p className="mt-1 text-xs text-muted">{t.admin.reviews.googleHelp}</p>
+                <label className="mt-3 block">
+                  <span className="mb-1.5 block text-sm font-semibold text-ink">{t.admin.reviews.placeId}</span>
+                  <input
+                    value={content.googlePlaceId ?? ""}
+                    onChange={(e) => setContent((c) => (c ? { ...c, googlePlaceId: e.target.value.trim() } : c))}
+                    placeholder="ChIJ…"
+                    className={plainInput}
+                    dir="ltr"
+                  />
+                  <span className="mt-1 block text-xs text-muted">{t.admin.reviews.placeIdHint}</span>
+                </label>
+                <label className="mt-3 flex items-center gap-2 text-sm font-semibold text-ink">
+                  <input
+                    type="checkbox"
+                    checked={!!content.showGoogleReviews}
+                    onChange={(e) => setContent((c) => (c ? { ...c, showGoogleReviews: e.target.checked } : c))}
+                    className="size-4 accent-brand"
+                  />
+                  {t.admin.reviews.showGoogle}
+                </label>
+              </div>
+
               {/* Google rating summary shown on the map card */}
               <div className="rounded-2xl border border-line p-4">
                 <h3 className="text-sm font-bold text-ink">{t.admin.reviews.ratingTitle}</h3>

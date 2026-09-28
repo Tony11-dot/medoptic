@@ -6,7 +6,7 @@ import type { OpeningRule, SiteContent } from "@/lib/types";
 import { Logo } from "@/components/ui/Logo";
 import { styleToCss } from "@/lib/textStyle";
 import { formatOpeningLines } from "@/lib/schedule";
-import { WAZE_URL } from "@/lib/location";
+import { wazeUrl } from "@/lib/location";
 import { SocialIcon, socialHref } from "./SocialIcon";
 
 export function Footer({
@@ -36,7 +36,7 @@ export function Footer({
             <Logo className="h-16 w-auto brightness-0 invert" />
             {pick(footer.address) && (
               <a
-                href={WAZE_URL}
+                href={wazeUrl(footer.address)}
                 target="_blank"
                 rel="noopener noreferrer"
                 title={t.footer.directions}

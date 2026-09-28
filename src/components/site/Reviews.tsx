@@ -6,11 +6,11 @@ import { useI18n } from "@/lib/i18n/LanguageProvider";
 import type { OpeningRule, Review, SiteContent } from "@/lib/types";
 import { formatOpeningLines } from "@/lib/schedule";
 import {
-  GOOGLE_MAPS_DIRECTIONS_URL,
   GOOGLE_PROFILE_URL,
   GOOGLE_WRITE_REVIEW_URL,
-  WAZE_URL,
+  googleMapsDirectionsUrl,
   googleMapsEmbedUrl,
+  wazeUrl,
 } from "@/lib/location";
 import { SectionHeading } from "./SectionHeading";
 import { SectionBg } from "./SectionBg";
@@ -81,7 +81,7 @@ export function Reviews({
               className="mx-auto mt-12 flex max-w-5xl snap-x snap-mandatory gap-6 overflow-x-auto scroll-smooth pb-2 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
             >
               {reviews.map((rev, i) => {
-                const isPhoto = (rev.source ?? (rev.image ? "google" : "manual")) === "google";
+                const isPhoto = !rev.live && (rev.source ?? (rev.image ? "google" : "manual")) === "google";
                 if (isPhoto && !rev.image) return null;
                 return (
                 <motion.figure
@@ -106,7 +106,10 @@ export function Reviews({
                     </div>
                   ) : (
                     <>
-                      <Stars rating={rev.rating} />
+                      <div className="flex items-center justify-between gap-2">
+                        <Stars rating={rev.rating} />
+                        {rev.live && <GoogleG className="size-5 shrink-0" />}
+                      </div>
                       <blockquote className="mt-4 flex-1 whitespace-pre-line text-base leading-relaxed text-ink">
                         “{rev.text}”
                       </blockquote>
@@ -206,11 +209,11 @@ function FindUs({
         </dl>
 
         <div className="mt-auto grid grid-cols-3 gap-3 pt-2">
-          <a href={WAZE_URL} target="_blank" rel="noopener noreferrer" className={`${btn} border-line text-ink hover:border-brand`}>
+          <a href={wazeUrl(footer.address)} target="_blank" rel="noopener noreferrer" className={`${btn} border-line text-ink hover:border-brand`}>
             <span aria-hidden className="text-xl leading-none">🚗</span>
             {t.location.waze}
           </a>
-          <a href={GOOGLE_MAPS_DIRECTIONS_URL} target="_blank" rel="noopener noreferrer" className={`${btn} border-line text-ink hover:border-brand`}>
+          <a href={googleMapsDirectionsUrl(footer.address)} target="_blank" rel="noopener noreferrer" className={`${btn} border-line text-ink hover:border-brand`}>
             <span aria-hidden className="text-xl leading-none">🗺️</span>
             {t.location.maps}
           </a>
@@ -251,9 +254,9 @@ function FindUs({
           </div>
         )}
         <iframe
-          key={locale}
+          key={`${locale}|${pick(footer.address)}`}
           title={t.location.mapTitle}
-          src={googleMapsEmbedUrl(locale)}
+          src={googleMapsEmbedUrl(footer.address, locale)}
           className="min-h-80 w-full flex-1 border-0"
           loading="lazy"
           referrerPolicy="no-referrer-when-downgrade"
