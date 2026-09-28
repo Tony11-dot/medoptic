@@ -239,9 +239,9 @@ export const seedContent: SiteContent = {
     phone: "050-965-2008",
     email: "Medoptic24@gmail.com",
     address: {
-      he: "רחוב הראייה 1, תל אביב",
-      en: "1 Vision St, Tel Aviv",
-      ru: "ул. Видения 1, Тель-Авив",
+      he: "התעשייה 1, יקנעם עילית, 2069200",
+      en: "Ha-Ta'asiya St 1, Yokne'am Illit, 2069200",
+      ru: "ул. ха-Таасия 1, Йокнеам-Иллит, 2069200",
     },
     hours: {
       he: "א׳–ה׳ 09:00–19:00 · ו׳ 09:00–13:00",

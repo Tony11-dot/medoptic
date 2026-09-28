@@ -10,9 +10,10 @@ const FALLBACK_ADDRESS = "Ha-Ta'asiya St 1, Yokne'am Illit, 2069200";
 export const GOOGLE_PROFILE_URL = "https://g.page/r/CS0DCpLShLONEBM";
 export const GOOGLE_WRITE_REVIEW_URL = `${GOOGLE_PROFILE_URL}/review`;
 
-/** One-line address for geocoding (Hebrew-first; line breaks → commas). */
+/** One-line address for geocoding (English-first — the form Waze and Google
+ * resolve most reliably — then any other language; line breaks → commas). */
 export function clinicAddress(address?: Localized): string {
-  const raw = address ? localizedOr(address, "") : "";
+  const raw = address ? address.en?.trim() || localizedOr(address, "") : "";
   const oneLine = raw.split(/\s*\n\s*/).filter(Boolean).join(", ").trim();
   return oneLine || FALLBACK_ADDRESS;
 }
