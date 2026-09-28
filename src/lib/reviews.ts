@@ -7,6 +7,7 @@
 // Without either, or on any error, the helpers return empty so the section
 // falls back to the admin-entered rating/reviews. Never throws to the page.
 import "server-only";
+import { unstable_cache } from "next/cache";
 import type { Review } from "./types";
 
 interface NewPlaceReview {
@@ -24,29 +25,35 @@ interface NewPlaceDetails {
   reviews?: NewPlaceReview[];
 }
 
-// One request serves both the rating and the reviews. Next caches it for an
-// hour (keyed on URL + headers), so the page makes at most ~1 call per hour
-// per language instead of one per visit.
-async function fetchPlace(placeId: string | undefined, language: string): Promise<NewPlaceDetails | null> {
-  const key = process.env.GOOGLE_PLACES_API_KEY;
-  if (!key || !placeId) return null;
-
-  const url = new URL(`https://places.googleapis.com/v1/places/${encodeURIComponent(placeId)}`);
-  url.searchParams.set("languageCode", language);
-
-  try {
+// One request serves both the rating and the reviews, and its result is kept
+// in Next's data cache for an hour — shared by every visitor and instance — so
+// Google is called at most ~24 times a day (~750/month), inside the free
+// monthly allowance. unstable_cache is used rather than fetch's own
+// `next.revalidate` because the home page is `force-dynamic`, which turns
+// fetch caching off. Failures throw inside the cached function so they are
+// NOT cached: fixing a bad key/Place ID takes effect on the next visit.
+const cachedPlace = unstable_cache(
+  async (placeId: string, language: string): Promise<NewPlaceDetails> => {
+    const url = new URL(`https://places.googleapis.com/v1/places/${encodeURIComponent(placeId)}`);
+    url.searchParams.set("languageCode", language);
     const res = await fetch(url, {
       headers: {
-        "X-Goog-Api-Key": key,
+        "X-Goog-Api-Key": process.env.GOOGLE_PLACES_API_KEY ?? "",
         "X-Goog-FieldMask": "rating,userRatingCount,reviews",
       },
-      next: { revalidate: 3600 },
+      cache: "no-store",
     });
-    if (!res.ok) {
-      console.error("Google Places request failed", res.status, await res.text().catch(() => ""));
-      return null;
-    }
+    if (!res.ok) throw new Error(`${res.status} ${await res.text().catch(() => "")}`);
     return (await res.json()) as NewPlaceDetails;
+  },
+  ["google-place-details-v1"],
+  { revalidate: 3600 },
+);
+
+async function fetchPlace(placeId: string | undefined, language: string): Promise<NewPlaceDetails | null> {
+  if (!process.env.GOOGLE_PLACES_API_KEY || !placeId) return null;
+  try {
+    return await cachedPlace(placeId, language);
   } catch (err) {
     console.error("Google Places request failed", err);
     return null;
