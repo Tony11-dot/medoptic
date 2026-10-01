@@ -24,6 +24,11 @@ const SECTIONS: LegalSection[] = [
         ru: "При записи на приём: имя и фамилия, номер телефона, адрес электронной почты (по желанию), выбранная услуга, время приёма, ваши комментарии и предпочтительный способ напоминания (SMS или email).",
       },
       {
+        he: "מסירת המידע אינה חובה על פי חוק, אך בלי שם וטלפון לא נוכל לקבוע לכם תור.",
+        en: "You are not legally required to give us this information, but we cannot book an appointment without a name and phone number.",
+        ru: "Закон не обязывает вас предоставлять эти данные, но без имени и телефона мы не сможем вас записать.",
+      },
+      {
         he: "במרפאה: תוצאות בדיקות ראייה ומרשמים נשמרים בתיק לקוח המזוהה במספר תעודת זהות ותאריך לידה. מידע זה מוזן על ידי הצוות בלבד ואינו נגיש לציבור.",
         en: "At the clinic: eye-exam results and prescriptions are kept in a customer file identified by national ID number and date of birth. This information is entered by our staff only and is never publicly accessible.",
         ru: "В клинике: результаты проверки зрения и рецепты хранятся в карте клиента, привязанной к номеру удостоверения личности и дате рождения. Эти данные вносит только наш персонал, и они не доступны публично.",
@@ -67,6 +72,16 @@ const SECTIONS: LegalSection[] = [
         he: "בהתאם לחוק הגנת הפרטיות, התשמ״א–1981, אתם רשאים לעיין במידע השמור עליכם ולבקש לתקן או למחוק אותו. לכל בקשה או שאלה ניתן לפנות אלינו בטלפון 050-965-2008 או באימייל Medoptic24@gmail.com.",
         en: "Under the Israeli Privacy Protection Law, 1981, you may review the information we hold about you and ask us to correct or delete it. For any request or question, contact us at 050-965-2008 or Medoptic24@gmail.com.",
         ru: "В соответствии с израильским Законом о защите частной жизни 1981 года вы можете ознакомиться с хранящимися о вас данными и попросить исправить или удалить их. По любым вопросам обращайтесь: 050-965-2008 или Medoptic24@gmail.com.",
+      },
+    ],
+  },
+  {
+    heading: { he: "בעל השליטה במידע", en: "Data controller", ru: "Ответственный за данные" },
+    body: [
+      {
+        he: "בעל השליטה במאגר המידע הוא MEDOPTIC, רחוב התעשייה 1, יקנעם עילית. האחראי לפניות בנושא פרטיות: סאמר נאסר, Medoptic24@gmail.com, טלפון 050-965-2008. אנו משיבים לבקשות תוך 30 יום.",
+        en: "The data controller is MEDOPTIC, 1 HaTa'asiya St, Yokne'am Illit. Privacy requests are handled by Samer Nasser, Medoptic24@gmail.com, phone 050-965-2008. We respond to requests within 30 days.",
+        ru: "Ответственный за базу данных — MEDOPTIC, ул. ха-Таасия 1, Йокнеам-Илит. Запросы о конфиденциальности рассматривает Самер Нассер, Medoptic24@gmail.com, телефон 050-965-2008. Мы отвечаем на запросы в течение 30 дней.",
       },
     ],
   },

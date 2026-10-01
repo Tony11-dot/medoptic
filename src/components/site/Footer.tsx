@@ -118,6 +118,7 @@ export function Footer({
             <Link href="/privacy" className="transition hover:text-white">{t.footer.privacy}</Link>
             <Link href="/cookies" className="transition hover:text-white">{t.footer.cookies}</Link>
             <Link href="/terms" className="transition hover:text-white">{t.footer.terms}</Link>
+            <Link href="/accessibility" className="transition hover:text-white">{t.footer.accessibility}</Link>
           </nav>
           <p className="text-xs text-white/50">
             {t.footer.credit}{" "}

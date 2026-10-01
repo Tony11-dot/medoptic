@@ -73,6 +73,8 @@ export interface Dict {
     reminderEmail: string;
     submit: string;
     submitHint: string;
+    privacyNotice: string;
+    privacyLink: string;
     submitting: string;
     successTitle: string;
     successBody: string;
@@ -117,6 +119,7 @@ export interface Dict {
     privacy: string;
     cookies: string;
     terms: string;
+    accessibility: string;
     credit: string;
   };
   /** "Find us" card under the reviews: Google rating + embedded map. */
@@ -135,6 +138,7 @@ export interface Dict {
     open: string; title: string; close: string;
     fontSize: string; decrease: string; increase: string;
     contrast: string; grayscale: string; underline: string; reduceMotion: string; reset: string;
+    statement: string;
   };
   /** Localized weekday names, Sunday first (index 0 = Sunday). */
   weekdaysShort: string[];
@@ -482,6 +486,8 @@ export const dictionaries: Record<Locale, Dict> = {
       reminderEmail: "באימייל",
       submit: "אישור וקביעת התור",
       submitHint: "בחרו יום ושעה — והתור שלכם נקבע מיד.",
+      privacyNotice: "הפרטים שתמסרו ישמשו לקביעת התור ולתזכורות בלבד. מסירתם אינה חובה, אך בלעדיהם לא נוכל לקבוע תור. פרטים נוספים ב",
+      privacyLink: "מדיניות הפרטיות",
       submitting: "קובע את התור…",
       successTitle: "התור נקבע!",
       successBody: "שלחנו לכם אישור, ונזכיר לכם יום לפני התור.",
@@ -525,6 +531,7 @@ export const dictionaries: Record<Locale, Dict> = {
       privacy: "מדיניות פרטיות",
       cookies: "מדיניות עוגיות",
       terms: "תנאי שימוש",
+      accessibility: "הצהרת נגישות",
       credit: "פותח על ידי",
     },
     location: {
@@ -542,6 +549,7 @@ export const dictionaries: Record<Locale, Dict> = {
       open: "פתיחת תפריט נגישות", title: "נגישות", close: "סגירה",
       fontSize: "גודל טקסט", decrease: "הקטנת טקסט", increase: "הגדלת טקסט",
       contrast: "ניגודיות גבוהה", grayscale: "גווני אפור", underline: "הדגשת קישורים", reduceMotion: "עצירת אנימציות", reset: "איפוס הגדרות",
+      statement: "הצהרת נגישות",
     },
     weekdaysShort: ["א׳", "ב׳", "ג׳", "ד׳", "ה׳", "ו׳", "ש׳"],
     weekdaysLong: ["ראשון", "שני", "שלישי", "רביעי", "חמישי", "שישי", "שבת"],
@@ -871,6 +879,8 @@ export const dictionaries: Record<Locale, Dict> = {
       reminderEmail: "By email",
       submit: "Confirm & book",
       submitHint: "Pick a day and time — your appointment is booked instantly.",
+      privacyNotice: "Your details are used only to book your appointment and send reminders. Providing them is not required by law, but we can't book without them. Read more in our",
+      privacyLink: "Privacy Policy",
       submitting: "Booking…",
       successTitle: "Appointment booked!",
       successBody: "We've sent you a confirmation, and we'll remind you the day before.",
@@ -914,6 +924,7 @@ export const dictionaries: Record<Locale, Dict> = {
       privacy: "Privacy Policy",
       cookies: "Cookie Policy",
       terms: "Terms of Use",
+      accessibility: "Accessibility Statement",
       credit: "Developed by",
     },
     location: {
@@ -931,6 +942,7 @@ export const dictionaries: Record<Locale, Dict> = {
       open: "Open accessibility menu", title: "Accessibility", close: "Close",
       fontSize: "Text size", decrease: "Decrease text size", increase: "Increase text size",
       contrast: "High contrast", grayscale: "Grayscale", underline: "Underline links", reduceMotion: "Stop animations", reset: "Reset settings",
+      statement: "Accessibility Statement",
     },
     weekdaysShort: ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"],
     weekdaysLong: ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"],
@@ -1260,6 +1272,8 @@ export const dictionaries: Record<Locale, Dict> = {
       reminderEmail: "По эл. почте",
       submit: "Подтвердить запись",
       submitHint: "Выберите день и время — запись подтверждается сразу.",
+      privacyNotice: "Ваши данные используются только для записи на приём и напоминаний. Закон не обязывает их предоставлять, но без них мы не сможем вас записать. Подробнее —",
+      privacyLink: "политика конфиденциальности",
       submitting: "Записываем…",
       successTitle: "Вы записаны!",
       successBody: "Мы отправили подтверждение и напомним за день до приёма.",
@@ -1303,6 +1317,7 @@ export const dictionaries: Record<Locale, Dict> = {
       privacy: "Политика конфиденциальности",
       cookies: "Политика cookie",
       terms: "Условия использования",
+      accessibility: "Заявление о доступности",
       credit: "Разработчик —",
     },
     location: {
@@ -1320,6 +1335,7 @@ export const dictionaries: Record<Locale, Dict> = {
       open: "Открыть меню доступности", title: "Доступность", close: "Закрыть",
       fontSize: "Размер текста", decrease: "Уменьшить текст", increase: "Увеличить текст",
       contrast: "Высокий контраст", grayscale: "Оттенки серого", underline: "Подчеркнуть ссылки", reduceMotion: "Остановить анимацию", reset: "Сбросить настройки",
+      statement: "Заявление о доступности",
     },
     weekdaysShort: ["Вс", "Пн", "Вт", "Ср", "Чт", "Пт", "Сб"],
     weekdaysLong: ["Воскресенье", "Понедельник", "Вторник", "Среда", "Четверг", "Пятница", "Суббота"],

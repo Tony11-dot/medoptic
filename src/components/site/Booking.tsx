@@ -3,6 +3,7 @@
 import { AnimatePresence, motion } from "framer-motion";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
+import Link from "next/link";
 import { useI18n } from "@/lib/i18n/LanguageProvider";
 import { useToast } from "@/components/ui/Toast";
 import type { ReminderChannel, Service } from "@/lib/types";
@@ -520,6 +521,13 @@ export function Booking({ bg }: { bg?: string }) {
                   {t.booking.continueToTime}
                 </button>
                 <p className="-mt-1 text-center text-sm text-muted sm:col-span-2">{t.booking.submitHint}</p>
+                <p className="text-center text-xs leading-5 text-muted sm:col-span-2">
+                  {t.booking.privacyNotice}{" "}
+                  <Link href="/privacy" target="_blank" className="font-semibold text-brand-dark underline">
+                    {t.booking.privacyLink}
+                  </Link>
+                  .
+                </p>
               </motion.form>
             )}
           </AnimatePresence>
