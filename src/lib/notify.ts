@@ -1,5 +1,5 @@
-// Notification layer. The actual WhatsApp/email provider (Twilio, SendGrid, …)
-// plugs in where marked below; until credentials are set it logs the message
+// Notification layer. SMS goes through sms4free, email through Gmail SMTP
+// (providers below); until credentials are set it logs the message
 // instead of throwing, so the admin approve/decline flow stays complete.
 import "server-only";
 import { BUSINESS_TZ } from "./schedule";
@@ -217,51 +217,50 @@ async function dispatch(
 // Each helper sends for real when its env vars are configured, otherwise logs
 // the message (so the admin flow works end-to-end before keys are added).
 
-// Turn a phone number into E.164, e.g. "0509652008" -> "+972509652008".
-// Defaults to the Israel country code; override with WHATSAPP_COUNTRY_CODE.
-function toE164(raw: string): string {
-  let n = raw.trim().replace(/[^\d+]/g, "");
-  if (!n.startsWith("+")) {
-    const cc = process.env.WHATSAPP_COUNTRY_CODE ?? "972";
-    n = `+${cc}${n.startsWith("0") ? n.slice(1) : n}`;
-  }
+// Turn a phone number into Israeli local form, e.g. "+972509652008" -> "0509652008".
+function toLocalIL(raw: string): string {
+  const n = raw.trim().replace(/[^\d+]/g, "");
+  if (n.startsWith("+972")) return `0${n.slice(4)}`;
+  if (n.startsWith("972")) return `0${n.slice(3)}`;
   return n;
 }
 
-// Twilio's WhatsApp address form, e.g. "whatsapp:+972509652008".
-function toWhatsApp(raw: string): string {
-  const v = raw.trim();
-  return v.startsWith("whatsapp:") ? v : `whatsapp:${toE164(v)}`;
-}
-
-// Sends the customer notification. By default it goes out as a plain SMS from
-// TWILIO_FROM (an alphanumeric sender id like "MEDOPTIC", or a Twilio number) —
-// this reaches any phone with no opt-in, while the business keeps WhatsApp for
-// manual chats. Set NOTIFY_TRANSPORT=whatsapp to deliver over Twilio's WhatsApp
-// API instead (needs a WhatsApp-enabled TWILIO_WHATSAPP_FROM). Logs instead of
-// sending until Twilio is configured, so the admin flow always completes.
+// Sends the customer notification as an SMS through sms4free (Israeli provider,
+// a few agorot per message; Hebrew up to ~201 chars is one unit). SMS4FREE_SENDER
+// is the sender shown to the customer: the registered phone number on the free
+// tier, or an English name like "MEDOPTIC" (≤11 chars) once a package is bought.
+// Logs instead of sending until configured, so the admin flow always completes.
 async function sendSms(to: string, body: string): Promise<void> {
-  const sid = process.env.TWILIO_ACCOUNT_SID;
-  const token = process.env.TWILIO_AUTH_TOKEN;
-  const useWhatsApp = process.env.NOTIFY_TRANSPORT === "whatsapp";
-  const from = useWhatsApp
-    ? process.env.TWILIO_WHATSAPP_FROM ?? process.env.TWILIO_FROM
-    : process.env.TWILIO_FROM ?? process.env.TWILIO_WHATSAPP_FROM;
-  const label = useWhatsApp ? "whatsapp" : "sms";
-  if (!sid || !token || !from) {
+  const key = process.env.SMS4FREE_KEY;
+  const user = process.env.SMS4FREE_USER;
+  const pass = process.env.SMS4FREE_PASS;
+  const sender = process.env.SMS4FREE_SENDER ?? user;
+  if (!key || !user || !pass || !sender) {
     // eslint-disable-next-line no-console
-    console.log(`[notify:${label} (unconfigured) -> ${to}] ${body}`);
+    console.log(`[notify:sms (unconfigured) -> ${to}] ${body}`);
     return;
   }
   try {
-    const { default: twilio } = await import("twilio");
-    const params = useWhatsApp
-      ? { to: toWhatsApp(to), from: toWhatsApp(from), body }
-      : { to: toE164(to), from, body };
-    await twilio(sid, token).messages.create(params);
+    const res = await fetch("https://api.sms4free.co.il/ApiSMS/v2/SendSMS", {
+      method: "POST",
+      headers: { "Content-Type": "application/json; charset=utf-8" },
+      body: JSON.stringify({ key, user, pass, sender, recipient: toLocalIL(to), msg: body }),
+    });
+    const text = await res.text();
+    // v2 answers {status, message}; older endpoints answer a bare number. >0 = sent.
+    let status = Number(text);
+    let message = text;
+    try {
+      const json = JSON.parse(text) as { status?: number; message?: string };
+      if (typeof json === "object" && json) {
+        status = Number(json.status);
+        message = json.message ?? text;
+      }
+    } catch {}
+    if (!res.ok || !(status > 0)) throw new Error(`sms4free status ${status}: ${message}`);
   } catch (e) {
     // eslint-disable-next-line no-console
-    console.error(`[notify:${label} FAILED -> ${to}]`, e instanceof Error ? e.message : e);
+    console.error(`[notify:sms FAILED -> ${to}]`, e instanceof Error ? e.message : e);
   }
 }
 

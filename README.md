@@ -68,7 +68,7 @@ src/
     seed.ts        default content + sample products
     i18n/          dictionary + LanguageProvider
     auth.ts        placeholder cookie session
-    notify.ts      placeholder SMS/email (wire Twilio/SendGrid here)
+    notify.ts      SMS (sms4free) + email (Gmail) notifications
     validation.ts  shared form/API validation
 data/              runtime JSON store (gitignored; reseeds from seed.ts)
 public/uploads/    uploaded images (gitignored)
@@ -76,8 +76,8 @@ public/uploads/    uploaded images (gitignored)
 
 ## Notes & next steps (placeholders to wire up later)
 - **Auth** (`src/lib/auth.ts`) — simple cookie session; swap for NextAuth / JWT.
-- **Notifications** (`src/lib/notify.ts`) — logs instead of sending; drop in
-  Twilio (SMS) and SendGrid (email).
+- **Notifications** (`src/lib/notify.ts`) — SMS via sms4free, email via Gmail;
+  each logs instead of sending until its env vars are set.
 - **Storage** (`src/lib/db.ts`) — JSON files; swap for Postgres/SQLite + Prisma.
 - **Logo** (`src/components/ui/Logo.tsx`) — placeholder SVG wordmark; replace with
   the real MEDOPTIC asset (drop it in `/public`).

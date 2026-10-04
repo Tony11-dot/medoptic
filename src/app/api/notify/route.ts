@@ -6,11 +6,10 @@ import { notifyCustomer } from "@/lib/notify";
 // notification env vars are actually set in this deployment.
 export async function GET() {
   return Response.json({
-    transport: process.env.NOTIFY_TRANSPORT ?? "sms",
-    twilioAccountSid: !!process.env.TWILIO_ACCOUNT_SID,
-    twilioAuthToken: !!process.env.TWILIO_AUTH_TOKEN,
-    twilioFrom: !!process.env.TWILIO_FROM,
-    twilioWhatsappFrom: !!process.env.TWILIO_WHATSAPP_FROM,
+    sms4freeKey: !!process.env.SMS4FREE_KEY,
+    sms4freeUser: !!process.env.SMS4FREE_USER,
+    sms4freePass: !!process.env.SMS4FREE_PASS,
+    sms4freeSender: !!process.env.SMS4FREE_SENDER,
     gmailUser: !!process.env.GMAIL_USER,
     gmailAppPassword: !!process.env.GMAIL_APP_PASSWORD,
   });
