@@ -84,6 +84,13 @@ export interface Dict {
     cancelQ: string;
     cancelYes: string;
     cancelBack: string;
+    /* Self-service date change (link in the confirmation SMS/email) */
+    change: string;
+    changeTitle: string;
+    changeCurrent: string;
+    changeConfirm: string;
+    changedTitle: string;
+    changeLimit: string;
     /* Built-in hour system (slot picker) */
     continueToTime: string;
     stepTime: string;
@@ -499,6 +506,12 @@ export const dictionaries: Record<Locale, Dict> = {
       cancelQ: "לבטל את התור הזה?",
       cancelYes: "כן, ביטול התור",
       cancelBack: "חזרה לאתר",
+      change: "שינוי מועד",
+      changeTitle: "בחירת מועד חדש",
+      changeCurrent: "המועד הנוכחי",
+      changeConfirm: "אישור המועד החדש",
+      changedTitle: "המועד עודכן!",
+      changeLimit: "לא ניתן לשנות את התור שוב דרך האתר. לשינוי חייגו אלינו.",
       continueToTime: "המשך לבחירת יום ושעה",
       stepTime: "בחירת יום ושעה",
       back: "חזרה לפרטים",
@@ -893,6 +906,12 @@ export const dictionaries: Record<Locale, Dict> = {
       cancelQ: "Cancel this appointment?",
       cancelYes: "Yes, cancel it",
       cancelBack: "Back to the site",
+      change: "Change date",
+      changeTitle: "Pick a new time",
+      changeCurrent: "Current time",
+      changeConfirm: "Confirm new time",
+      changedTitle: "Your appointment was moved!",
+      changeLimit: "This booking can't be changed online again. Please call us to change it.",
       continueToTime: "Continue to pick a day & time",
       stepTime: "Pick a day & time",
       back: "Back to details",
@@ -1287,6 +1306,12 @@ export const dictionaries: Record<Locale, Dict> = {
       cancelQ: "Отменить эту запись?",
       cancelYes: "Да, отменить",
       cancelBack: "Вернуться на сайт",
+      change: "Перенести запись",
+      changeTitle: "Выберите новое время",
+      changeCurrent: "Текущее время",
+      changeConfirm: "Подтвердить новое время",
+      changedTitle: "Запись перенесена!",
+      changeLimit: "Эту запись больше нельзя перенести онлайн. Позвоните нам, чтобы изменить её.",
       continueToTime: "Далее: выбрать день и время",
       stepTime: "Выбор дня и времени",
       back: "Назад к данным",

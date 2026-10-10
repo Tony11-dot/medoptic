@@ -10,6 +10,7 @@ import type { ReminderChannel, Service } from "@/lib/types";
 // The /api/availability response shape comes straight from the shared slot
 // engine, so the picker can never drift from what the server returns.
 import { serviceDuration, type DayAvailability, type Slot } from "@/lib/schedule";
+import { SlotPicker, useDateLabels } from "./SlotPicker";
 import { isValidEmail, isValidPhone } from "@/lib/validation";
 import { SectionBg } from "./SectionBg";
 import { cn } from "@/lib/cn";
@@ -25,7 +26,7 @@ interface FormValues {
 }
 
 export function Booking({ bg }: { bg?: string }) {
-  const { t, pick, locale } = useI18n();
+  const { t, pick } = useI18n();
   const toast = useToast();
   const [step, setStep] = useState<"details" | "time">("details");
   const [done, setDone] = useState(false);
@@ -37,7 +38,7 @@ export function Booking({ bg }: { bg?: string }) {
   const [selectedDay, setSelectedDay] = useState<string | null>(null);
   const [selectedSlot, setSelectedSlot] = useState<Slot | null>(null);
 
-  // Self-service after booking: let the customer cancel their appointment.
+  // Self-service after booking: let the customer change or cancel their appointment.
   const [apptId, setApptId] = useState<string | null>(null);
   const [bookedSlot, setBookedSlot] = useState<(Slot & { date: string; weekday: number }) | null>(null);
   const [cancelled, setCancelled] = useState(false);
@@ -131,15 +132,7 @@ export function Booking({ bg }: { bg?: string }) {
     [days, selectedDay],
   );
 
-  // Localized labels for a "YYYY-MM-DD" business-tz calendar date.
-  const dayNum = (date: string) => Number(date.slice(8, 10));
-  const monthFmt = useMemo(
-    () => new Intl.DateTimeFormat(locale, { month: "short", timeZone: "UTC" }),
-    [locale],
-  );
-  const monthName = (date: string) => monthFmt.format(new Date(`${date}T12:00:00Z`));
-  const fullDate = (date: string, weekday: number) =>
-    `${t.weekdaysLong[weekday]}, ${dayNum(date)} ${monthName(date)}`;
+  const { fullDate } = useDateLabels();
 
   const submitBooking = handleSubmit(async (values) => {
     if (!selectedSlot || !selectedDayData) return;
@@ -254,10 +247,19 @@ export function Booking({ bg }: { bg?: string }) {
                     )}
                     <p className="mt-3 max-w-sm text-lg text-ink/80">{t.booking.successBody}</p>
 
+                    {apptId && (
+                      <a
+                        href={`/change/${apptId}`}
+                        className="mt-7 inline-flex h-12 items-center justify-center gap-2 rounded-xl border-2 border-brand-200 bg-brand-50/60 px-6 text-base font-bold text-brand-dark transition hover:border-brand"
+                      >
+                        <span aria-hidden>🗓</span>
+                        {t.booking.change}
+                      </a>
+                    )}
                     <button
                       type="button"
                       onClick={bookAnother}
-                      className="mt-8 text-base font-semibold text-brand-dark underline-offset-2 hover:underline"
+                      className="mt-5 text-base font-semibold text-brand-dark underline-offset-2 hover:underline"
                     >
                       {t.booking.bookAnother}
                     </button>
@@ -295,102 +297,26 @@ export function Booking({ bg }: { bg?: string }) {
                   </p>
                 )}
 
-                {days === null ? (
-                  <div className="flex items-center gap-3 py-14 text-muted">
-                    <span className="size-5 animate-spin rounded-full border-2 border-line border-t-brand" />
-                    {t.booking.loadingSlots}
-                  </div>
-                ) : !anySlots ? (
-                  <p className="py-14 text-center text-lg text-muted">{t.booking.noSlotsAtAll}</p>
-                ) : (
-                  <>
-                    {/* Day picker — open days light up, closed/full days are off */}
-                    <p className="mt-5 text-base font-bold text-ink">{t.booking.chooseDay}</p>
-                    <div className="mt-2 grid grid-cols-4 gap-2 sm:grid-cols-7">
-                      {days.map((d) => {
-                        const enabled = d.slots.length > 0;
-                        const active = selectedDay === d.date;
-                        return (
-                          <button
-                            key={d.date}
-                            type="button"
-                            disabled={!enabled}
-                            onClick={() => {
-                              setSelectedDay(d.date);
-                              setSelectedSlot(null);
-                            }}
-                            aria-pressed={active ? "true" : "false"}
-                            className={cn(
-                              "flex min-h-16 flex-col items-center justify-center rounded-xl border-2 px-1 py-2 transition",
-                              active
-                                ? "border-brand bg-brand text-white shadow-md"
-                                : enabled
-                                  ? "border-brand-200 bg-brand-50/60 text-brand-dark hover:border-brand"
-                                  : "cursor-not-allowed border-line bg-surface text-ink/30",
-                            )}
-                          >
-                            <span className="text-xs font-semibold">{t.weekdaysShort[d.weekday]}</span>
-                            <span className="text-lg font-extrabold leading-tight">{dayNum(d.date)}</span>
-                            <span className="text-[10px] font-medium">
-                              {enabled ? monthName(d.date) : d.open ? t.booking.full : t.booking.closed}
-                            </span>
-                          </button>
-                        );
-                      })}
-                    </div>
-
-                    {/* Hour picker — taken slots simply aren't offered (cinema-style) */}
-                    {selectedDayData && (
-                      <>
-                        <p className="mt-6 text-base font-bold text-ink">{t.booking.chooseHour}</p>
-                        {selectedDayData.slots.length === 0 ? (
-                          <p className="mt-2 text-muted">{t.booking.noSlotsDay}</p>
-                        ) : (
-                          <div className="mt-2 grid grid-cols-4 gap-2 sm:grid-cols-5">
-                            {selectedDayData.slots.map((s) => {
-                              const active = selectedSlot?.iso === s.iso;
-                              return (
-                                <button
-                                  key={s.iso}
-                                  type="button"
-                                  onClick={() => setSelectedSlot(s)}
-                                  aria-pressed={active ? "true" : "false"}
-                                  className={cn(
-                                    "h-12 rounded-xl border-2 text-base font-bold transition",
-                                    active
-                                      ? "border-brand bg-brand text-white shadow-md"
-                                      : "border-line bg-white text-ink hover:border-brand-200",
-                                  )}
-                                  dir="ltr"
-                                >
-                                  {s.label}
-                                </button>
-                              );
-                            })}
-                          </div>
-                        )}
-                      </>
-                    )}
-
-                    {/* Confirm */}
-                    {selectedSlot && selectedDayData && (
-                      <div className="mt-6 rounded-2xl bg-brand-50 p-4 text-center">
-                        <p className="text-sm font-semibold text-muted">{t.booking.yourSlot}</p>
-                        <p className="mt-1 text-xl font-extrabold text-brand-dark">
-                          {fullDate(selectedDayData.date, selectedDayData.weekday)} · {selectedSlot.label}
-                        </p>
-                      </div>
-                    )}
-                    <button
-                      type="button"
-                      onClick={submitBooking}
-                      disabled={!selectedSlot || isSubmitting}
-                      className="mt-4 inline-flex h-14 w-full items-center justify-center gap-2 rounded-xl bg-brand px-6 text-lg font-bold text-white shadow-[0_10px_28px_rgba(0,102,204,0.28)] transition hover:bg-brand-dark disabled:opacity-50"
-                    >
-                      <span aria-hidden className="text-xl">🗓</span>
-                      {isSubmitting ? t.booking.submitting : t.booking.submit}
-                    </button>
-                  </>
+                <SlotPicker
+                  days={days}
+                  selectedDay={selectedDay}
+                  selectedSlot={selectedSlot}
+                  onDay={(date) => {
+                    setSelectedDay(date);
+                    setSelectedSlot(null);
+                  }}
+                  onSlot={setSelectedSlot}
+                />
+                {anySlots && (
+                  <button
+                    type="button"
+                    onClick={submitBooking}
+                    disabled={!selectedSlot || isSubmitting}
+                    className="mt-4 inline-flex h-14 w-full items-center justify-center gap-2 rounded-xl bg-brand px-6 text-lg font-bold text-white shadow-[0_10px_28px_rgba(0,102,204,0.28)] transition hover:bg-brand-dark disabled:opacity-50"
+                  >
+                    <span aria-hidden className="text-xl">🗓</span>
+                    {isSubmitting ? t.booking.submitting : t.booking.submit}
+                  </button>
                 )}
               </motion.div>
             ) : (

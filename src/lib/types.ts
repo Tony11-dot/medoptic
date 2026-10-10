@@ -169,6 +169,9 @@ export interface Appointment {
   notifiedAt?: string;
   /** Records that the day-before reminder was sent. */
   remindedAt?: string;
+  /** How many times the customer moved this booking via the self-service
+   * "change date" link (capped, since every move sends an SMS). */
+  selfChanges?: number;
 }
 
 // ---- Eye tests / prescriptions (מרשמים) -------------------------------------

@@ -85,6 +85,13 @@ export default function CancelPage() {
             >
               {t.booking.cancelYes}
             </button>
+            <a
+              href={`/change/${id}`}
+              className="mt-3 inline-flex h-12 w-full items-center justify-center gap-2 rounded-xl border-2 border-brand-200 bg-brand-50/60 px-6 text-base font-bold text-brand-dark transition hover:border-brand"
+            >
+              <span aria-hidden>🗓</span>
+              {t.booking.change}
+            </a>
             <a href="/" className="mt-4 block text-base font-semibold text-brand-dark underline-offset-2 hover:underline">
               {t.booking.cancelBack}
             </a>

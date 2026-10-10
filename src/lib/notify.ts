@@ -58,8 +58,13 @@ function whenText(appt: Appointment): string | null {
   });
 }
 
-/** Public self-service link where the customer can cancel this booking. */
+/** Public self-service links where the customer can cancel or move this booking. */
 const cancelUrl = (appt: Appointment) => `${SITE_URL}/cancel/${appt.id}`;
+const changeUrl = (appt: Appointment) => `${SITE_URL}/change/${appt.id}`;
+
+/** SMS tail with both self-service links. */
+const selfServiceText = (appt: Appointment) =>
+  `לשינוי מועד: ${changeUrl(appt)} לביטול: ${cancelUrl(appt)}`;
 
 function buildMessage(appt: Appointment): string {
   const name = `${appt.firstName} ${appt.lastName}`.trim();
@@ -69,8 +74,8 @@ function buildMessage(appt: Appointment): string {
   if (appt.status === "approved") {
     const slot = when
       ? `התור שלך נקבע ל-${when}.`
-      : `נחזור אליך לתיאום מועד.`;
-    return `${BUSINESS.name}: שלום ${name}, התור שלך אושר. ${slot} ${signoff} לביטול התור: ${cancelUrl(appt)}`;
+      : `התור שלך אושר, נחזור אליך לתיאום מועד.`;
+    return `${BUSINESS.name}: שלום ${name}, ${slot} ${signoff} ${selfServiceText(appt)}`;
   }
   if (appt.status === "declined") {
     const reason = appt.decisionReason ? ` סיבה: ${appt.decisionReason}` : "";
@@ -87,11 +92,17 @@ function buildCancelMessage(appt: Appointment): string {
   return `${BUSINESS.name}: שלום ${name}, התור שלך${slot} בוטל כמבוקש. נשמח לראותך בפעם הבאה! ${signoff}`;
 }
 
+function buildRescheduleMessage(appt: Appointment): string {
+  const name = `${appt.firstName} ${appt.lastName}`.trim();
+  const when = whenText(appt);
+  return `${BUSINESS.name}: שלום ${name}, התור שלך הועבר${when ? ` ל-${when}` : ""}. לשאלות חייגו ${BUSINESS.phone}. ${selfServiceText(appt)}`;
+}
+
 function buildReminder(appt: Appointment): string {
   const name = `${appt.firstName} ${appt.lastName}`.trim();
   const when = whenText(appt);
   const slot = when ? ` מחר, ${when}` : " מחר";
-  return `${BUSINESS.name}: שלום ${name}, תזכורת לתור שלך${slot}. נתראה בקרוב! לשינוי חייגו ${BUSINESS.phone}. לביטול: ${cancelUrl(appt)}`;
+  return `${BUSINESS.name}: שלום ${name}, תזכורת לתור שלך${slot}. נתראה בקרוב! ${selfServiceText(appt)}`;
 }
 
 // ---- Branded HTML email -----------------------------------------------------
@@ -141,10 +152,13 @@ function buttonHtml(href: string, label: string): string {
   return `<a href="${href}" style="display:inline-block;background:${BRAND};color:#ffffff;text-decoration:none;font-weight:bold;padding:14px 30px;border-radius:12px;font-size:16px;">${label}</a>`;
 }
 
-/** Understated cancel link shown under the main email content. */
+/** Self-service block under the main email content: a "change date" button,
+ * with the cancel link kept understated beside it. */
 function cancelLinkHtml(appt: Appointment): string {
-  return `<p style="margin:18px 0 0;font-size:13px;color:#8a94a3;">
-    לא מסתדר לכם? <a href="${cancelUrl(appt)}" style="color:#c2410c;font-weight:bold;text-decoration:underline;">לחצו כאן לביטול התור</a>
+  return `<p style="margin:22px 0 0;font-size:14px;color:#46505e;">המועד לא מסתדר? אפשר להחליף אותו בכמה לחיצות:</p>
+  <p style="margin:12px 0 0;">${buttonHtml(changeUrl(appt), "🗓 שינוי מועד")}</p>
+  <p style="margin:14px 0 0;font-size:13px;color:#8a94a3;">
+    או <a href="${cancelUrl(appt)}" style="color:#c2410c;font-weight:bold;text-decoration:underline;">לחצו כאן לביטול התור</a>
   </p>`;
 }
 
@@ -177,6 +191,13 @@ function buildCancelEmailHtml(appt: Appointment): string {
     ? `התור שנקבע ל-<strong>${esc(when)}</strong> בוטל בהצלחה, כפי שביקשת.`
     : `התור בוטל בהצלחה, כפי שביקשת.`;
   return emailShell(`שלום ${name}, התור בוטל`, `${slot}<br/><br/>מתחשק לקבוע תור חדש? נשמח לראות אותך שוב.`);
+}
+
+function buildRescheduleEmailHtml(appt: Appointment): string {
+  const name = esc(`${appt.firstName} ${appt.lastName}`.trim());
+  const when = whenText(appt);
+  const slot = when ? `התור הועבר ל-<strong>${esc(when)}</strong>.` : `התור הועבר.`;
+  return emailShell(`שלום ${name}, המועד עודכן 🔁`, `${slot} נשמח לראותך!${cancelLinkHtml(appt)}`);
 }
 
 function buildReminderHtml(appt: Appointment): string {
@@ -306,6 +327,16 @@ export function notifyCustomerCancelled(appt: Appointment): Promise<NotifyResult
   });
 }
 
+/** Confirm to the customer that their booking moved to a new time. Same delivery
+ * rule as a decision: always SMS, plus email whenever one was given. */
+export function notifyCustomerRescheduled(appt: Appointment): Promise<NotifyResult> {
+  const channels: ReminderChannel[] = ["sms", ...(appt.email ? (["email"] as const) : [])];
+  return dispatch({ ...appt, reminderChannels: channels }, buildRescheduleMessage(appt), {
+    subject: `${BUSINESS.name} — מועד התור עודכן`,
+    html: buildRescheduleEmailHtml(appt),
+  });
+}
+
 /** Send the day-before appointment reminder via the customer's chosen channel. */
 export function notifyReminder(appt: Appointment): Promise<NotifyResult> {
   return dispatch(appt, buildReminder(appt), {
@@ -374,8 +405,9 @@ export async function notifyAdminNewBooking(appt: Appointment, serviceLabel: str
  * expect the customer to re-book, or whether they made the change themselves. */
 export type ChangedBy = "customer" | "admin";
 
-function changedByLabel(by: ChangedBy): string {
-  return by === "customer" ? "הלקוח/ה (ביטול עצמי באתר)" : "הצוות (מהניהול)";
+function changedByLabel(by: ChangedBy, action: "cancel" | "change" = "cancel"): string {
+  if (by === "admin") return "הצוות (מהניהול)";
+  return action === "cancel" ? "הלקוח/ה (ביטול עצמי באתר)" : "הלקוח/ה (שינוי עצמי באתר)";
 }
 
 /** Branded Hebrew HTML alerting the office that a booking was cancelled. */
@@ -420,6 +452,7 @@ function buildAdminRescheduleHtml(
   appt: Appointment,
   serviceLabel: string,
   previousAppointmentAt: string | undefined,
+  changedBy: ChangedBy,
 ): string {
   const name = `${appt.firstName} ${appt.lastName}`.trim();
   const prevWhen = previousAppointmentAt ? whenText({ ...appt, appointmentAt: previousAppointmentAt }) : null;
@@ -431,6 +464,7 @@ function buildAdminRescheduleHtml(
     detailRow("שם", name),
     detailRow("טלפון", appt.phone),
     detailRow("אימייל", appt.email ?? ""),
+    detailRow("שונה על ידי", changedByLabel(changedBy, "change")),
   ].join("");
   const body = `תור שונה במערכת התורים. הפרטים:
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-top:14px;border-top:1px solid #e6eaef;">
@@ -443,22 +477,23 @@ function buildAdminRescheduleHtml(
   );
 }
 
-/** Notify the office that a booking's time was changed (admin reschedule from the
- * queue). Email only. */
+/** Notify the office that a booking's time was changed — by the admin (from the
+ * queue) or by the customer (self-service change link). Email only. */
 export async function notifyAdminRescheduled(
   appt: Appointment,
   serviceLabel: string,
   previousAppointmentAt: string | undefined,
+  changedBy: ChangedBy = "admin",
 ): Promise<void> {
   const name = `${appt.firstName} ${appt.lastName}`.trim();
   const prevWhen = previousAppointmentAt ? whenText({ ...appt, appointmentAt: previousAppointmentAt }) : null;
   const when = whenText(appt);
-  const text = `תור שונה: ${name}, טלפון ${appt.phone}, שירות: ${serviceLabel}${prevWhen ? `, ממועד: ${prevWhen}` : ""}${when ? `, למועד: ${when}` : ""}.`;
+  const text = `תור שונה: ${name}, טלפון ${appt.phone}, שירות: ${serviceLabel}${prevWhen ? `, ממועד: ${prevWhen}` : ""}${when ? `, למועד: ${when}` : ""}. שונה על ידי: ${changedByLabel(changedBy, "change")}.`;
   await sendEmail(
     ADMIN_EMAIL,
     `${BUSINESS.name} — תור שונה${when ? ` ל${when}` : ""} · ${name}`,
     text,
-    buildAdminRescheduleHtml(appt, serviceLabel, previousAppointmentAt),
+    buildAdminRescheduleHtml(appt, serviceLabel, previousAppointmentAt, changedBy),
   );
 }
 
