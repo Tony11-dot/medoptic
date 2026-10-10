@@ -1,28 +1,48 @@
 "use client";
 
 import { AnimatePresence, motion } from "framer-motion";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useI18n } from "@/lib/i18n/LanguageProvider";
 import type { GalleryImage, SiteContent } from "@/lib/types";
 import { ImageBlock } from "@/components/ui/ImageBlock";
 import { styleToCss } from "@/lib/textStyle";
 import { SectionHeading } from "./SectionHeading";
 import { SectionBg } from "./SectionBg";
+import { PauseButton, useCarouselPause } from "./carousel";
+
+// Slides move like a strip: "next" (the left arrow, RTL-natural) brings the new
+// photo in from the left; "previous" from the right.
+const slideVariants = {
+  enter: (dir: number) => ({ x: dir > 0 ? "-100%" : "100%" }),
+  center: { x: 0 },
+  exit: (dir: number) => ({ x: dir > 0 ? "100%" : "-100%" }),
+};
 
 // Auto-advancing image carousel ("hero gallery"), fully managed in the admin.
 export function Gallery({ gallery, bg, styles }: { gallery: GalleryImage[]; bg?: string; styles?: SiteContent["styles"] }) {
   const { t, pick } = useI18n();
-  const [i, setI] = useState(0);
+  const [[i, dir], setSlide] = useState([0, 1]);
   const count = gallery.length;
+  const { paused, pinned, setPinned, reduced, bind, onSurfaceClick } = useCarouselPause();
+  const swipeX = useRef<number | null>(null);
 
-  const go = useCallback((n: number) => setI((c) => (n + count) % count), [count]);
+  // step +1 = next, -1 = previous; or jump straight to slide `to`.
+  const go = useCallback(
+    (step: number, to?: number) =>
+      setSlide(([c]) => {
+        const n = to ?? (c + step + count) % count;
+        return [n, to === undefined ? step : n > c ? 1 : -1];
+      }),
+    [count],
+  );
 
-  // Auto-advance every 5s (pauses implicitly when tab is hidden).
+  // Auto-advance 5s after the slide last changed, unless paused (hover, tap,
+  // keyboard focus or reduced motion). Manual navigation restarts the timer.
   useEffect(() => {
-    if (count <= 1) return;
-    const id = setInterval(() => setI((c) => (c + 1) % count), 5000);
-    return () => clearInterval(id);
-  }, [count]);
+    if (count <= 1 || paused) return;
+    const id = setTimeout(() => go(1), 5000);
+    return () => clearTimeout(id);
+  }, [count, paused, i, go]);
 
   if (count === 0) return null;
   const slide = gallery[Math.min(i, count - 1)];
@@ -33,15 +53,30 @@ export function Gallery({ gallery, bg, styles }: { gallery: GalleryImage[]; bg?:
       <div className="container-x">
         <SectionHeading eyebrow={t.gallery.eyebrow} title={t.gallery.heading} subtitle={t.gallery.subheading} />
 
-        <div className="relative mx-auto mt-10 max-w-5xl">
-          <div className="relative overflow-hidden rounded-3xl shadow-card" style={{ aspectRatio: slide.aspectRatio ?? "16 / 9" }}>
-            <AnimatePresence mode="wait">
+        <div {...bind} className="relative mx-auto mt-10 max-w-5xl">
+          <div
+            className="relative overflow-hidden rounded-3xl shadow-card"
+            style={{ aspectRatio: slide.aspectRatio ?? "16 / 9" }}
+            onClick={onSurfaceClick}
+            onTouchStart={(e) => (swipeX.current = e.touches[0].clientX)}
+            onTouchEnd={(e) => {
+              // Swipe to change photo; same direction as the arrows above it.
+              const start = swipeX.current;
+              swipeX.current = null;
+              if (start === null || count <= 1) return;
+              const dx = e.changedTouches[0].clientX - start;
+              if (Math.abs(dx) > 40) go(dx > 0 ? 1 : -1);
+            }}
+          >
+            <AnimatePresence initial={false} custom={dir}>
               <motion.div
                 key={slide.id}
-                initial={{ opacity: 0, scale: 1.02 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+                custom={dir}
+                variants={slideVariants}
+                initial="enter"
+                animate="center"
+                exit="exit"
+                transition={{ duration: reduced ? 0 : 0.7, ease: [0.22, 1, 0.36, 1] }}
                 className="absolute inset-0"
               >
                 <ImageBlock src={slide.image} alt={pick(slide.caption) || "MEDOPTIC"} rounded="rounded-3xl" objectPosition={slide.imagePosition} />
@@ -52,6 +87,11 @@ export function Gallery({ gallery, bg, styles }: { gallery: GalleryImage[]; bg?:
                 )}
               </motion.div>
             </AnimatePresence>
+            {pinned && (
+              <span className="pointer-events-none absolute start-4 top-4 z-10 rounded-full bg-black/55 px-3 py-1 text-sm font-semibold text-white">
+                ❚❚ {t.carousel.paused}
+              </span>
+            )}
           </div>
 
           {count > 1 && (
@@ -59,7 +99,7 @@ export function Gallery({ gallery, bg, styles }: { gallery: GalleryImage[]; bg?:
               {/* Arrows */}
               <button
                 type="button"
-                onClick={() => go(i + 1)}
+                onClick={() => go(1)}
                 aria-label="Next"
                 className="absolute left-3 top-1/2 grid size-12 -translate-y-1/2 place-items-center rounded-full bg-white/90 text-2xl text-brand-dark shadow-lg transition hover:bg-white"
               >
@@ -67,20 +107,21 @@ export function Gallery({ gallery, bg, styles }: { gallery: GalleryImage[]; bg?:
               </button>
               <button
                 type="button"
-                onClick={() => go(i - 1)}
+                onClick={() => go(-1)}
                 aria-label="Previous"
                 className="absolute right-3 top-1/2 grid size-12 -translate-y-1/2 place-items-center rounded-full bg-white/90 text-2xl text-brand-dark shadow-lg transition hover:bg-white"
               >
                 ›
               </button>
 
-              {/* Dots */}
-              <div className="mt-5 flex justify-center gap-2">
+              {/* Dots + pause */}
+              <div className="mt-5 flex items-center justify-center gap-2">
+                {!reduced && <PauseButton compact pinned={pinned} onToggle={() => setPinned(!pinned)} className="me-2" />}
                 {gallery.map((g, n) => (
                   <button
                     key={g.id}
                     type="button"
-                    onClick={() => setI(n)}
+                    onClick={() => go(0, n)}
                     aria-label={`Slide ${n + 1}`}
                     className={`h-2.5 rounded-full transition-all ${n === i ? "w-7 bg-brand" : "w-2.5 bg-brand-200 hover:bg-brand-light"}`}
                   />

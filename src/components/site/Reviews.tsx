@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useI18n } from "@/lib/i18n/LanguageProvider";
 import type { OpeningRule, Review, SiteContent } from "@/lib/types";
 import { formatOpeningLines } from "@/lib/schedule";
@@ -13,6 +13,15 @@ import {
 } from "@/lib/location";
 import { SectionHeading } from "./SectionHeading";
 import { SectionBg } from "./SectionBg";
+import { PauseButton, useCarouselPause } from "./carousel";
+
+// How fast the review cards drift sideways.
+const DRIFT_PX_PER_SEC = 32;
+
+// A photo review is an uploaded screenshot of a Google review (not a live one).
+function isPhotoReview(rev: Review) {
+  return !rev.live && (rev.source ?? (rev.image ? "google" : "manual")) === "google";
+}
 
 // Five stars, filled up to `rating`. Large and high-contrast for readability.
 function Stars({ rating }: { rating: number }) {
@@ -45,23 +54,123 @@ export function Reviews({
   openingRules?: OpeningRule[];
 }) {
   const { t } = useI18n();
+  const { paused, pinned, setPinned, reduced, bind, onSurfaceClick } = useCarouselPause();
+  const cards = reviews.filter((rev) => !(isPhotoReview(rev) && !rev.image));
 
-  // Auto-cycle the review cards like a train (every 7s).
+  // The cards drift slowly sideways like a train. When they overflow the track,
+  // a second (hidden-from-AT) copy follows the first so the loop is seamless.
   const trackRef = useRef<HTMLDivElement>(null);
+  const [loop, setLoop] = useState(false);
+  const period = useRef(0); // width of one full set of cards + gap
+  const pausedRef = useRef(paused);
+  const touching = useRef(false);
+  const touchStart = useRef<{ x: number; y: number } | null>(null);
+  useEffect(() => {
+    pausedRef.current = paused;
+  }, [paused]);
+
   useEffect(() => {
     const el = trackRef.current;
-    if (!el || reviews.length <= 1) return;
-    const id = setInterval(() => {
-      const first = el.children[0] as HTMLElement | undefined;
-      const step = first ? first.getBoundingClientRect().width + 24 : el.clientWidth;
-      if (el.scrollLeft + el.clientWidth >= el.scrollWidth - 12) {
-        el.scrollTo({ left: 0, behavior: "smooth" });
-      } else {
-        el.scrollBy({ left: step, behavior: "smooth" });
+    if (!el) return;
+    const measure = () => {
+      const items = el.querySelectorAll<HTMLElement>("[data-card]");
+      if (items.length < 2) return setLoop(false);
+      const first = items[0];
+      const last = items[items.length - 1];
+      const width = last.offsetLeft + last.offsetWidth - first.offsetLeft;
+      period.current = width + (parseFloat(getComputedStyle(el).columnGap) || 0);
+      setLoop(width > el.clientWidth + 2);
+    };
+    measure();
+    const ro = new ResizeObserver(measure);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [cards.length]);
+
+  useEffect(() => {
+    const el = trackRef.current;
+    if (!el || !loop) return;
+    let raf = 0;
+    let last = 0;
+    let pos = el.scrollLeft;
+    let visible = false;
+    const io = new IntersectionObserver(([e]) => (visible = e.isIntersecting));
+    io.observe(el);
+    const tick = (now: number) => {
+      raf = requestAnimationFrame(tick);
+      const dt = last ? Math.min(now - last, 64) : 0;
+      last = now;
+      if (pausedRef.current || touching.current || !visible || period.current <= 0) {
+        pos = el.scrollLeft; // pick up wherever the visitor left it
+        return;
       }
-    }, 7000);
-    return () => clearInterval(id);
-  }, [reviews.length]);
+      pos += (DRIFT_PX_PER_SEC * dt) / 1000;
+      if (pos >= period.current) pos -= period.current;
+      el.scrollLeft = pos;
+    };
+    raf = requestAnimationFrame(tick);
+    return () => {
+      cancelAnimationFrame(raf);
+      io.disconnect();
+    };
+  }, [loop]);
+
+  // On pausing by tap/button, glide to the nearest card so it sits fully in view.
+  const settle = () => {
+    const el = trackRef.current;
+    const kids = el ? (Array.from(el.children) as HTMLElement[]) : [];
+    if (!el || !kids.length) return;
+    const base = kids[0].offsetLeft;
+    const target = kids
+      .map((k) => k.offsetLeft - base)
+      .reduce((best, x) => (Math.abs(x - el.scrollLeft) < Math.abs(best - el.scrollLeft) ? x : best));
+    el.scrollTo({ left: target, behavior: "smooth" });
+  };
+  const togglePin = () => {
+    if (!pinned) settle();
+    setPinned(!pinned);
+  };
+
+  const renderCard = (rev: Review, clone: boolean) => {
+    const isPhoto = isPhotoReview(rev);
+    return (
+      <figure
+        key={clone ? `${rev.id}-clone` : rev.id}
+        data-card={clone ? undefined : ""}
+        aria-hidden={clone || undefined}
+        inert={clone}
+        className={`flex shrink-0 basis-[85%] flex-col rounded-2xl border border-line bg-white shadow-sm sm:basis-[calc(50%-12px)] lg:basis-[calc(33.333%-16px)] ${loop ? "" : "snap-start"} ${isPhoto ? "self-start overflow-hidden" : "p-6"}`}
+      >
+        {isPhoto ? (
+          // A photo review is a screenshot of a real Google review — shown
+          // at its chosen frame shape (set in the admin), cropped to fit.
+          <div className="w-full overflow-hidden" style={{ aspectRatio: rev.aspectRatio ?? "3 / 4" }}>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={rev.image}
+              alt={rev.author || "Google review"}
+              style={{ objectPosition: rev.imagePosition }}
+              className="h-full w-full object-cover"
+            />
+          </div>
+        ) : (
+          <>
+            <div className="flex items-center justify-between gap-2">
+              <Stars rating={rev.rating} />
+              {rev.live && <GoogleG className="size-5 shrink-0" />}
+            </div>
+            <blockquote className="mt-4 flex-1 whitespace-pre-line text-base leading-relaxed text-ink">
+              “{rev.text}”
+            </blockquote>
+            <figcaption className="mt-4 flex items-center justify-between gap-2 border-t border-line pt-3">
+              <span className="font-bold text-ink">{rev.author}</span>
+              <span className="text-sm text-muted">{rev.date}</span>
+            </figcaption>
+          </>
+        )}
+      </figure>
+    );
+  };
 
   return (
     <section id="reviews" className={`relative scroll-mt-20 overflow-hidden py-20 md:py-28 ${bg ? "flex min-h-screen flex-col justify-center" : ""}`}>
@@ -69,59 +178,53 @@ export function Reviews({
       <div className="container-x">
         <SectionHeading eyebrow={t.reviews.eyebrow} title={t.reviews.heading} subtitle={t.reviews.subheading} />
 
-        {reviews.length === 0 ? (
+        {cards.length === 0 ? (
           !(rating && rating.rating > 0) && (
             <p className="mx-auto mt-12 max-w-xl text-center text-lg text-muted">{t.reviews.empty}</p>
           )
         ) : (
+          <motion.div
+            {...bind}
+            initial={{ opacity: 0, y: 24 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, amount: 0.2 }}
+            transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+            className="mx-auto mt-12 max-w-5xl"
+          >
             <div
               ref={trackRef}
               dir="ltr"
-              className="mx-auto mt-12 flex max-w-5xl snap-x snap-mandatory gap-6 overflow-x-auto scroll-smooth pb-2 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+              onClick={(e) => onSurfaceClick(e) && !pinned && settle()}
+              onTouchStart={(e) => {
+                touching.current = true;
+                touchStart.current = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+              }}
+              onTouchMove={(e) => {
+                // A sideways swipe means they're browsing — keep it still for reading.
+                const s = touchStart.current;
+                if (!s) return;
+                const dx = Math.abs(e.touches[0].clientX - s.x);
+                const dy = Math.abs(e.touches[0].clientY - s.y);
+                if (dx > 10 && dx > dy) {
+                  setPinned(true);
+                  touchStart.current = null;
+                }
+              }}
+              onTouchEnd={() => {
+                touching.current = false;
+                touchStart.current = null;
+              }}
+              className={`relative flex gap-6 overflow-x-auto pb-2 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden ${loop ? "" : "snap-x snap-mandatory"}`}
             >
-              {reviews.map((rev, i) => {
-                const isPhoto = !rev.live && (rev.source ?? (rev.image ? "google" : "manual")) === "google";
-                if (isPhoto && !rev.image) return null;
-                return (
-                <motion.figure
-                  key={rev.id}
-                  initial={{ opacity: 0, y: 24 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true, amount: 0.2 }}
-                  transition={{ duration: 0.5, delay: (i % 3) * 0.1, ease: [0.22, 1, 0.36, 1] }}
-                  className={`flex shrink-0 snap-start basis-[85%] flex-col rounded-2xl border border-line bg-white shadow-sm sm:basis-[calc(50%-12px)] lg:basis-[calc(33.333%-16px)] ${isPhoto ? "self-start overflow-hidden" : "p-6"}`}
-                >
-                  {isPhoto ? (
-                    // A photo review is a screenshot of a real Google review — shown
-                    // at its chosen frame shape (set in the admin), cropped to fit.
-                    <div className="w-full overflow-hidden" style={{ aspectRatio: rev.aspectRatio ?? "3 / 4" }}>
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img
-                        src={rev.image}
-                        alt={rev.author || "Google review"}
-                        style={{ objectPosition: rev.imagePosition }}
-                        className="h-full w-full object-cover"
-                      />
-                    </div>
-                  ) : (
-                    <>
-                      <div className="flex items-center justify-between gap-2">
-                        <Stars rating={rev.rating} />
-                        {rev.live && <GoogleG className="size-5 shrink-0" />}
-                      </div>
-                      <blockquote className="mt-4 flex-1 whitespace-pre-line text-base leading-relaxed text-ink">
-                        “{rev.text}”
-                      </blockquote>
-                      <figcaption className="mt-4 flex items-center justify-between gap-2 border-t border-line pt-3">
-                        <span className="font-bold text-ink">{rev.author}</span>
-                        <span className="text-sm text-muted">{rev.date}</span>
-                      </figcaption>
-                    </>
-                  )}
-                </motion.figure>
-                );
-              })}
+              {cards.map((rev) => renderCard(rev, false))}
+              {loop && cards.map((rev) => renderCard(rev, true))}
             </div>
+            {loop && !reduced && (
+              <div className="mt-4 flex justify-center">
+                <PauseButton pinned={pinned} onToggle={togglePin} />
+              </div>
+            )}
+          </motion.div>
         )}
 
         <FindUs rating={rating} footer={footer} openingRules={openingRules} />

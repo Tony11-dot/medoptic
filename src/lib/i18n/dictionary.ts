@@ -140,6 +140,8 @@ export interface Dict {
     contrast: string; grayscale: string; underline: string; reduceMotion: string; reset: string;
     statement: string;
   };
+  /** Pause/play control for the auto-scrolling reviews and gallery. */
+  carousel: { pause: string; play: string; paused: string };
   /** Localized weekday names, Sunday first (index 0 = Sunday). */
   weekdaysShort: string[];
   weekdaysLong: string[];
@@ -551,6 +553,7 @@ export const dictionaries: Record<Locale, Dict> = {
       contrast: "ניגודיות גבוהה", grayscale: "גווני אפור", underline: "הדגשת קישורים", reduceMotion: "עצירת אנימציות", reset: "איפוס הגדרות",
       statement: "הצהרת נגישות",
     },
+    carousel: { pause: "עצירת הגלילה", play: "המשך גלילה", paused: "מושהה · לחצו להמשך" },
     weekdaysShort: ["א׳", "ב׳", "ג׳", "ד׳", "ה׳", "ו׳", "ש׳"],
     weekdaysLong: ["ראשון", "שני", "שלישי", "רביעי", "חמישי", "שישי", "שבת"],
     datePicker: {
@@ -944,6 +947,7 @@ export const dictionaries: Record<Locale, Dict> = {
       contrast: "High contrast", grayscale: "Grayscale", underline: "Underline links", reduceMotion: "Stop animations", reset: "Reset settings",
       statement: "Accessibility Statement",
     },
+    carousel: { pause: "Pause scrolling", play: "Resume scrolling", paused: "Paused · press to resume" },
     weekdaysShort: ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"],
     weekdaysLong: ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"],
     datePicker: {
@@ -1337,6 +1341,7 @@ export const dictionaries: Record<Locale, Dict> = {
       contrast: "Высокий контраст", grayscale: "Оттенки серого", underline: "Подчеркнуть ссылки", reduceMotion: "Остановить анимацию", reset: "Сбросить настройки",
       statement: "Заявление о доступности",
     },
+    carousel: { pause: "Остановить прокрутку", play: "Продолжить прокрутку", paused: "Пауза · нажмите, чтобы продолжить" },
     weekdaysShort: ["Вс", "Пн", "Вт", "Ср", "Чт", "Пт", "Сб"],
     weekdaysLong: ["Воскресенье", "Понедельник", "Вторник", "Среда", "Четверг", "Пятница", "Суббота"],
     datePicker: {
