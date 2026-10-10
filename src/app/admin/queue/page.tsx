@@ -46,7 +46,7 @@ export default function QueuePage() {
 
   // List view (rows, newest request first) vs calendar-grid view (month of
   // day cells; tap a day to see its bookings earliest-first).
-  const [view, setView] = useState<"list" | "grid">("list");
+  const [view, setView] = useState<"list" | "grid">("grid");
   const [month, setMonth] = useState(() => dateStrInTz(new Date()).slice(0, 7)); // "YYYY-MM"
   const [dayOpen, setDayOpen] = useState<string | null>(null); // "YYYY-MM-DD"
 
