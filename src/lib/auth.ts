@@ -1,14 +1,16 @@
 // Admin auth. The password can be changed at runtime from the admin panel —
 // it's stored (salted + hashed) in the database; until one is set, the
-// ADMIN_PASSWORD env var (or its default) is used.
+// ADMIN_PASSWORD env var is used.
 import "server-only";
 import { cookies } from "next/headers";
 import { scryptSync, randomBytes, timingSafeEqual } from "crypto";
 import { getSettings, updateSettings } from "./db";
 
 export const SESSION_COOKIE = "medoptic_admin";
-const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD ?? "medoptic24";
-const SESSION_TOKEN = process.env.ADMIN_TOKEN ?? "medoptic-session-ok";
+// No fallbacks: this repo is public, so a default written here is a password
+// anyone can read. Unset means that way in stays closed.
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || "";
+const SESSION_TOKEN = process.env.ADMIN_TOKEN || "";
 // Personal dev/tester login, independent of the admin password: set only in
 // the developer's own .env.local (git-ignored), never in .env.example or
 // committed source. Unaffected by admin password changes/resets.
@@ -36,7 +38,7 @@ export async function checkPassword(password: string): Promise<boolean> {
     const stored = Buffer.from(s.passwordHash, "hex");
     return candidate.length === stored.length && timingSafeEqual(candidate, stored);
   }
-  return password === ADMIN_PASSWORD;
+  return ADMIN_PASSWORD !== "" && password === ADMIN_PASSWORD;
 }
 
 /** Set a new admin password (stored salted + hashed). */
@@ -47,11 +49,12 @@ export async function setPassword(next: string): Promise<void> {
 }
 
 export function sessionToken(): string {
+  if (SESSION_TOKEN === "") throw new Error("ADMIN_TOKEN is not set");
   return SESSION_TOKEN;
 }
 
 /** True when the request carries a valid admin session cookie (async in Next 16). */
 export async function isAuthed(): Promise<boolean> {
   const store = await cookies();
-  return store.get(SESSION_COOKIE)?.value === SESSION_TOKEN;
+  return SESSION_TOKEN !== "" && store.get(SESSION_COOKIE)?.value === SESSION_TOKEN;
 }
